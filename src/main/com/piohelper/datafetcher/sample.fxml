@@ -1,4 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.GridPane?>
-<GridPane fx:controller="com.piohelper.datafetcher.Controller"
-          xmlns:fx="http://javafx.com/fxml" alignment="center" hgap="10" vgap="10">
+
+<GridPane alignment="center" hgap="10" vgap="10" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.piohelper.datafetcher.Controller">
+   <columnConstraints>
+      <ColumnConstraints />
+   </columnConstraints>
+   <rowConstraints>
+      <RowConstraints />
+   </rowConstraints>
+   <children>
+      <TabPane minHeight="300.0" minWidth="400.0" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+          <Tab text="Untitled Tab 1">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+            </content>
+          </Tab>
+          <Tab text="Untitled Tab 2">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+            </content>
+          </Tab>
+            <Tab text="DB Connection">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <VBox layoutX="129.0" layoutY="14.0" prefHeight="271.0" prefWidth="400.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <children>
+                              <HBox prefHeight="36.0" prefWidth="400.0">
+                                 <children>
+                                    <TextField editable="false" prefHeight="36.0" prefWidth="115.0" text="DB Name:" />
+                                    <TextField fx:id="DBName" prefHeight="40.0" prefWidth="361.0" text="PT4 DB" />
+                                 </children>
+                              </HBox>
+                              <HBox prefHeight="36.0" prefWidth="400.0">
+                                 <children>
+                                    <TextField editable="false" prefHeight="36.0" prefWidth="115.0" text="User:" />
+                                    <TextField fx:id="DBUser" prefHeight="40.0" prefWidth="361.0" text="postgres" />
+                                 </children>
+                              </HBox>
+                              <HBox prefHeight="36.0" prefWidth="400.0">
+                                 <children>
+                                    <TextField editable="false" prefHeight="36.0" prefWidth="75.0" text="Password:" />
+                                    <TextField fx:id="DBPassword" prefHeight="36.0" prefWidth="318.0" text="dbpass" />
+                                 </children>
+                              </HBox>
+                              <Button mnemonicParsing="false" prefHeight="47.0" prefWidth="256.0" text="Test connection by querying version" onAction="#testConnection"/>
+                              <TextArea editable="false" prefHeight="128.0" prefWidth="400.0" text="Results..." />
+                           </children>
+                        </VBox>
+                     </children></AnchorPane>
+               </content>
+            </Tab>
+            <Tab text="Debug Output">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <TextArea prefHeight="271.0" prefWidth="400.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                     </children>
+                  </AnchorPane>
+               </content>
+            </Tab>
+        </tabs>
+      </TabPane>
+   </children>
 </GridPane>

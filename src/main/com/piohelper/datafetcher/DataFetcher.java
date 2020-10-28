@@ -1,5 +1,6 @@
 package com.piohelper.datafetcher;
 
+import com.piohelper.PT4DataManager.PT4HandSummaryDM;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -12,20 +13,46 @@ import java.util.logging.Logger;
 
 public class DataFetcher extends Application {
 
+    String url = "jdbc:postgresql://localhost:5432/PT4 DB";
+    String user = "postgres";
+    String password = "dbpass";
+
+    PT4HandSummaryDM pt4HandSummaryDM;
+
     @Override
-    public void start(Stage primaryStage) throws Exception{
-        Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
-        primaryStage.setTitle("Hello World");
-        primaryStage.setScene(new Scene(root, 300, 275));
+    public void start(Stage primaryStage) throws Exception {
+        FXMLLoader rootLoader = new FXMLLoader(getClass().getResource("sample.fxml"));
+        rootLoader.load();
+
+        Controller rootController = rootLoader.getController();
+        rootController.setDataFetcher(this);
+
+        primaryStage.setTitle("PioHelper v 0.0");
+        primaryStage.setScene(new Scene(rootLoader.getRoot(), 500, 375));
         primaryStage.show();
+    }
+
+    public void initializeDM() {
+
+        Connection con;
+        try {
+            con = DriverManager.getConnection(url, user, password);
+            pt4HandSummaryDM = new PT4HandSummaryDM(con);
+
+            pt4HandSummaryDM.getRowCount();
+            System.out.println(pt4HandSummaryDM.getRowCount());
+
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
     }
 
 
     public static void main(String[] args) {
 
-        String url = "jdbc:postgresql://localhost:5432/PT4 DB";
-        String user = "postgres";
-        String password = "dbpass";
+
 
     //    connect(url, user, password);
 
