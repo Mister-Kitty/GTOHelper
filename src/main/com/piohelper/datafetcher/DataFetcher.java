@@ -1,4 +1,4 @@
-package com.piohelper.pokerDataFetcher;
+package com.piohelper.datafetcher;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -10,7 +10,7 @@ import java.sql.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class PokerDataFetcher extends Application {
+public class DataFetcher extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -44,7 +44,7 @@ public class PokerDataFetcher extends Application {
 
         } catch (SQLException ex) {
 
-            Logger lgr = Logger.getLogger(PokerDataFetcher.class.getName());
+            Logger lgr = Logger.getLogger(DataFetcher.class.getName());
             lgr.log(Level.SEVERE, ex.getMessage(), ex);
         }
 

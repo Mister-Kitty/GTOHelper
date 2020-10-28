@@ -1,10 +1,8 @@
-package com.piohelper.pokerDataFetcher;
+package com.piohelper.datafetcher;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-class PokerDataFetcherTest {
+class DataFetcherTest {
 
     @Test
     void connect() {
@@ -13,6 +11,6 @@ class PokerDataFetcherTest {
         String user = "postgres";
         String password = "dbpass";
 
-        PokerDataFetcher.connect(url, user, password);
+        DataFetcher.connect(url, user, password);
     }
 }
