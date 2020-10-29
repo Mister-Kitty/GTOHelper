@@ -11,6 +11,9 @@ public class PioHelperController {
     DBConnectionController dbConnectionController;
 
     @FXML
+    HandAnalysisController handAnalysisController;
+
+    @FXML
     private URL location;
 
     @FXML
@@ -21,4 +24,7 @@ public class PioHelperController {
     {
 
     }
+
+
+
 }

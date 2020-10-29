@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.piohelper.datafetcher.controllers.HandAnalysisController">
+   <children>
+      <SplitPane dividerPositions="0.657190635451505" prefHeight="400.0" prefWidth="600.0">
+        <items>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+               <children>
+                  <TabPane prefHeight="398.0" prefWidth="390.0" tabClosingPolicy="UNAVAILABLE">
+                    <tabs>
+                      <Tab text="Tags">
+                        <content>
+                          <AnchorPane minHeight="350.0" minWidth="400.0" prefHeight="180.0" prefWidth="200.0">
+                                 <children>
+                                    <TableView fx:id="tagTable" prefHeight="367.0" prefWidth="390.0">
+                                      <columns>
+                                        <TableColumn prefWidth="75.0" text="Id #" />
+                                        <TableColumn prefWidth="75.0" text="Tag" />
+                                      </columns>
+                                    </TableView>
+                                 </children>
+                              </AnchorPane>
+                        </content>
+                      </Tab>
+                      <Tab text="Sessions">
+                        <content>
+                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                        </content>
+                      </Tab>
+                    </tabs>
+                  </TabPane>
+               </children>
+            </AnchorPane>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="399.0" prefWidth="537.0" />
+        </items>
+      </SplitPane>
+   </children>
+</AnchorPane>

@@ -30,7 +30,7 @@ public class PT4HandSummaryDM extends DataManagerBase implements IHandSummaryDM 
 
     public ArrayList<HandSummary> getNHandSummaries(int N) throws SQLException {
         String sql = "select * from cash_hand_summary limit " + N;
-        ArrayList<HandSummary> hands = new ArrayList<>();
+        ArrayList<HandSummary> hands = new ArrayList<HandSummary>();
 
         try (Statement st = con.createStatement();
              ResultSet rs = st.executeQuery(sql)) {

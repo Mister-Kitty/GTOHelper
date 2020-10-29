@@ -10,15 +10,10 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBConnection  {
-    public String getVersionTest(String url, String user, String password) {
-        try {
-            Connection con = DriverManager.getConnection(url, user, password);
+    public String getVersionTest(String url, String user, String password) throws SQLException {
+        Connection con = DriverManager.getConnection(url, user, password);
 
-            IGeneralDM generalDM = new PT4GeneralDM(con);
-            return generalDM.getDBVersion();
-        } catch (SQLException throwables) {
-            return "Connect attempt failed. Error posted in the debug tab.";
-           // throwables.printStackTrace();
-        }
+        IGeneralDM generalDM = new PT4GeneralDM(con);
+        return generalDM.getDBVersion();
     }
 }
