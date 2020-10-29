@@ -23,7 +23,7 @@ public class PT4HandSummaryDM extends DataManagerBase implements IHandSummaryDM 
             if (rs.next()) {
                 return rs.getInt(1);
             } else {
-                throw new SQLException("Fetch rowcount from the cash_hand_summary table failed. Maybe the table DNE?");
+                throw new SQLException("Fetch row count from the cash_hand_summary table failed. Maybe the table DNE?");
             }
         }
     }

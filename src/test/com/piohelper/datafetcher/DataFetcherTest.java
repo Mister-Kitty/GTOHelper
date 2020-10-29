@@ -1,5 +1,6 @@
 package com.piohelper.datafetcher;
 
+import com.piohelper.datafetcher.models.PioHelper;
 import org.junit.jupiter.api.Test;
 
 class DataFetcherTest {
@@ -11,6 +12,6 @@ class DataFetcherTest {
         String user = "postgres";
         String password = "dbpass";
 
-        DataFetcher.connect(url, user, password);
+        PioHelper.connect(url, user, password);
     }
 }
