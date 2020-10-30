@@ -31,20 +31,5 @@ public class PioHelper extends Application {
         launch(args);
     }
 
-    public static void connect(String url, String user, String pass) {
-        try (Connection con = DriverManager.getConnection(url, user, pass);
-             Statement st = con.createStatement();
-             ResultSet rs = st.executeQuery("SELECT VERSION()")) {
 
-            if (rs.next()) {
-                System.out.println(rs.getString(1));
-            }
-
-        } catch (SQLException ex) {
-
-            Logger lgr = Logger.getLogger(PioHelper.class.getName());
-            lgr.log(Level.SEVERE, ex.getMessage(), ex);
-        }
-
-    }
 }
