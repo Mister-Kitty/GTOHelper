@@ -6,10 +6,9 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gtohelper.datafetcher.controllers.HandAnalysisController">
+<AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="400.0" minWidth="600.0" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gtohelper.datafetcher.controllers.HandAnalysisController">
    <children>
-      <SplitPane dividerPositions="0.657190635451505" prefHeight="400.0" prefWidth="600.0">
+      <SplitPane dividerPositions="0.6555183946488294" prefHeight="400.0" prefWidth="600.0">
         <items>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                <children>
@@ -29,16 +28,26 @@
                               </AnchorPane>
                         </content>
                       </Tab>
-                      <Tab text="Sessions">
-                        <content>
-                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-                        </content>
-                      </Tab>
                     </tabs>
                   </TabPane>
                </children>
             </AnchorPane>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="399.0" prefWidth="537.0" />
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="399.0" prefWidth="537.0">
+               <children>
+                  <VBox prefHeight="400.0" prefWidth="208.0">
+                     <children>
+                        <TableView fx:id="handsTable" prefHeight="372.0" prefWidth="208.0">
+                          <columns>
+                            <TableColumn fx:id="handsTableDateColumn" editable="false" prefWidth="75.0" text="Date" />
+                            <TableColumn fx:id="handsTableCWonColumn" editable="false" prefWidth="75.0" text="\$ Won" />
+                            <TableColumn fx:id="handsTableCardsColumn" prefWidth="75.0" text="Cards" />
+                            <TableColumn fx:id="handsTableRunoutColumn" prefWidth="75.0" text="Runout" />
+                          </columns>
+                        </TableView>
+                        <Button mnemonicParsing="false" prefHeight="25.0" prefWidth="201.0" text="Solve highlighted hands" />
+                     </children>
+                  </VBox>
+               </children></AnchorPane>
         </items>
       </SplitPane>
    </children>

@@ -2,6 +2,8 @@ package com.gtohelper.datafetcher.controllers;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -31,6 +33,11 @@ public class GTOHelperController {
     @FXML
     private void initialize()
     {
+        initializeControls();
+    }
+
+    private void initializeControls() {
+        // Listener for when different tabs are selected.
         mainTabPain.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
             @Override
             public void changed(ObservableValue<? extends Tab> observable, Tab oldValue, Tab newValue) {
@@ -41,11 +48,19 @@ public class GTOHelperController {
 
                 // moving away from DBConnection. Let's see if we have a good connection, and propogate it.
                 if(oldTabName.equals("dbConnectionTab")) {
-                    if(dbConnectionController.connectionSuccess) {
-                        handAnalysisController.refreshTags();
-                    }
+
 
                 }
+            }
+        });
+
+        // Listen for when a valid database is set up.
+        dbConnectionController.go.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                // should likely do validation.
+                handAnalysisController.refreshTags();
+                //
             }
         });
     }

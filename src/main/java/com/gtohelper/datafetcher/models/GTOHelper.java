@@ -19,7 +19,7 @@ public class GTOHelper extends Application {
 
 
         primaryStage.setTitle("GTOHelper v 0.0");
-        primaryStage.setScene(new Scene(root, 500, 375));
+        primaryStage.setScene(new Scene(root, 720, 480));
         primaryStage.show();
     }
 

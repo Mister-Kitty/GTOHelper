@@ -28,6 +28,30 @@ public class PT4HandSummaryDM extends DataManagerBase implements IHandSummaryDM 
         }
     }
 
+    @Override
+    public ArrayList<HandSummary> getHandSummariesByTag(int tagId) throws SQLException {
+        String sql = String.format( "select * from cash_hand_summary\n" +
+                "inner join tags\n" +
+                "on tags.id_x = cash_hand_summary.id_hand\n" +
+                "and tags.id_tag = %d\n" +
+                "order by date_played DESC", tagId);
+        ArrayList<HandSummary> hands = new ArrayList<HandSummary>();
+
+        try (Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                HandSummary hand = mapHandSummary(rs);
+                hands.add(hand);
+            }
+        }
+
+        return hands;
+    }
+
+
+
+
+
     public ArrayList<HandSummary> getNHandSummaries(int N) throws SQLException {
         String sql = "select * from cash_hand_summary limit " + N;
         ArrayList<HandSummary> hands = new ArrayList<HandSummary>();

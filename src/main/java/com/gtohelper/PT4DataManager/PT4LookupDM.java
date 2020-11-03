@@ -2,6 +2,8 @@ package com.gtohelper.PT4DataManager;
 
 import com.gtohelper.datamanager.DataManagerBase;
 import com.gtohelper.datamanager.ILookupDM;
+import com.gtohelper.domain.Player;
+import com.gtohelper.domain.Site;
 import com.gtohelper.domain.Tag;
 
 import java.sql.Connection;
@@ -33,13 +35,76 @@ public class PT4LookupDM  extends DataManagerBase implements ILookupDM {
         return hands;
     }
 
+    @Override
+    public ArrayList<Site> getSites() throws SQLException {
+        String sql = "select * from lookup_sites";
+
+        ArrayList<Site> hands = new ArrayList<Site>();
+
+        try (Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                Site site = mapSite(rs);
+                hands.add(site);
+            }
+        }
+
+        return hands;
+    }
+
+
+    @Override
+    public ArrayList<Player> getSortedPlayersBySite(int siteId, int minCount)throws SQLException {
+        String sql = String.format(
+                "SELECT cash_table_session_summary.id_player, COUNT(*) as cnt, MAX(p.player_name) as player_name,\n" +
+                "\t\t\tbool_or(p.flg_note) as flg_note, bool_or(p.flg_tag) as flg_tag\n" +
+                "FROM cash_table_session_summary\n" +
+                "\tLEFT JOIN \n" +
+                "\t\t(SELECT *\n" +
+                "\t\t FROM player\n" +
+                "\t\tWHERE id_site = %d) AS p\n" +
+                "\tON cash_table_session_summary.id_player = p.id_player\n" +
+                "WHERE cash_table_session_summary.id_site = %d\n" +
+                "GROUP BY cash_table_session_summary.id_player\n" +
+             //   "HAVING COUNT(*) > %d" +
+                "ORDER BY cnt DESC\n" +
+                "LIMIT %d", siteId, siteId, minCount);
+
+        ArrayList<Player> players = new ArrayList<Player>();
+
+        try (Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                Player player = mapPlayer(rs);
+                players.add(player);
+            }
+        }
+
+        return players;
+    }
+
     private Tag mapTag(ResultSet rs) throws SQLException {
         Tag tag = new Tag();
-
         tag.id_tag = rs.getInt("id_tag");
         tag.enum_type = rs.getString("enum_type").charAt(0);
         tag.tag = rs.getString("tag");
         tag.icon = rs.getString("icon");
         return tag;
+    }
+
+    private Site mapSite(ResultSet rs) throws SQLException {
+        Site tag = new Site();
+        tag.id_site = rs.getInt("id_site");
+        tag.site_name = rs.getString("site_name");
+        return tag;
+    }
+
+    private Player mapPlayer(ResultSet rs) throws SQLException {
+        Player player = new Player();
+        player.id_player = rs.getInt("id_player");
+        player.player_name = rs.getString("player_name");
+        player.flg_note = rs.getBoolean("flg_note");
+        player.flg_tag = rs.getBoolean("flg_tag");
+        return player;
     }
 }

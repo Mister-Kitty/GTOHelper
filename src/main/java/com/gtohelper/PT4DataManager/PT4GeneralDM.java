@@ -20,7 +20,8 @@ public class PT4GeneralDM  extends DataManagerBase implements IGeneralDM {
 
             throw new SQLException("SELECT VERSION() returned no results, even though a connection appeared to be successful.\n" +
                     "Are you sure you're connecting to a postgres database?");
-
         }
     }
+
+
 }
