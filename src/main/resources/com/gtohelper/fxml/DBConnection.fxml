@@ -8,7 +8,10 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<StackPane fx:id="DBConnectionController" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="400.0" minWidth="600.0" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gtohelper.datafetcher.controllers.DBConnectionController">
+<StackPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
+           minHeight="400.0" minWidth="600.0" prefHeight="400.0" prefWidth="600.0"
+           xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.gtohelper.datafetcher.controllers.DBConnectionController">
     <children>
         <VBox layoutX="129.0" layoutY="14.0" minHeight="350.0" minWidth="600.0" prefHeight="321.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
@@ -52,7 +55,7 @@
             </HBox>
             <Pane>
                <children>
-                  <Button fx:id="go" alignment="CENTER" contentDisplay="CENTER" disable="true" layoutX="420.0" layoutY="2.0" mnemonicParsing="false" prefHeight="47.0" prefWidth="98.0" text="Go!">
+                  <Button fx:id="go" alignment="CENTER" contentDisplay="CENTER" disable="true" layoutX="420.0" layoutY="2.0" mnemonicParsing="false" prefHeight="47.0" prefWidth="98.0" text="Go!" onAction="#playerSelectionConfirmed">
                      <font>
                         <Font size="15.0" />
                      </font>

@@ -6,50 +6,33 @@
 <?import javafx.scene.layout.GridPane?>
 
 
-<GridPane alignment="center" hgap="10" vgap="10"
-          xmlns="http://javafx.com/javafx/8" minHeight="480.0" minWidth="720.0"
+<Pane xmlns="http://javafx.com/javafx/8"
           xmlns:fx="http://javafx.com/fxml/1"
           fx:controller="com.gtohelper.datafetcher.controllers.GTOHelperController">
    <children>
-      <TabPane fx:id="mainTabPain" minHeight="300.0" minWidth="400.0" tabClosingPolicy="UNAVAILABLE">
+      <TabPane fx:id="mainTabPain" prefWidth="${mainTabPain.parent.width}" prefHeight="${mainTabPain.parent.height}" tabClosingPolicy="UNAVAILABLE">
         <tabs>
-          <Tab text="Untitled Tab 1">
+          <Tab fx:id="workQueueTab"  id="workQueueTab" text="Work Queue">
             <content>
               <AnchorPane minHeight="480.0" minWidth="720.0"/>
             </content>
           </Tab>
-          <Tab id="handAnalysisTab" text="HandAnalysis">
+          <Tab fx:id="handAnalysisTab"  id="handAnalysisTab" text="Hand Analysis" >
             <content>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                    <children>
-
-                        <fx:include fx:id="handAnalysis" source="/com/gtohelper/fxml/HandAnalysis.fxml"/>
-
-                    </children>
-                </AnchorPane>
+              <fx:include fx:id="handAnalysis" source="/com/gtohelper/fxml/HandAnalysis.fxml" />
             </content>
           </Tab>
-            <Tab id="dbConnectionTab" text="DB Connection">
-               <content>
-                  <AnchorPane minHeight="480.0" minWidth="720.0">
-                     <children>
-
-                         <fx:include fx:id="dbConnection" source="/com/gtohelper/fxml/DBConnection.fxml"/>
-
-                     </children>
-                  </AnchorPane>
-               </content>
-            </Tab>
-            <Tab text="Debug Output">
-               <content>
-                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                     <children>
-                        <TextArea prefHeight="271.0" prefWidth="400.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                     </children>
-                  </AnchorPane>
-               </content>
-            </Tab>
+          <Tab fx:id="dbConnectionTab" id="dbConnectionTab" text="DB Connection">
+            <content>
+              <fx:include fx:id="dbConnection" source="/com/gtohelper/fxml/DBConnection.fxml"/>
+            </content>
+          </Tab>
+          <Tab text="Debug Output">
+            <content>
+              <TextArea wrapText="true"/>
+             </content>
+          </Tab>
         </tabs>
       </TabPane>
    </children>
-</GridPane>
+</Pane>

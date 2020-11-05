@@ -28,6 +28,7 @@ public class PT4HandSummaryDM extends DataManagerBase implements IHandSummaryDM 
         }
     }
 
+    /*
     @Override
     public ArrayList<HandSummary> getHandSummariesByTag(int tagId) throws SQLException {
         String sql = String.format( "select * from cash_hand_summary\n" +
@@ -47,10 +48,7 @@ public class PT4HandSummaryDM extends DataManagerBase implements IHandSummaryDM 
 
         return hands;
     }
-
-
-
-
+*/
 
     public ArrayList<HandSummary> getNHandSummaries(int N) throws SQLException {
         String sql = "select * from cash_hand_summary limit " + N;

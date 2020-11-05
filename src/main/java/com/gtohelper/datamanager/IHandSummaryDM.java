@@ -10,8 +10,4 @@ public interface IHandSummaryDM {
 
     int getRowCount() throws SQLException;
 
-    ArrayList<HandSummary> getHandSummariesByTag(int tagId) throws SQLException;
-
-
-
 }

@@ -1,11 +1,13 @@
 package com.gtohelper.datafetcher.models;
 
+import com.gtohelper.PT4DataManager.PT4HandDataDM;
 import com.gtohelper.PT4DataManager.PT4HandSummaryDM;
 import com.gtohelper.PT4DataManager.PT4LookupDM;
 import com.gtohelper.database.Database;
+import com.gtohelper.datamanager.IHandDataDM;
 import com.gtohelper.datamanager.IHandSummaryDM;
 import com.gtohelper.datamanager.ILookupDM;
-import com.gtohelper.domain.HandSummary;
+import com.gtohelper.domain.HandData;
 import com.gtohelper.domain.Tag;
 
 import java.sql.Connection;
@@ -22,11 +24,11 @@ public class HandAnalysis {
         }
     }
 
-    public ArrayList<HandSummary> getHandSummariesByTag(int tagId) throws SQLException {
+    public ArrayList<HandData> getHandSummariesByTag(int tagId, int playerId) throws SQLException {
         try (Connection con = Database.getConnection();) {
 
-            IHandSummaryDM handSummaryDM = new PT4HandSummaryDM(con);
-            return handSummaryDM.getHandSummariesByTag(tagId);
+            IHandDataDM handSummaryDM = new PT4HandDataDM(con);
+            return handSummaryDM.getHandDataByTag(tagId, playerId);
         }
     }
 

@@ -1,24 +1,27 @@
 package com.gtohelper.datafetcher.controllers;
 
 import com.gtohelper.datafetcher.models.HandAnalysis;
-import com.gtohelper.domain.HandSummary;
-import com.gtohelper.domain.Tag;
+import com.gtohelper.domain.*;
 import com.gtohelper.utility.CardResolver;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableFloatValue;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.util.Callback;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class HandAnalysisController {
 
@@ -28,14 +31,16 @@ public class HandAnalysisController {
     @FXML TableColumn<Tag, String> tagTableTagColumn;
 
     @FXML
-    TableView<HandSummary> handsTable;
-    @FXML TableColumn<HandSummary, String> handsTableDateColumn;
-    @FXML TableColumn<HandSummary, String> handsTableCWonColumn;
-    @FXML TableColumn<HandSummary, String> handsTableCardsColumn;
-    @FXML TableColumn<HandSummary, String> handsTableRunoutColumn;
+    TableView<HandData> handsTable;
+    @FXML TableColumn<HandData, String> handsTableDateColumn;
+    @FXML TableColumn<HandData, String> handsTableCWonColumn;
+    @FXML TableColumn<HandData, String> handsTableCardsColumn;
+    @FXML TableColumn<HandData, String> handsTableRunoutColumn;
 
+    @FXML Button solveButton;
 
     HandAnalysis handAnalysis = new HandAnalysis();
+    Player player;
 
     @FXML
     private void initialize()
@@ -43,8 +48,9 @@ public class HandAnalysisController {
         initializeControls();
     }
 
-    public void refreshTags() {
+    public void refreshTags(Player p) {
         try {
+            player = p;
             ArrayList<Tag> newHandTags = handAnalysis.getHandTags();
             ObservableList<Tag> t = FXCollections.observableList(newHandTags);
 
@@ -54,7 +60,32 @@ public class HandAnalysisController {
         }
     }
 
+    @FXML
+    private void selectAll() {
+        handsTable.getSelectionModel().selectAll();
+    }
+
+    @FXML
+    private void solveSelected() {
+       List<HandData> handsToSolve = handsTable.getSelectionModel().getSelectedItems();
+        solveHandsCallback.accept(handsToSolve);
+    }
+
+    private Consumer<List<HandData>> solveHandsCallback;
+    public void saveSolveHandsCallback(Consumer<List<HandData>> callback) {
+        solveHandsCallback = callback;
+    }
+
     private void initializeControls() {
+
+        handsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        handsTable.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
+                if(newValue == null)
+                    solveButton.disableProperty().setValue(true);
+                else
+                    solveButton.disableProperty().setValue(false);
+            }
+        );
 
         // I could annotate the domain objects to make this more elegant... I may do it latter.
         tagTableIdColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Tag, String>, ObservableValue<String>>() {
@@ -77,8 +108,8 @@ public class HandAnalysisController {
 
                     Tag clickedRow = row.getItem();
                     try {
-                        ArrayList<HandSummary> handSummaries = handAnalysis.getHandSummariesByTag(clickedRow.id_tag);
-                        ObservableList<HandSummary> t = FXCollections.observableList(handSummaries);
+                        ArrayList<HandData> handSummaries = handAnalysis.getHandSummariesByTag(clickedRow.id_tag, player.id_player);
+                        ObservableList<HandData> t = FXCollections.observableList(handSummaries);
 
                         handsTable.getItems().clear();
                         handsTable.getItems().addAll(t);
@@ -90,27 +121,30 @@ public class HandAnalysisController {
             return row ;
         });
 
-        handsTableDateColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<HandSummary, String>, ObservableValue<String>>() {
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<HandSummary, String> p) {
+        handsTableDateColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<HandData, String>, ObservableValue<String>>() {
+            public ObservableValue<String> call(TableColumn.CellDataFeatures<HandData, String> p) {
                 return new SimpleStringProperty(p.getValue().date_played.toString());
             }
         });
 
-        handsTableCWonColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<HandSummary, String>, ObservableValue<String>>() {
+        handsTableCWonColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<HandData, String>, ObservableValue<String>>() {
             @Override
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<HandSummary, String> p) {
+            public ObservableValue<String> call(TableColumn.CellDataFeatures<HandData, String> p) {
                 return new SimpleStringProperty("" + p.getValue().amt_pot);
             }
         });
 
-        handsTableCardsColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<HandSummary, String>, ObservableValue<String>>() {
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<HandSummary, String> p) {
-                return new SimpleStringProperty("" + p.getValue().hand);
+        handsTableCardsColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<HandData, String>, ObservableValue<String>>() {
+            public ObservableValue<String> call(TableColumn.CellDataFeatures<HandData, String> p) {
+                String result = CardResolver.resolveToString(p.getValue().holecard_1) + " " +
+                    CardResolver.resolveToString(p.getValue().holecard_2);
+
+                return new SimpleStringProperty(result);
             }
         });
 
-        handsTableRunoutColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<HandSummary, String>, ObservableValue<String>>() {
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<HandSummary, String> p) {
+        handsTableRunoutColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<HandData, String>, ObservableValue<String>>() {
+            public ObservableValue<String> call(TableColumn.CellDataFeatures<HandData, String> p) {
                 String runout = CardResolver.resolveToString(p.getValue().card_1) + " " +
                         CardResolver.resolveToString(p.getValue().card_2) + " " +
                         CardResolver.resolveToString(p.getValue().card_3) + " " +
@@ -119,9 +153,5 @@ public class HandAnalysisController {
                 return new SimpleStringProperty(runout);
             }
         });
-
-
     }
-
-
 }

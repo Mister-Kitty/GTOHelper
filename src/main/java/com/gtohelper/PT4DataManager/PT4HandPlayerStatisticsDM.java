@@ -17,7 +17,7 @@ public class PT4HandPlayerStatisticsDM extends DataManagerBase implements IHandP
     public PT4HandPlayerStatisticsDM(Connection con) {
         super(con);
     }
-
+/*
     public ArrayList<HandPlayerStatistics> getHandSummariesByTag(int tagId) throws SQLException {
         String sql = "";
         ArrayList<HandPlayerStatistics> hands = new ArrayList<HandPlayerStatistics>();
@@ -33,13 +33,10 @@ public class PT4HandPlayerStatisticsDM extends DataManagerBase implements IHandP
         return hands;
     }
 
-
-
     private HandPlayerStatistics mapHandSummary(ResultSet rs) throws SQLException {
         HandPlayerStatistics hand = new HandPlayerStatistics();
 
         return hand;
     }
-
-
+*/
 }

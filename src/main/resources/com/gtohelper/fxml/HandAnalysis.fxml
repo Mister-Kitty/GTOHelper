@@ -6,49 +6,42 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="400.0" minWidth="600.0" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gtohelper.datafetcher.controllers.HandAnalysisController">
-   <children>
-      <SplitPane dividerPositions="0.6555183946488294" prefHeight="400.0" prefWidth="600.0">
-        <items>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
-               <children>
-                  <TabPane prefHeight="398.0" prefWidth="390.0" tabClosingPolicy="UNAVAILABLE">
-                    <tabs>
-                      <Tab text="Tags">
-                        <content>
-                          <AnchorPane minHeight="350.0" minWidth="400.0" prefHeight="180.0" prefWidth="200.0">
-                                 <children>
-                                    <TableView fx:id="tagTable" prefHeight="367.0" prefWidth="390.0">
-                                      <columns>
-                                        <TableColumn fx:id="tagTableIdColumn" prefWidth="75.0" text="Id#" />
-                                        <TableColumn fx:id="tagTableTagColumn" prefWidth="75.0" text="Tag" />
-                                      </columns>
-                                    </TableView>
-                                 </children>
-                              </AnchorPane>
-                        </content>
-                      </Tab>
-                    </tabs>
-                  </TabPane>
-               </children>
-            </AnchorPane>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="399.0" prefWidth="537.0">
-               <children>
-                  <VBox prefHeight="400.0" prefWidth="208.0">
-                     <children>
-                        <TableView fx:id="handsTable" prefHeight="372.0" prefWidth="208.0">
-                          <columns>
-                            <TableColumn fx:id="handsTableDateColumn" editable="false" prefWidth="75.0" text="Date" />
-                            <TableColumn fx:id="handsTableCWonColumn" editable="false" prefWidth="75.0" text="\$ Won" />
-                            <TableColumn fx:id="handsTableCardsColumn" prefWidth="75.0" text="Cards" />
-                            <TableColumn fx:id="handsTableRunoutColumn" prefWidth="75.0" text="Runout" />
-                          </columns>
-                        </TableView>
-                        <Button mnemonicParsing="false" prefHeight="25.0" prefWidth="201.0" text="Solve highlighted hands" />
-                     </children>
-                  </VBox>
-               </children></AnchorPane>
-        </items>
-      </SplitPane>
-   </children>
-</AnchorPane>
+<SplitPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minWidth="720" minHeight="480"
+           fx:id="rootSplitPane" prefWidth="${rootSplitPane.parent.width}" prefHeight="${rootSplitPane.parent.height}"
+      xmlns="http://javafx.com/javafx/8"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.gtohelper.datafetcher.controllers.HandAnalysisController"
+    dividerPositions=".3">
+   <items>
+      <TabPane minWidth="100.0" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+          <Tab text="Tags">
+            <content>
+              <TableView fx:id="tagTable">
+                <columns>
+                  <TableColumn fx:id="tagTableIdColumn" minWidth="30.0" text="Id#" />
+                  <TableColumn fx:id="tagTableTagColumn" minWidth="70.0" text="Tag" />
+                </columns>
+              </TableView>
+            </content>
+          </Tab>
+        </tabs>
+      </TabPane>
+      <VBox >
+         <children>
+            <TableView fx:id="handsTable" prefHeight="372.0" minWidth="200.0">
+              <columns>
+                <TableColumn fx:id="handsTableDateColumn" text="Date" />
+                <TableColumn fx:id="handsTableCWonColumn" text="\$ Pot" />
+                <TableColumn fx:id="handsTableCardsColumn" text="Cards" />
+                <TableColumn fx:id="handsTableRunoutColumn" text="Runout" />
+              </columns>
+            </TableView>
+             <HBox>
+                <Button fx:id="selectAllButton" mnemonicParsing="false" prefHeight="25.0" text="Select all from table" onAction="#selectAll"/>
+                <Button fx:id="solveButton" disable="true" mnemonicParsing="false" prefHeight="25.0" text="Solve highlighted hands" onAction="#solveSelected"/>
+             </HBox>
+         </children>
+      </VBox>
+   </items>
+</SplitPane>

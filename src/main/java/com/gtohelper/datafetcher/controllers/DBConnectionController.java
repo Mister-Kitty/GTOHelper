@@ -1,6 +1,7 @@
 package com.gtohelper.datafetcher.controllers;
 
 import com.gtohelper.datafetcher.models.DBConnection;
+import com.gtohelper.domain.HandData;
 import com.gtohelper.domain.Player;
 import com.gtohelper.domain.Site;
 import javafx.beans.binding.Bindings;
@@ -15,7 +16,9 @@ import javafx.scene.control.*;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Properties;
+import java.util.function.Consumer;
 
 public class DBConnectionController {
 
@@ -39,9 +42,11 @@ public class DBConnectionController {
 
     @FXML
     private ComboBox<Site> site;
+    public Site getSite() { return site.getValue(); }
 
     @FXML
     private ChoiceBox<Player> player;
+    public Player getPlayer() { return player.getValue(); }
 
     @FXML // maybe this is an abstraction violation? Could pass a callback to init... whatever.
     public Button go;
@@ -59,6 +64,16 @@ public class DBConnectionController {
 
     DBConnection dbConnection = new DBConnection();
     Properties prop;
+
+    private Consumer<Player> playerSelectionConfirmedCallback;
+    public void savePlayerSelectionConfirmedCallback(Consumer<Player> callback) {
+        playerSelectionConfirmedCallback = callback;
+    }
+
+    @FXML
+    private void playerSelectionConfirmed() {
+        playerSelectionConfirmedCallback.accept(player.getValue());
+    }
 
     public void initialize() {
         initializeControls();
