@@ -2,6 +2,7 @@ package com.gtohelper.solver;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -24,10 +25,52 @@ class PioSolverTest {
     }
 
     @Test
-    void testSetRange() throws IOException {
+    @Order(1)
+    void setRangeTest() throws IOException {
         solver.setRange("IP", IPRange);
         solver.setRange("OOP", OOPRange);
     }
+
+    @Test
+    @Order(2)
+    void initializeOptionsTest() throws IOException {
+        int allInThresholdPercent = 67;
+        int allInOnlyIfLessThanNPercent = 500;
+        boolean forceOOPBet = false;
+        boolean forceOOPCheckIPBet = false;
+
+        solver.setPot(0, 0, 185);
+        solver.setEffectiveStack(910);
+        solver.setGameTreeOptions(allInThresholdPercent, allInOnlyIfLessThanNPercent, forceOOPBet, forceOOPCheckIPBet);
+    }
+
+    @Test
+    @Order(3)
+    void setBetsizesTest() {
+        solver.setIPFlop(false, false, "52", "2.5x");
+        solver.setOOPFlop(false, "52", "2.5x");
+
+        solver.setIPTurn(false, false, "52", "3x");
+        solver.setOOPTurn(false, "52", "3x", "");
+
+        solver.setIPRiver(true, false, "52", "3x");
+        solver.setOOPRiver(false, "52", "50, 3x, allIn", "");
+    }
+
+    @Test
+    void buildGameTreeTest() throws IOException {
+        setRangeTest();
+        initializeOptionsTest();
+        setBetsizesTest();
+
+        solver.buildTree();
+        System.out.println(" ");
+    }
+
+
+
+
+
 
     final String OOPRange = "0.9 0.9 0.9 0.9 0.9 0.9 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0 0 1 1 1 0 0 0 0 0.8 0 0 0 0 0 0 0 0 0.8 0 0 1 0 0 0 0 0 0 0.8 0 1 1 0 0 0 0 0 0 0 " +
             "0.8 1 1 1 0 0 0 0 0.8 0 0 0 0.8 0 0 0 0 0 0 0 0 0.8 0 0 0 0.8 0 0 1 0 0 0 0 0 0 0.8 0 0 0 0.8 0 1 1 0 0 0 0 0 0 0 0.8 0 0 0 0.8 1 1 1 0 0 0 0 0.8 0 0 0 0.8 0 " +
