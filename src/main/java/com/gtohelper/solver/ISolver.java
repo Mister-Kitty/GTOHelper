@@ -1,6 +1,7 @@
 package com.gtohelper.solver;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 public interface ISolver {
     void connectAndInit(String pioLocation) throws IOException;
@@ -22,5 +23,6 @@ public interface ISolver {
     void setOOPRiver(boolean addAllIn, String betSizesString, String raiseSizesString, String donkSizesString);
 
     void buildTree();
+    ArrayList<String> getAllInLeaves();
     void disconnect();
 }

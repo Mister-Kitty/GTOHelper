@@ -2,163 +2,306 @@ package com.gtohelper.solver;
 
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import com.gtohelper.solver.GameTreeData.Bets;
+import com.gtohelper.solver.GameTreeData.Raises;
 import com.gtohelper.solver.GameTreeData.Street;
 import com.gtohelper.solver.GameTreeData.StreetAction;
 import com.gtohelper.solver.GameTreeData.OOPStreetAction;
+
+enum Actor {
+    IP,
+    OOP;
+
+    public static Actor nextActor(Actor t) {
+        if(t == null)
+            return OOP;
+        else if(t.equals(IP))
+            return OOP;
+        else
+            return IP;
+    }
+}
+
+enum Action {
+    FOLD,
+    CHECK,
+    CALL,
+    BET,
+    RAISE
+}
 
 public class GameTree {
     private Node root;
 
     public void buildGameTree(GameTreeData data) {
         root = new Node(data);
-
-
-
-
-
-
     }
 
-
-
-
-
-
+    public ArrayList<String> getAllInLeaves() {
+        ArrayList<String> results = root.getPrintOfAllInLeaves();
+        return results;
+    }
 }
 
 class Node {
-    private enum Actor {
-        IP,
-        OOP;
-
-        public static Actor nextActor(Actor t) {
-            if(t.equals(IP))
-                return OOP;
-            else
-                return IP;
-        }
+    class NodeData {
+        Action parentAction;
+        int effectiveStack;
+        int currentPot;
+        int maxChipsInvestedByAPlayer;
+        Street street;
+        Actor curActor;
+        int facingBet;
+        public NodeData() {}
+        public NodeData(NodeData d) { parentAction = d.parentAction; effectiveStack = d.effectiveStack; currentPot = d.currentPot;
+                    maxChipsInvestedByAPlayer = d.maxChipsInvestedByAPlayer; street = d.street; curActor = d.curActor; facingBet = d.facingBet; }
     }
 
-    private enum Action {
-        FOLD,
-        CHECK_CALL,
-        BET,
-        RAISE
-    }
+    NodeData nodeData;
 
-    final int startingPot;
-    int currentPot;
-    int effectiveStack;
-    GameTreeData.Street street;
-    Actor curActor;
-    Action lastAction;
-    int facingBet;
     Node parent;
-
     Node foldNode;
     Node checkCallNode;
-    ArrayList<Node> betNodes = new ArrayList<Node>();
+    ArrayList<Node> betRaiseNodes;
 
     //root node
-    public Node(GameTreeData data) {
-        startingPot = data.pot;
-        currentPot = data.pot;
-        effectiveStack = data.effectiveStack;
-        street = GameTreeData.Street.FLOP;
-        curActor = Actor.OOP;
-        lastAction = Action.CHECK_CALL;
+    public Node(GameTreeData treeData) {
+        nodeData = new NodeData();
+        nodeData.currentPot = treeData.pot;
+        nodeData.effectiveStack = treeData.effectiveStack;
+        nodeData.street = GameTreeData.Street.PRE;
+        nodeData.curActor = null;
+        nodeData.parentAction = Action.CHECK; // Helps the logic. Could maybe be null and add checks...
 
-        // TODO: Add flag to disable folding as a child
-
-        // TODO: test check/call possibility
-        checkCallNode = new Node(this, data, currentPot, currentPot, effectiveStack, Actor.nextActor(curActor), getStreetAfterChecking(street, curActor, Action.CHECK_CALL), Action.CHECK_CALL, 0);
-
-        generateBetNodes(data, street, lastAction, curActor, currentPot, effectiveStack);
+        // Notice that we start as Preflop on root node, so that our flop checks/donks have a parent street of Preflop.
+        checkCallNode = generateCheckNode(treeData);
+        if(nodeData.effectiveStack > 0)
+            betRaiseNodes = generateBetRaiseNodes(treeData);
     }
 
-    public Node(Node p, GameTreeData data, int startPot, int curPot, int effStack, Actor t, Street s, Action l, int facing) {
+    public Node(Node p, GameTreeData treeData, NodeData d) {
         parent = p;
-        startingPot = startPot;
-        currentPot = curPot;
-        effectiveStack = effStack;
-        curActor = t;
-        street = s;
-        lastAction = l;
-        facingBet = facing;
+        nodeData = d;
 
-        if(s != Street.SHOWDOWN) {
-            if(lastAction.equals(Action.BET) || lastAction.equals(Action.RAISE)) {
-                foldNode = new Node(this, data, startingPot, currentPot, effectiveStack, curActor, Street.SHOWDOWN, Action.FOLD, facing);
-            }
-            checkCallNode = new Node(this, data, startingPot,currentPot + (2 * facingBet), effectiveStack, Actor.nextActor(curActor), getStreetAfterChecking(street, curActor, l), Action.CHECK_CALL, 0);
-            generateBetNodes(data, street, lastAction, curActor, currentPot, effectiveStack);
+        if(nodeData.street == Street.SHOWDOWN) {
+            //System.out.println(this);
+            return;
         }
-        else {
-            System.out.println(this);
+
+        if(nodeData.parentAction == Action.BET || nodeData.parentAction == Action.RAISE) {
+            foldNode = generateFoldNode(treeData);
+            checkCallNode = generateCallNode(treeData);
+        } else if (nodeData.parentAction == Action.CALL || nodeData.parentAction == Action.CHECK) {
+            checkCallNode = generateCheckNode(treeData);
         }
+
+        if(nodeData.effectiveStack > 0)
+            betRaiseNodes = generateBetRaiseNodes(treeData);
+
     }
 
-    private void generateBetNodes(GameTreeData data, Street currentStreet, Action lastAction, Actor curActor, int currentPot, int effectiveStack) {
-        if(effectiveStack == 0)
-            return;
+    public ArrayList<String> getPrintOfAllInLeaves() {
+        ArrayList<String> results = new ArrayList<String>();
 
-        StreetAction actions = getStreetActions(data, currentStreet, curActor);
+        getArrayListOfFunctionOnAllNodes(
+                (node) -> {
+                    if(node.isShowdownNode() && node.nodeData.parentAction == Action.CALL)
+                        return node.toString();
+                    else
+                        return "";
+        });
 
-        // Are we generating bets based on donk, bet, or raise values?
-        if(lastAction.equals(Action.CHECK_CALL) && curActor.equals(Actor.OOP)) {
+        return results;
+    }
+
+    public <T> ArrayList<T> getArrayListOfFunctionOnAllNodes(Function<Node, T> function) {
+        ArrayList<T> results = new ArrayList<T>();
+
+        if(foldNode != null)
+            results.add(function.apply(foldNode));
+
+        if(checkCallNode != null)
+            results.add(function.apply(checkCallNode));
+
+        if(betRaiseNodes != null)
+            for(Node n : betRaiseNodes)
+                results.add(function.apply(n));
+
+        return results;
+    }
+
+    public boolean isShowdownNode() {
+        return nodeData.street == Street.SHOWDOWN;
+    }
+
+    @Override
+    public String toString() {
+        if(parent == null)
+            return "";
+
+        if(nodeData.parentAction == Action.FOLD)
+            return parent.toString() + " 0";
+
+        String parentString = parent.toString();
+        if(parentString.isEmpty())
+            return "" + nodeData.maxChipsInvestedByAPlayer;
+        else
+            return parentString + " " + nodeData.maxChipsInvestedByAPlayer;
+    }
+
+    /*
+
+        Below is code to generate the tree
+
+     */
+
+    private Node generateFoldNode(GameTreeData treeData) {
+        return new Node(this, treeData, getNextFoldNodeData(this, treeData));
+    }
+
+    private Node generateCheckNode(GameTreeData treeData) {
+         return new Node(this, treeData, getNextCheckNodeData(this, treeData));
+    }
+
+    private Node generateCallNode(GameTreeData treeData) {
+        return new Node(this, treeData, getNextCallNodeData(this, treeData));
+    }
+
+    private Node generateBetNode(GameTreeData treeData, int betSize) {
+        return new Node(this, treeData, getNextBetNodeData(this, treeData, betSize));
+    }
+
+    private ArrayList<Node> generateBetRaiseNodes(GameTreeData treeData) {
+        ArrayList<Node> betRaiseNodes = new ArrayList<Node>();
+        StreetAction actions = getStreetActions(treeData, nodeData.street, nodeData.curActor);
+
+        // Are we generating sizes based on donk, bet, or raise values?
+        boolean firstNode = (nodeData.curActor == null);
+        boolean facingCheckOrCall = (nodeData.parentAction == Action.CALL || nodeData.parentAction == Action.CHECK);
+        boolean OOPandCalledBetLastStreet = (nodeData.parentAction == Action.CALL && nodeData.curActor == Actor.OOP);
+        if(firstNode || OOPandCalledBetLastStreet) {
             // We're donking
             Bets donkBets = ((OOPStreetAction) actions).getDonks();
-            for(Integer betSize : donkBets.getSizeOfAllBets(currentPot, effectiveStack, actions.canAllIn)) {
-                Node donkNode = new Node(this, data, startingPot, currentPot, effectiveStack - betSize,
-                        Actor.nextActor(curActor), currentStreet, Action.BET, betSize);
-                betNodes.add(donkNode);
+            for(Integer betSize : donkBets.getSizeOfAllBets(nodeData.currentPot, nodeData.effectiveStack, 0, actions.canAllIn)) {
+                Node donkNode = new Node(this, treeData, getNextBetNodeData(this, treeData, betSize));
+                betRaiseNodes.add(donkNode);
             }
 
-        } else if (lastAction.equals(Action.CHECK_CALL)) {
+        } else if (facingCheckOrCall) {
             // We're betting
             Bets bets = actions.getBets();
-            for(Integer betSize : bets.getSizeOfAllBets(currentPot, effectiveStack, actions.canAllIn)) {
-                Node betNode = new Node(this, data, startingPot,currentPot, effectiveStack - betSize,
-                        Actor.nextActor(curActor), currentStreet, Action.BET, betSize);
-                betNodes.add(betNode);
+            for(Integer betSize : bets.getSizeOfAllBets(nodeData.currentPot, nodeData.effectiveStack, 0, actions.canAllIn)) {
+                Node betNode = new Node(this, treeData, getNextBetNodeData(this, treeData, betSize));
+                betRaiseNodes.add(betNode);
             }
 
         } else {
-            // we must be raising.
+            // We must be raising.
+            Raises bets = actions.getRaises();
 
+            // It's easier to break down a raise as a call + bet.
+            int currentPotAfterCall = nodeData.currentPot + nodeData.facingBet;
+
+            for(Integer raiseSize : bets.getSizeOfRaisesOntop(currentPotAfterCall, nodeData.effectiveStack, nodeData.facingBet, actions.canAllIn)) {
+                Node raiseNode = new Node(this, treeData, getNextRaiseNodeData(this, treeData, raiseSize));
+                betRaiseNodes.add(raiseNode);
+            }
 
         }
 
-
+        return betRaiseNodes;
     }
 
-    private static Street getStreetAfterChecking(Street curStreet, Actor act, Action lastAction) {
-        if(curStreet.equals(Street.FLOP)) {
-            if(act.equals(Actor.IP))
-                return Street.TURN;
-            else
-                return Street.FLOP;
-        } else if(curStreet.equals(Street.TURN)) {
-            if (act.equals(Actor.IP))
-                return Street.RIVER;
-            else
-                return Street.TURN;
+    // In the next few functions it is very very important to remember that we use the copy constructor for ease,
+    // but we are making these fields to be successor fields for a set parent node's actions.
+    private NodeData getNextFoldNodeData(Node parent, GameTreeData treeData) {
+        NodeData newNode = new NodeData(parent.nodeData);
+        newNode.parentAction = Action.FOLD;
+        newNode.facingBet = parent.nodeData.facingBet;
+        newNode.curActor = Actor.nextActor(newNode.curActor);
+        newNode.street = Street.SHOWDOWN;
+
+        return newNode;
+    }
+
+    private NodeData getNextCheckNodeData(Node parent, GameTreeData treeData) {
+        NodeData newNode = new NodeData(parent.nodeData);
+        newNode.parentAction = Action.CHECK;
+
+        // If our first action ever is a check, our parent is root and has null currentActor.
+        if(newNode.curActor == null) {
+            newNode.curActor = Actor.IP;
+            newNode.street = Street.FLOP;
         } else {
-            if (act.equals(Actor.IP)) {
-                return Street.SHOWDOWN;
-            }
-            else {
-                if(lastAction.equals(Action.CHECK_CALL))
-                    return Street.RIVER;
-                else
-                    return Street.SHOWDOWN;
-            }
+            newNode.curActor = Actor.nextActor(newNode.curActor);
         }
+
+        // if our parent was checking IP, we move streets.
+        if(parent.nodeData.curActor == Actor.IP) {
+            newNode.street = Street.nextStreet(newNode.street);
+        }
+
+        return newNode;
+    }
+
+    private NodeData getNextCallNodeData(Node parent, GameTreeData treeData) {
+        int bet = parent.nodeData.facingBet;
+
+        NodeData newNode = new NodeData(parent.nodeData);
+        newNode.parentAction = Action.CALL;
+        newNode.currentPot += bet;
+        if(newNode.effectiveStack > 0)
+            newNode.street = Street.nextStreet(newNode.street);
+        else
+            newNode.street = Street.SHOWDOWN; // we're calling an all in.
+        newNode.curActor = Actor.OOP;
+        newNode.facingBet = 0;
+
+        return newNode;
+    }
+
+    private NodeData getNextBetNodeData(Node parent, GameTreeData treeData, int betsize) {
+        NodeData newNode = new NodeData(parent.nodeData);
+        newNode.parentAction = Action.BET;
+        newNode.maxChipsInvestedByAPlayer += betsize;
+        newNode.effectiveStack -= betsize;
+        newNode.currentPot += betsize;
+        newNode.facingBet = betsize;
+
+        // If our first action ever is a bet, our parent is root and has null currentActor.
+        if(newNode.curActor == null) {
+            newNode.curActor = Actor.IP;
+            newNode.street = Street.FLOP;
+        } else {
+            newNode.curActor = Actor.nextActor(newNode.curActor);
+        }
+
+        return newNode;
+    }
+
+    private NodeData getNextRaiseNodeData(Node parent, GameTreeData treeData, int raiseATotalOf) {
+        // We need 'how much more on top' to adjust node stats properly.
+        // So if we 3x from 50 to 150, the effective stack only drops by 100.
+        int currentRaiseAfterCall = raiseATotalOf - nodeData.facingBet;
+
+        NodeData newNode = new NodeData(parent.nodeData);
+        newNode.parentAction = Action.RAISE;
+        newNode.currentPot += raiseATotalOf;
+        newNode.maxChipsInvestedByAPlayer += currentRaiseAfterCall;
+        newNode.effectiveStack -= currentRaiseAfterCall;
+        newNode.curActor = Actor.nextActor(newNode.curActor);
+        newNode.facingBet = currentRaiseAfterCall;
+
+        return newNode;
     }
 
     public static StreetAction getStreetActions(GameTreeData data, Street currentStreet, Actor act) {
-        if(currentStreet.equals(Street.FLOP)) {
+        if(currentStreet == Street.PRE) {
+            return data.OOPFlop;
+        } else if(currentStreet.equals(Street.FLOP)) {
             if(act.equals(Actor.IP))
                 return data.IPFlop;
             else
@@ -174,23 +317,5 @@ class Node {
             else
                 return data.OOPRiver;
         }
-    }
-
-
-    @Override
-    public String toString() {
-        if(parent == null)
-            return "root";
-
-        if(lastAction.equals(Action.FOLD))
-            return parent.toString() + " 0";
-
-        // our toString is known as the actions taken to get to this node.
-        // as such, the root's children don't want "root" in their toString.
-        String parentString = parent.toString();
-        if(parentString == "root")
-            return (currentPot + facingBet - startingPot) + " ";
-        else
-            return parentString + (currentPot + facingBet - startingPot) + " ";
     }
 }

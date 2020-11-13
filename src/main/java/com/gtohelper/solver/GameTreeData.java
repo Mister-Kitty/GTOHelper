@@ -15,7 +15,17 @@ public class GameTreeData {
         FLOP,
         TURN,
         RIVER,
-        SHOWDOWN
+        SHOWDOWN;
+
+        public static Street nextStreet(Street s) {
+            if(s == PRE)
+                return FLOP;
+            else if(s == FLOP)
+                return TURN;
+            else if (s == TURN)
+                return RIVER;
+            return SHOWDOWN;
+        }
     }
 
     public class Options {
@@ -97,14 +107,17 @@ public class GameTreeData {
             return percentOptions;
         }
 
-        public ArrayList<Integer> getSizeOfAllBets(int currentPot, int effectiveStack, boolean addAllIn) {
+        public ArrayList<Integer> getSizeOfAllBets(int currentPot, int effectiveStack, int facingBet, boolean addAllIn) {
             ArrayList<Integer> results = new ArrayList<Integer>();
             for(Integer i : percentOptions) {
                 Float percent = i.floatValue() / 100;
-                Integer betPot = Math.round(currentPot * percent);
+                Integer betPot = Math.round((currentPot + facingBet) * percent);
 
-                if(betPot > effectiveStack)
-                    betPot = effectiveStack;
+                // Suppose we face 100, with 175 left. We want to initially 50% it to 400.
+                // But with 75 effective, we actually want to return 175 as that's
+                // what we consider to be the bet size.
+                if(betPot > effectiveStack + facingBet)
+                    betPot = effectiveStack + facingBet;
 
                 if(!results.contains(betPot))
                     results.add(betPot);
@@ -132,6 +145,22 @@ public class GameTreeData {
                 return;
             }
             super.parseBet(bet);
+        }
+
+        public ArrayList<Integer> getSizeOfRaisesOntop(int currentPot, int effectiveStack, int facingBet, boolean addAllIn) {
+            ArrayList<Integer> results = getSizeOfAllBets(currentPot, effectiveStack, facingBet, addAllIn);
+
+            for(Float i : multiplierOptions) {
+                Integer betPot = Math.round(facingBet * i);
+
+                if(betPot > effectiveStack + facingBet)
+                    betPot = effectiveStack + facingBet;
+
+                if(!results.contains(betPot))
+                    results.add(betPot);
+            }
+
+            return results;
         }
     }
 }

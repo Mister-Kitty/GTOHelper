@@ -6,6 +6,9 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -46,29 +49,91 @@ class PioSolverTest {
 
     @Test
     @Order(3)
-    void setBetsizesTest() {
+    void setBetsizes1Test() {
         solver.setIPFlop(false, false, "52", "2.5x");
         solver.setOOPFlop(false, "52", "2.5x");
 
         solver.setIPTurn(false, false, "52", "3x");
         solver.setOOPTurn(false, "52", "3x", "");
 
-        solver.setIPRiver(true, false, "52", "3x");
-        solver.setOOPRiver(false, "52", "50, 3x, allIn", "");
+        solver.setIPRiver(false, false, "52", "3x");
+        solver.setOOPRiver(false, "52", "3x", "");
     }
 
     @Test
     void buildGameTreeTest() throws IOException {
         setRangeTest();
         initializeOptionsTest();
-        setBetsizesTest();
+        setBetsizes1Test();
 
         solver.buildTree();
-        System.out.println(" ");
+    }
+
+    @Test
+    void getAllInLeavesTest() throws IOException {
+        buildGameTreeTest();
+        ArrayList<String> test1SolverResults = solver.getAllInLeaves();
+        assert(test1SolverResults.size() == test1Results.size());
     }
 
 
-
+    final ArrayList<String> test1Results = new ArrayList<String>(
+            Arrays.asList("0 0 0 0 0 96 288 672 910",
+        "0 0 0 0 96 288 672 910",
+        "0 0 0 96 288 288 288 684 910",
+        "0 0 0 96 288 288 684 910",
+        "0 0 0 96 288 672 672 672 910",
+        "0 0 0 96 288 672 910",
+        "0 0 0 96 96 96 292 684 910",
+        "0 0 96 288 288 288 684 910",
+        "0 0 96 288 672 672 672 910",
+        "0 0 96 288 672 672 910",
+        "0 0 96 288 672 910",
+        "0 0 96 96 292 684 910",
+        "0 0 96 96 96 292 684 910",
+        "0 96 240 240 240 240 240 586 910",
+        "0 96 240 240 240 240 586 910",
+        "0 96 240 240 240 586 586 586 910",
+        "0 96 240 240 240 586 910",
+        "0 96 240 240 586 586 586 910",
+        "0 96 240 240 586 586 910",
+        "0 96 240 240 586 910",
+        "0 96 240 456 456 456 456 456 910",
+        "0 96 240 456 456 456 456 910",
+        "0 96 240 456 456 456 910",
+        "0 96 240 456 780 780 780 780 780 910",
+        "0 96 240 456 780 780 780 780 910",
+        "0 96 240 456 780 780 780 910",
+        "0 96 240 456 780 780 910",
+        "0 96 240 456 780 910",
+        "0 96 96 96 292 292 292 692 910",
+        "0 96 96 96 292 684 684 684 910",
+        "0 96 96 96 292 684 684 910",
+        "0 96 96 96 292 684 910",
+        "0 96 96 96 96 292 684 910",
+        "0 96 96 96 96 96 292 684 910",
+        "96 240 240 240 240 240 586 910",
+        "96 240 240 240 240 586 910",
+        "96 240 240 240 586 586 586 910",
+        "96 240 240 240 586 910",
+        "96 240 456 456 456 456 456 910",
+        "96 240 456 456 456 456 910",
+        "96 240 456 456 456 910",
+        "96 240 456 456 910",
+        "96 240 456 780 780 780 780 780 910",
+        "96 240 456 780 780 780 780 910",
+        "96 240 456 780 780 780 910",
+        "96 240 456 780 910",
+        "96 96 292 292 292 692 910",
+        "96 96 292 292 692 910",
+        "96 96 292 684 684 684 910",
+        "96 96 292 684 910",
+        "96 96 96 292 292 292 692 910",
+        "96 96 96 292 684 684 684 910",
+        "96 96 96 292 684 684 910",
+        "96 96 96 292 684 910",
+        "96 96 96 96 292 684 910",
+        "96 96 96 96 96 292 684 910"));
 
 
 

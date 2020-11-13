@@ -1,12 +1,15 @@
 package com.gtohelper.solver;
 
 import java.io.*;
+import java.util.ArrayList;
 
 public class PioSolver implements ISolver {
 
     private Process process;
     private BufferedReader input;
     private BufferedWriter output;
+
+    private GameTree tree;
     private GameTreeData currentGame;
 
     @Override
@@ -122,8 +125,13 @@ public class PioSolver implements ISolver {
 
     @Override
     public void buildTree() {
-        GameTree tree = new GameTree();
+        tree = new GameTree();
         tree.buildGameTree(currentGame);
+    }
+
+    @Override
+    public ArrayList<String> getAllInLeaves() {
+        return tree.getAllInLeaves();
     }
 
     @Override
