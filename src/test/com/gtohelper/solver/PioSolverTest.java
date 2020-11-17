@@ -27,28 +27,29 @@ class PioSolverTest {
         solver.disconnect();
     }
 
-    @Test
-    @Order(1)
-    void setRangeTest() throws IOException {
-        solver.setRange("IP", IPRange);
-        solver.setRange("OOP", OOPRange);
+    void setRange1Test() throws IOException {
+        solver.setRange("IP", IPRange1);
+        solver.setRange("OOP", OOPRange1);
     }
 
-    @Test
-    @Order(2)
-    void initializeOptionsTest() throws IOException {
-        int allInThresholdPercent = 67;
-        int allInOnlyIfLessThanNPercent = 500;
-        boolean forceOOPBet = false;
-        boolean forceOOPCheckIPBet = false;
-
-        solver.setPot(0, 0, 185);
+    void setFlopData1Test() throws IOException {
+        solver.setBoard(test1Board);
+        solver.setPotAndAccuracy(0, 0, 185, 1.628F);
         solver.setEffectiveStack(910);
-        solver.setGameTreeOptions(allInThresholdPercent, allInOnlyIfLessThanNPercent, forceOOPBet, forceOOPCheckIPBet);
     }
 
-    @Test
-    @Order(3)
+    void initializeOptions1Test() throws IOException {
+        int allInThresholdPercent = 100;
+        int allInOnlyIfLessThanNPercent = 500;
+        final boolean forceOOPBet = false;
+        final boolean forceOOPCheckIPBet = false;
+        solver.setGameTreeOptions(allInThresholdPercent, allInOnlyIfLessThanNPercent, forceOOPBet, forceOOPCheckIPBet);
+
+        final boolean flopIso = true;
+        final boolean turnIso = false;
+        solver.setIsomorphism(flopIso, turnIso);
+    }
+
     void setBetsizes1Test() {
         solver.setIPFlop(false, false, "52", "2.5x");
         solver.setOOPFlop(false, "52", "2.5x");
@@ -61,21 +62,56 @@ class PioSolverTest {
     }
 
     @Test
-    void buildGameTreeTest() throws IOException {
-        setRangeTest();
-        initializeOptionsTest();
+    void getAddLines1Test() throws IOException {
+        // This tree has no 'all-in threshold' or 'dont 3bet' options enabled. That's for the next tests.
+        setRange1Test();
+        setFlopData1Test();
+        initializeOptions1Test();
         setBetsizes1Test();
 
+        solver.clearLines();
         solver.buildTree();
+
+        // Tree is build. Test results.
+        ArrayList<String> test1SolverResults = solver.getAllInLeaves();
+        for(String s : test1SolverResults) {
+            assert(test1Results.contains(s));
+        }
+
+        for(String s : test1Results) {
+            assert(test1SolverResults.contains(s));
+        }
+
+        // Results have been validated. Send the tree to Pio and validate the tree size estimate
+        solver.setBuiltTreeAsActive();
+
+        String treeSize = solver.getEstimateSchematicTree();
+        assert(treeSize.equals("estimated tree size: 457 MB"));
+
+        String showMemory = solver.getShowMemory();
+        assert(!showMemory.isEmpty());
+
+        String calc = solver.getCalcResults();
+        assert(!calc.isEmpty());
     }
 
     @Test
-    void getAllInLeavesTest() throws IOException {
-        buildGameTreeTest();
-        ArrayList<String> test1SolverResults = solver.getAllInLeaves();
-        assert(test1SolverResults.size() == test1Results.size());
+    void runFullTest1() throws IOException {
+        getAddLines1Test();
+        solver.go();
+        String calcResults = solver.waitForSolve();
+        System.out.println(calcResults);
     }
 
+
+
+
+
+
+
+
+
+    final String test1Board = "Qs Jh 2h";
 
     final ArrayList<String> test1Results = new ArrayList<String>(
             Arrays.asList("0 0 0 0 0 96 288 672 910",
@@ -135,9 +171,53 @@ class PioSolverTest {
         "96 96 96 96 292 684 910",
         "96 96 96 96 96 292 684 910"));
 
+    final String OOPRange1 = "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0 0 0 0 0 0.5 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0 0 " +
+            "0 0 0 0 0 0.5 0 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0 0.25 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0.25 0.25 0 0 0 " +
+            "0 0 0 0 0.5 0 0 0 0.75 0.25 0.25 0.25 0 0 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0 0.25 0 0 0 0 0 " +
+            "0 0 0 0 0 0.5 0 0 0 0.75 0 0.25 0.25 0 0 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0.75 0.25 0.25 0.25 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0 0 " +
+            "0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0 0.5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0.5 0.5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0" +
+            " 0 0 0.75 0.5 0.5 0.5 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0.5 0 0 0 0.75 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0.5 0 0 0 0.75 0 0 0.75 0" +
+            " 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0.5 0 0 0 0.75 0 0.75 0.75 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0.5 0 0 0 0.75 0.75 0.75 0.75 0 0 0" +
+            " 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0 0 0.75 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0 0 0.75 0 0 0.75 0 0 0 0 0 0 " +
+            "0 0 0 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0 0 0.75 0 0.75 0.75 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0 0 0.75 0.75 0.75 0.75 " +
+            "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.75 0 0 0 0.75 0 0 0 0.75 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.75 0 0 0 0.75 0 0 0 0.75 " +
+            "0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.75 0 0 0 0.75 0 0 0 0.75 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.75 0 0" +
+            " 0 0.75 0 0 0 0.75 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.75 0 0 0 0.75 0 0 0 0.75 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0" +
+            " 0 0 0 0 0 0 0 0 0 0.75 0 0 0 0.75 0 0 0 0.75 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.75 0 0 0 0.75 0 0 0 0.75 0 1 1 0" +
+            " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.75 0 0 0 0.75 0 0 0 0.75 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 " +
+            "0 0 0.5 0 0 0 0.75 0 0 0 0.75 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0 0 0.75 0 0 1 0 0 0 0 0 0 " +
+            "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0 0 0.75 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 " +
+            "0 0 0.5 0 0 0 0.75 0 0 0 0.75 1 1 1 0 0 0 0 0 0 0 0 0.25 0 0 0 0.25 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.75 0 0 0 1 0 0 0 1 0.5 0.5 0.5" +
+            " 0 0 0 0 0 0 0 0 0 0.25 0 0 0 0.25 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.75 0 0 0 1 0 0 0.5 1 0.5 0.5 1 0 0 0 0 0 0 0 0 0 0 0.25 0 0 0 " +
+            "0.25 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.75 0 0 0 1 0 0.5 0.5 1 0.5 1 1 0 0 0 0 0 0 0 0 0 0 0 0.25 0 0 0 0.25 0 0 0 0 0 0 0 0 0 0 0 0 " +
+            "0 0 0 0 0 0 0 0.75 0 0 0 1 0.5 0.5 0.5 1 1 1 1 0.5 0 0 0 0.5 0 0 0 0.75 0 0 0 0.75 0 0 0 0.25 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.75 0 0 0 1 0.5 " +
+            "0.5 0.5 1 0.75 0.75 0.75 1 1 1 1 0 0.5 0 0 0 0.5 0 0 0 0.75 0 0 0 0.75 0 0 0 0.25 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.75 0 0 0.5 1 0.5 0.5 0.75 1 " +
+            "0.75 0.75 1 1 1 1 1 0 0 0.5 0 0 0 0.5 0 0 0 0.75 0 0 0 0.75 0 0 0 0.25 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.75 0 0.5 0.5 1 0.5 0.75 0.75 1 0.75 1 1" +
+            " 1 1 1 1 0 0 0 0.5 0 0 0 0.5 0 0 0 0.75 0 0 0 0.75 0 0 0 0.25 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.75 0.5 0.5 0.5 1 0.75 0.75 0.75 1 1 1 1 1 1 1 1";
 
+    final String IPRange1 = "1 1 1 1 1 1 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0 0 1 1 1 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 0 1 0 1 1 0 0 0 0 0 0 0" +
+            " 1 1 1 1 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 1 0 0 0 0 0 0 1 0 0 0 1 0 1 1 0 0 0 0 0 0 0 1 0 0 0 1 1 1 1 0 0 0 0 0 0 0 0 1 0 0 0 " +
+            "1 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 " +
+            "1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 " +
+            "1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 " +
+            "0 1 0 0 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0" +
+            " 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 " +
+            "0 1 0 0 0 1 0 0 0 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1" +
+            " 0 0 0 1 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 " +
+            "0 0 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0.5 0.5 0.5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1" +
+            " 0 0 0 1 0 0 0.5 1 0.5 0.5 0.75 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0.5 0.5 1 0.5 0.75 0.75 0 0 0 0 0 0 0 0 0 0 0" +
+            " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0.5 0.5 0.5 1 0.75 0.75 0.75 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0" +
+            " 0 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 1 1 1 1 0.5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 " +
+            "0 0 0 1 0 0 0 1 0 0 0 1 0 1 1 1 1 0.5 0.5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 1 1 1 1 0.5 0.5 0.5 0.5 0 0 0 " +
+            "0.5 0 0 0 0.5 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0.5 0.5 0.5 1 1 1 1 1 1 1 1 0 0.5 0 0 0 0.5 0 0 0 0.5 0 0 0 1 0 0 0 1 0 0 0 1 0 0" +
+            " 0 1 0 0 0 1 0 0 0.5 1 0.5 0.5 1 1 1 1 1 1 1 1 0 0 0 0.5 0 0 0 0.5 0 0 0 0.5 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0.5 0.5 1 0.5 1 1 1 1 1 " +
+            "1 1 1 0 0 0 0 0 0.5 0 0 0 0.5 0 0 0 0.5 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0.5 0.5 0.5 1 1 1 1 1 1 1 1 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 " +
+            "0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0.75 0.75 0.75 1 0.75 0.75 0.75 1 0.75 0.75 0.75 0 0.25 0.25 0.25 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0" +
+            " 0 1 0 0 0 1 0 0 0 1 0 0 0.75 1 0.75 0.75 0.75 1 0.75 0.75 0.75 1 0.75 0.75 0.25 0 0.25 0.25 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0" +
+            " 0 1 0 0 0 1 0 0.75 0.75 1 0.75 0.75 0.75 1 0.75 0.75 0.75 1 0.75 0.25 0.25 0 0.25 0 0 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0 0 0 1 0" +
+            " 0 0 1 0.75 0.75 0.75 1 0.75 0.75 0.75 1 0.75 0.75 0.75 1 0.25 0.25 0.25 0 0 0 0";
 
-    final String OOPRange = "0.9 0.9 0.9 0.9 0.9 0.9 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0 0 1 1 1 0 0 0 0 0.8 0 0 0 0 0 0 0 0 0.8 0 0 1 0 0 0 0 0 0 0.8 0 1 1 0 0 0 0 0 0 0 " +
+    final String OOPRange2 = "0.9 0.9 0.9 0.9 0.9 0.9 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0 0 1 1 1 0 0 0 0 0.8 0 0 0 0 0 0 0 0 0.8 0 0 1 0 0 0 0 0 0 0.8 0 1 1 0 0 0 0 0 0 0 " +
             "0.8 1 1 1 0 0 0 0 0.8 0 0 0 0.8 0 0 0 0 0 0 0 0 0.8 0 0 0 0.8 0 0 1 0 0 0 0 0 0 0.8 0 0 0 0.8 0 1 1 0 0 0 0 0 0 0 0.8 0 0 0 0.8 1 1 1 0 0 0 0 0.8 0 0 0 0.8 0 " +
             "0 0 0.8 0 0 0 0 0 0 0 0 0.8 0 0 0 0.8 0 0 0 0.8 0 0 1 0 0 0 0 0 0 0.8 0 0 0 0.8 0 0 0 0.8 0 1 1 0 0 0 0 0 0 0 0.8 0 0 0 0.8 0 0 0 0.8 1 1 1 0 0 0 0 0 0 0 0" +
             " 0.8 0 0 0 0.8 0 0 0 0.8 0 0 0 0 0 0 0 0 0 0 0 0 0.8 0 0 0 0.8 0 0 0 0.8 0 0 0.9 0 0 0 0 0 0 0 0 0 0 0.8 0 0 0 0.8 0 0 0 0.8 0 0.9 0.9 0 0 0 0 0 0 0 0 0 0 " +
@@ -159,7 +239,7 @@ class PioSolverTest {
             "0.1 0.1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0.8 1 0.8 0.8 0.5 0.8 0.5 0.5 0.1 0.5 0.1 0.1 0.1 0.1 0.1 0.1 1 1 1 1 1 1 1 " +
             "1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0.8 0.8 0.8 0.8 0.5 0.5 0.5 0.5 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1";
 
-    final String IPRange = "1 1 1 1 1 1 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0 0 1 1 1 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 0 1 0 1 1 0 0 0 0 0 0 0 1 1 1 1 0 0 0 0 1 0 0 0 1 0 " +
+    final String IPRange2 = "1 1 1 1 1 1 0 0 0 0 0 0 0 0 1 0 0 0 0 1 1 0 0 0 0 1 1 1 0 0 0 0 1 0 0 0 0 0 0 0 0 1 0 0 1 0 0 0 0 0 0 1 0 1 1 0 0 0 0 0 0 0 1 1 1 1 0 0 0 0 1 0 0 0 1 0 " +
             "0 0 0 0 0 0 0 1 0 0 0 1 0 0 1 0 0 0 0 0 0 1 0 0 0 1 0 1 1 0 0 0 0 0 0 0 1 0 0 0 1 1 1 1 0 0 0 0 0.5 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0.5 0 0 0 1 0 0 0 1 0 0 1 0 0 " +
             "0 0 0 0 0.5 0 0 0 1 0 0 0 1 0 1 1 0 0 0 0 0 0 0 0.5 0 0 0 1 0 0 0 1 1 1 1 0 0 0 0 0 0 0 0 0.5 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0 0 0 1 0 0 0 1 0 0 1 0" +
             " 0 0 0 0 0 0 0 0 0 0.5 0 0 0 1 0 0 0 1 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0.5 0 0 0 1 0 0 0 1 1 1 1 0 0 0 0 0 0 0 0 0.3 0 0 0 1 0 0 0 1 0 0 0 1 0.3 0.3 0.3 0 0 0 0 0 0 0 " +

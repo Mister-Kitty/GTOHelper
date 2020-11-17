@@ -87,7 +87,6 @@ class Node {
         nodeData = d;
 
         if(nodeData.street == Street.SHOWDOWN) {
-            //System.out.println(this);
             return;
         }
 
@@ -104,31 +103,43 @@ class Node {
     }
 
     public ArrayList<String> getPrintOfAllInLeaves() {
-        ArrayList<String> results = new ArrayList<String>();
+        ArrayList<String> results =
+            getArrayListOfFunctionOnAllNodes(
+                    (node) -> {
+                        if(node.isShowdownNode() && node.nodeData.parentAction == Action.CALL && node.nodeData.effectiveStack == 0)
+                            return node.parent.toString();
+                        else
+                            return "";
+            });
 
-        getArrayListOfFunctionOnAllNodes(
-                (node) -> {
-                    if(node.isShowdownNode() && node.nodeData.parentAction == Action.CALL)
-                        return node.toString();
-                    else
-                        return "";
-        });
-
-        return results;
+        ArrayList<String> nonEmptyResults = new ArrayList<String>();
+        for(String s : results) {
+            if (!s.isEmpty()) {
+                nonEmptyResults.add(s);
+            }
+        }
+        return nonEmptyResults;
     }
 
     public <T> ArrayList<T> getArrayListOfFunctionOnAllNodes(Function<Node, T> function) {
         ArrayList<T> results = new ArrayList<T>();
 
-        if(foldNode != null)
+        if(foldNode != null) {
             results.add(function.apply(foldNode));
+            results.addAll(foldNode.getArrayListOfFunctionOnAllNodes(function));
+        }
 
-        if(checkCallNode != null)
+        if(checkCallNode != null) {
             results.add(function.apply(checkCallNode));
+            results.addAll(checkCallNode.getArrayListOfFunctionOnAllNodes(function));
+        }
 
-        if(betRaiseNodes != null)
-            for(Node n : betRaiseNodes)
+        if(betRaiseNodes != null) {
+            for (Node n : betRaiseNodes) {
                 results.add(function.apply(n));
+                results.addAll(n.getArrayListOfFunctionOnAllNodes(function));
+            }
+        }
 
         return results;
     }
@@ -181,8 +192,8 @@ class Node {
         // Are we generating sizes based on donk, bet, or raise values?
         boolean firstNode = (nodeData.curActor == null);
         boolean facingCheckOrCall = (nodeData.parentAction == Action.CALL || nodeData.parentAction == Action.CHECK);
-        boolean OOPandCalledBetLastStreet = (nodeData.parentAction == Action.CALL && nodeData.curActor == Actor.OOP);
-        if(firstNode || OOPandCalledBetLastStreet) {
+        boolean OOPandWeCalledBetLastStreet = (nodeData.curActor == Actor.OOP && parent.nodeData.curActor == Actor.OOP && nodeData.parentAction == Action.CALL);
+        if(firstNode || OOPandWeCalledBetLastStreet) {
             // We're donking
             Bets donkBets = ((OOPStreetAction) actions).getDonks();
             for(Integer betSize : donkBets.getSizeOfAllBets(nodeData.currentPot, nodeData.effectiveStack, 0, actions.canAllIn)) {

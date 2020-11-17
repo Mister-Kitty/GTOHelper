@@ -1,6 +1,7 @@
 package com.gtohelper.solver;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class PioSolver implements ISolver {
@@ -105,15 +106,22 @@ public class PioSolver implements ISolver {
     }
 
     @Override
-    public void setIsomorphism(int flop, int turn) throws IOException {
-        writeToOutput("set_isomorphism " + flop + " " + turn);
+    public void setIsomorphism(boolean flop, boolean turn) throws IOException {
+        int flopIso, turnIso;
+        if(flop) flopIso = 1; else flopIso = 0;
+        if(turn) turnIso = 1; else turnIso = 0;
+
+        writeToOutput("set_isomorphism " + flopIso + " " + turnIso);
         readNLinesFromInput(1);
     }
 
     @Override
-    public void setPot(int oopInvestment, int ipInvestment, int pot) throws IOException {
+    public void setPotAndAccuracy(int oopInvestment, int ipInvestment, int pot, float chips) throws IOException {
         writeToOutput("set_pot " + oopInvestment + " " + ipInvestment + " " + pot);
         currentGame.pot = pot;
+        readNLinesFromInput(1);
+
+        writeToOutput("set_accuracy " + chips);
         readNLinesFromInput(1);
     }
 
@@ -127,6 +135,51 @@ public class PioSolver implements ISolver {
     public void buildTree() {
         tree = new GameTree();
         tree.buildGameTree(currentGame);
+    }
+
+    @Override
+    public void go() throws IOException {
+        writeToOutput("go");
+        readNLinesFromInput(1);
+    }
+
+    @Override
+    public String waitForSolve() throws IOException {
+        return readFromInputUntil("SOLVER: stopped");
+    }
+
+    @Override
+    public void setBuiltTreeAsActive() throws IOException {
+        ArrayList<String> leaves = tree.getAllInLeaves();
+        for(String leaf : leaves) {
+            setAddLine(leaf);
+        }
+
+        writeToOutput("build_tree");
+        readNLinesFromInput(1);
+    }
+
+    private String setAddLine(String line) throws IOException {
+        writeToOutput("add_line " + line);
+        return readNLinesFromInput(1);
+    }
+
+    @Override
+    public String getEstimateSchematicTree() throws IOException {
+        writeToOutput("estimate_schematic_tree");
+        return readNLinesFromInput(1);
+    }
+
+    @Override
+    public String getShowMemory() throws IOException {
+        writeToOutput("show_memory");
+        return readFromInputUntilEND();
+    }
+
+    @Override
+    public String getCalcResults() throws IOException {
+        writeToOutput("calc_results");
+        return readFromInputUntilEND();
     }
 
     @Override
@@ -152,12 +205,26 @@ public class PioSolver implements ISolver {
         String results = "";
         String currentLine;
         while ((numLines > 0) && (currentLine = input.readLine()) != null) {
-            results += currentLine;
+            results += currentLine + "\n";
             numLines--;
         }
-        System.out.println(results);
-        return results;
+        System.out.println(results.trim());
+        return results.trim();
     }
 
+    private String readFromInputUntilEND() throws IOException {
+        return readFromInputUntil("END");
+    }
 
+    private String readFromInputUntil(String terminalPrefix) throws IOException {
+        String results = "";
+        String currentLine;
+        while ((currentLine = input.readLine()) != null) {
+            if(currentLine.trim().startsWith(terminalPrefix))
+                break;
+            results += currentLine  + "\n";
+        }
+        System.out.println(results.trim());
+        return results.trim();
+    }
 }
