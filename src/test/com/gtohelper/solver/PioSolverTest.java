@@ -2,15 +2,11 @@ package com.gtohelper.solver;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class PioSolverTest {
 
@@ -100,7 +96,7 @@ class PioSolverTest {
         getAddLines1Test();
         solver.go();
         String calcResults = solver.waitForSolve();
-        System.out.println(calcResults);
+        assert(!calcResults.isEmpty());
     }
 
 

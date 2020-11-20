@@ -2,14 +2,14 @@ package com.gtohelper.solver;
 
 
 import java.util.ArrayList;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
-import com.gtohelper.solver.GameTreeData.Bets;
-import com.gtohelper.solver.GameTreeData.Raises;
-import com.gtohelper.solver.GameTreeData.Street;
-import com.gtohelper.solver.GameTreeData.StreetAction;
-import com.gtohelper.solver.GameTreeData.OOPStreetAction;
+import com.gtohelper.domain.GameTreeData;
+import com.gtohelper.domain.GameTreeData.Bets;
+import com.gtohelper.domain.GameTreeData.Raises;
+import com.gtohelper.domain.GameTreeData.Street;
+import com.gtohelper.domain.GameTreeData.StreetAction;
+import com.gtohelper.domain.GameTreeData.OOPStreetAction;
 
 enum Actor {
     IP,
@@ -196,7 +196,7 @@ class Node {
         if(firstNode || OOPandWeCalledBetLastStreet) {
             // We're donking
             Bets donkBets = ((OOPStreetAction) actions).getDonks();
-            for(Integer betSize : donkBets.getSizeOfAllBets(nodeData.currentPot, nodeData.effectiveStack, 0, actions.canAllIn)) {
+            for(Integer betSize : donkBets.getSizeOfAllBets(nodeData.currentPot, nodeData.effectiveStack, 0, actions.getCanAllIn())) {
                 Node donkNode = new Node(this, treeData, getNextBetNodeData(this, treeData, betSize));
                 betRaiseNodes.add(donkNode);
             }
@@ -204,7 +204,7 @@ class Node {
         } else if (facingCheckOrCall) {
             // We're betting
             Bets bets = actions.getBets();
-            for(Integer betSize : bets.getSizeOfAllBets(nodeData.currentPot, nodeData.effectiveStack, 0, actions.canAllIn)) {
+            for(Integer betSize : bets.getSizeOfAllBets(nodeData.currentPot, nodeData.effectiveStack, 0, actions.getCanAllIn())) {
                 Node betNode = new Node(this, treeData, getNextBetNodeData(this, treeData, betSize));
                 betRaiseNodes.add(betNode);
             }
@@ -216,7 +216,7 @@ class Node {
             // It's easier to break down a raise as a call + bet.
             int currentPotAfterCall = nodeData.currentPot + nodeData.facingBet;
 
-            for(Integer raiseSize : bets.getSizeOfRaisesOntop(currentPotAfterCall, nodeData.effectiveStack, nodeData.facingBet, actions.canAllIn)) {
+            for(Integer raiseSize : bets.getSizeOfRaisesOntop(currentPotAfterCall, nodeData.effectiveStack, nodeData.facingBet, actions.getCanAllIn())) {
                 Node raiseNode = new Node(this, treeData, getNextRaiseNodeData(this, treeData, raiseSize));
                 betRaiseNodes.add(raiseNode);
             }

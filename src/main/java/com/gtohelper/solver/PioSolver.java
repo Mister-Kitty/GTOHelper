@@ -1,7 +1,8 @@
 package com.gtohelper.solver;
 
+import com.gtohelper.domain.GameTreeData;
+
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class PioSolver implements ISolver {

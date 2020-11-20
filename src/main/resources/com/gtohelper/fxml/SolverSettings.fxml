@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gtohelper.datafetcher.controllers.SolverSettingsController">
+   <children>
+      <TabPane tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <tabs>
+          <Tab text="Bet Sizes">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+            </content>
+          </Tab>
+          <Tab text="Ranges">
+            <content>
+              <AnchorPane>
+                     <children>
+                        <VBox layoutX="50.0" layoutY="6.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <children>
+                              <HBox fillHeight="false" VBox.vgrow="NEVER">
+                                 <children>
+                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Range folder location:" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" HBox.hgrow="NEVER">
+                                       <HBox.margin>
+                                          <Insets left="1.0" right="1.0" top="3.0" />
+                                       </HBox.margin>
+                                    </Text>
+                                    <TextField fx:id="solverLocation" maxHeight="25.0" minHeight="25.0" minWidth="160.0" HBox.hgrow="ALWAYS" />
+                                    <Button onAction="#onChooseFolderPress" mnemonicParsing="false" text="Browse">
+                                       <HBox.margin>
+                                          <Insets left="1.0" />
+                                       </HBox.margin></Button>
+                                 </children>
+                                 <padding>
+                                    <Insets bottom="2.0" />
+                                 </padding>
+                              </HBox>
+                              <AnchorPane VBox.vgrow="ALWAYS">
+                                 <children>
+                                    <SplitPane dividerPositions="0.7" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                      <items>
+                                        <AnchorPane>
+                                             <children>
+                                                <TreeTableView fx:id="fileTable" minWidth="200.0" sortMode="ONLY_FIRST_LEVEL" AnchorPane.bottomAnchor="-0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                  <columns>
+                                                    <TreeTableColumn fx:id="fileTableFilePathColumn" minWidth="100.0" prefWidth="100.0" text="File Path" />
+                                                    <TreeTableColumn fx:id="fileTableBoundActionColumn" maxWidth="150.0" minWidth="150.0" prefWidth="150.0" text="Bound Action/Position" />
+                                                  </columns>
+                                                   <columnResizePolicy>
+                                                      <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                                   </columnResizePolicy>
+                                                </TreeTableView>
+                                             </children>
+                                          </AnchorPane>
+                                        <AnchorPane>
+                                             <children>
+                                                <VBox minWidth="75.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                   <children>
+                                                      <AnchorPane VBox.vgrow="ALWAYS">
+                                                         <children>
+                                                            <TreeTableView fx:id="actionTable" minWidth="75.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="ALWAYS">
+                                                               <columns>
+                                                                  <TreeTableColumn fx:id="actionTableActionColumn" maxWidth="400.0" minWidth="75.0" prefWidth="75.0" text="Action/Position" />
+                                                               </columns>
+                                                               <columnResizePolicy>
+                                                                  <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                                               </columnResizePolicy>
+                                                            </TreeTableView>
+                                                         </children>
+                                                      </AnchorPane>
+                                                      <AnchorPane>
+                                                         <children>
+                                                            <Button alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" text="Bind file to action/position" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                                                               <VBox.margin>
+                                                                  <Insets left="1.0" top="1.0" />
+                                                               </VBox.margin>
+                                                            </Button>
+                                                         </children>
+                                                      </AnchorPane>
+                                                      <AnchorPane>
+                                                         <children>
+                                                            <Button alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" text="Save bindings" textAlignment="CENTER" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                                                               <VBox.margin>
+                                                                  <Insets />
+                                                               </VBox.margin>
+                                                            </Button>
+                                                         </children>
+                                                      </AnchorPane>
+                                                   </children>
+                                                </VBox>
+                                             </children>
+                                          </AnchorPane>
+                                      </items>
+                                    </SplitPane>
+                                 </children>
+                              </AnchorPane>
+                           </children>
+                        </VBox>
+                     </children>
+                     <padding>
+                        <Insets top="2.0" />
+                     </padding>
+                  </AnchorPane>
+            </content>
+          </Tab>
+        </tabs>
+      </TabPane>
+   </children>
+   <padding>
+      <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+   </padding>
+</AnchorPane>

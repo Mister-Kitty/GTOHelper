@@ -1,5 +1,6 @@
 package com.gtohelper.datafetcher.models;
 
+import com.gtohelper.datafetcher.controllers.GTOHelperController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -10,16 +11,15 @@ public class GTOHelper extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-     //   FXMLLoader rootLoader = new FXMLLoader(getClass().getResource("/com/piohelper/fxml/GTOHelper.fxml"));
-     //   rootLoader.load();
-        Parent root = FXMLLoader.load(getClass().getResource("/com/gtohelper/fxml/GTOHelper.fxml"));
+        FXMLLoader rootLoader = new FXMLLoader(getClass().getResource("/com/gtohelper/fxml/GTOHelper.fxml"));
+        Parent root = rootLoader.load();
 
-     //   DataFetcherController rootDataFetcherController = rootLoader.getController();
-    //    rootDataFetcherController.setDataFetcher(this);
-
+        Scene scene = new Scene(root, 720, 480);
+        GTOHelperController controller = (GTOHelperController)rootLoader.getController();
+        controller.setStage(primaryStage);
 
         primaryStage.setTitle("GTOHelper v 0.0");
-        primaryStage.setScene(new Scene(root, 720, 480));
+        primaryStage.setScene(scene);
         primaryStage.setMinWidth(720);
         primaryStage.setMinWidth(480);
         primaryStage.show();

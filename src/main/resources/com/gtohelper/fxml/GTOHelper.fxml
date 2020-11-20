@@ -17,6 +17,11 @@
               <AnchorPane minHeight="480.0" minWidth="720.0"/>
             </content>
           </Tab>
+          <Tab fx:id="solverSettingsTab" id="solverSettingsTab" text="Solver Settings">
+            <content>
+              <fx:include fx:id="solverSettings" source="/com/gtohelper/fxml/SolverSettings.fxml"/>
+            </content>
+          </Tab>
           <Tab fx:id="handAnalysisTab"  id="handAnalysisTab" text="Hand Analysis" >
             <content>
               <fx:include fx:id="handAnalysis" source="/com/gtohelper/fxml/HandAnalysis.fxml" />

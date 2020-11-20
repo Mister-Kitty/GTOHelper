@@ -1,14 +1,14 @@
-package com.gtohelper.solver;
+package com.gtohelper.domain;
 
 import java.util.ArrayList;
 
 public class GameTreeData {
-    int effectiveStack;
-    int pot;
-    Options options = new Options();
+    public int effectiveStack;
+    public int pot;
+    public Options options = new Options();
 
-    IPStreetAction IPFlop, IPTurn, IPRiver;
-    OOPStreetAction OOPFlop, OOPTurn, OOPRiver;
+    public IPStreetAction IPFlop, IPTurn, IPRiver;
+    public OOPStreetAction OOPFlop, OOPTurn, OOPRiver;
 
     public enum Street {
         PRE,
