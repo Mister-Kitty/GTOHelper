@@ -4,18 +4,18 @@ import com.gtohelper.utility.SaveFileHelper;
 import com.gtohelper.utility.Saveable;
 
 import java.util.HashMap;
-public class SolverSettings extends Saveable {
 
-    public SolverSettings(SaveFileHelper saveHelper) {
-        super(saveHelper, "SolverSettings");
+public class RangeFiles extends Saveable {
+    public RangeFiles(SaveFileHelper saveHelper) {
+        super(saveHelper, "RangeFiles");
     }
 
 
     @Override
     public HashMap<String, String> getDefaultValues() {
         HashMap<String, String> values = new HashMap<>();
-
-
+        values.put("rangeFolderLocation", "C:\\PioSolver Edge\\Ranges");
         return values;
     }
+
 }

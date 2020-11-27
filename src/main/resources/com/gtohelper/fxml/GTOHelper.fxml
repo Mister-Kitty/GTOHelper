@@ -19,7 +19,7 @@
           </Tab>
           <Tab fx:id="solverSettingsTab" id="solverSettingsTab" text="Solver Settings">
             <content>
-              <fx:include fx:id="solverSettings" source="/com/gtohelper/fxml/RangeFiles.fxml"/>
+              <fx:include fx:id="solverSettings" source="/com/gtohelper/fxml/SolverSettings.fxml"/>
             </content>
           </Tab>
           <Tab fx:id="handAnalysisTab"  id="handAnalysisTab" text="Hand Analysis" >

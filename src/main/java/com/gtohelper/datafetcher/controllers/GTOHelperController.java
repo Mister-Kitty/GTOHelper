@@ -1,6 +1,7 @@
 package com.gtohelper.datafetcher.controllers;
 
 import com.gtohelper.datafetcher.controllers.solversettings.RangeFilesController;
+import com.gtohelper.datafetcher.controllers.solversettings.SolverSettingsController;
 import com.gtohelper.domain.*;
 import com.gtohelper.utility.SaveFileHelper;
 import javafx.beans.value.ChangeListener;
@@ -22,7 +23,7 @@ public class GTOHelperController  {
     DBConnectionController dbConnectionController;
 
     @FXML
-    RangeFilesController rangeFilesController;
+    SolverSettingsController solverSettingsController;
 
     @FXML
     HandAnalysisController handAnalysisController;
@@ -44,6 +45,7 @@ public class GTOHelperController  {
 
     @FXML
     private void initialize() {
+        // todo: loadproperties shoudl be in a constructor or something.
         saveHelper.loadProperties();
         initializeControls();
         initializeControllers();
@@ -59,8 +61,8 @@ public class GTOHelperController  {
 
         handAnalysisController.saveSolveHandsCallback(this::analyzeHands);
 
-        rangeFilesController.loadModel(saveHelper);
-        rangeFilesController.saveDisplayFolderChooserCallback(this::displayFileChooser);
+        solverSettingsController.loadModels(saveHelper);
+        solverSettingsController.saveDisplayFolderChooserCallback(this::displayFileChooser);
     }
 
     public File displayFileChooser(DirectoryChooser chooser) {

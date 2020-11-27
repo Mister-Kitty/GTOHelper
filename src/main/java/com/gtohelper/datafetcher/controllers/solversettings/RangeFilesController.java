@@ -1,6 +1,6 @@
 package com.gtohelper.datafetcher.controllers.solversettings;
 
-import com.gtohelper.datafetcher.models.solversettings.SolverSettings;
+import com.gtohelper.datafetcher.models.solversettings.RangeFiles;
 import com.gtohelper.utility.FileTreeItem;
 import com.gtohelper.utility.SaveFileHelper;
 import javafx.beans.property.SimpleStringProperty;
@@ -39,9 +39,9 @@ public class RangeFilesController {
 
     DirectoryChooser folderChooser = new DirectoryChooser();
 
-    SolverSettings settings;
+    RangeFiles rangeFiles;
     public void loadModel(SaveFileHelper saveHelper) {
-        settings = new SolverSettings(saveHelper);
+        rangeFiles = new RangeFiles(saveHelper);
         loadFieldsFromModel();
     }
 
@@ -79,7 +79,6 @@ public class RangeFilesController {
         File selectedFile = rangeFileTable.getSelectionModel().getSelectedItem().getValue();
         ActionPosition selectedAction = actionPositionTable.getSelectionModel().getSelectedItem().getValue();
 
-
         actionToRangeFileMap.put(selectedAction, selectedFile);
         rangeFileToActionMap.put(selectedFile, selectedAction);
 
@@ -89,12 +88,11 @@ public class RangeFilesController {
     private void selectFolder(File folder) {
         rangeFolderLocation.setText(folder.getAbsolutePath());
         rangeFileTable.setRoot(new FileTreeItem(folder));
-        settings.saveTextField("rangeFolderLocation", folder.getAbsolutePath());
+        rangeFiles.saveTextField("rangeFolderLocation", folder.getAbsolutePath());
     }
 
     private void initializeControls() {
         actionPositionTableActionColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getValue().actionString));
-
         rangeFileTableFilePathColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getValue().getName()));
 
         rangeFileTableBoundActionColumn.setCellValueFactory(p -> {
@@ -120,17 +118,17 @@ public class RangeFilesController {
     @FXML
     private void onSaveBindingsButtonPress() {
         try {
-            actionToRangeFileMap.forEach((k, v) -> settings.saveTextField(k.fullActionString,v.getAbsolutePath()));
-            settings.saveAll();
+            actionToRangeFileMap.forEach((k, v) -> rangeFiles.saveTextField(k.fullActionString,v.getAbsolutePath()));
+            rangeFiles.saveAll();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     void loadFieldsFromModel() {
-        selectFolder(new File(settings.loadTextField("rangeFolderLocation")));
+        selectFolder(new File(rangeFiles.loadTextField("rangeFolderLocation")));
 
-        HashMap<String, String> valuesToLoad = settings.getAllOurSavedValues();
+        HashMap<String, String> valuesToLoad = rangeFiles.getAllOurSavedValues();
 
         // We have (actionString, fileLocation).
         // Note that rangeFolderLocation must be set before we dump our map

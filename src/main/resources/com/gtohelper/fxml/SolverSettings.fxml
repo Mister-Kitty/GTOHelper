@@ -6,12 +6,32 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import javafx.geometry.Insets?>
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.gtohelper.datafetcher.controllers.solversettings.SolverSettingsController"
             prefHeight="400.0" prefWidth="600.0">
+    <children>
+        <TabPane tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <tabs>
+
+                <Tab fx:id="betSettingsTab" id="betSettingsTab" text="Bet Settings">
+                    <content>
+                        <fx:include fx:id="betSettings" source="/com/gtohelper/fxml/BetSettings.fxml"/>
+                    </content>
+                </Tab>
 
 
+                <Tab fx:id="rangeFilesTab" id="rangeFilesTab" text="Range Files">
+                    <content>
+                        <fx:include fx:id="rangeFiles" source="/com/gtohelper/fxml/RangeFiles.fxml"/>
+                    </content>
+                </Tab>
 
-
+            </tabs>
+        </TabPane>
+    </children>
+    <padding>
+        <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+    </padding>
 </AnchorPane>
