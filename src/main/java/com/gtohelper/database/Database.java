@@ -8,7 +8,19 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 public class Database {
-    public static Connection getConnection() throws SQLException {
+
+    private static String connectionString = "";
+    private static String user = "";
+    private static String pass = "";
+
+    public static void initialize(String connection, String usr, String pas) {
+        connectionString = connection;
+        user = usr;
+        pass = pas;
+    }
+
+    // Deprecated. Will clean this up later.
+    public static void buildConnectionProperties() {
         Properties prop = new Properties();
 
         try (InputStream output = Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties")) {
@@ -17,13 +29,19 @@ public class Database {
             e.printStackTrace();
         }
 
-        String address = prop.getProperty("db.address");
-        String port = prop.getProperty("db.port");
-        String name = prop.getProperty("db.name");
-        String user = prop.getProperty("db.user");
-        String password= prop.getProperty("db.pass");
-        String url = "jdbc:postgresql://" + address + ":" + port + "/" + name;
+        String address = prop.getProperty("DBConnection.address");
+        String port = prop.getProperty("DBConnection.port");
+        String name = prop.getProperty("DBConnection.name");
 
-       return DriverManager.getConnection(url, user, password);
+        user = prop.getProperty("DBConnection.user");
+        pass = prop.getProperty("DBConnection.pass");
+        connectionString = "jdbc:postgresql://" + address + ":" + port + "/" + name;
+    }
+
+    public static Connection getConnection() throws SQLException {
+        if(connectionString.isEmpty())
+            buildConnectionProperties();
+
+       return DriverManager.getConnection(connectionString, user, pass);
     }
 }

@@ -1,10 +1,10 @@
 package com.gtohelper.datafetcher.controllers;
 
+import com.gtohelper.database.Database;
 import com.gtohelper.datafetcher.models.DBConnection;
-import com.gtohelper.domain.HandData;
 import com.gtohelper.domain.Player;
 import com.gtohelper.domain.Site;
-import javafx.beans.binding.Bindings;
+import com.gtohelper.utility.SaveFileHelper;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -16,8 +16,6 @@ import javafx.scene.control.*;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Properties;
 import java.util.function.Consumer;
 
 public class DBConnectionController {
@@ -48,22 +46,35 @@ public class DBConnectionController {
     private ChoiceBox<Player> player;
     public Player getPlayer() { return player.getValue(); }
 
-    @FXML // maybe this is an abstraction violation? Could pass a callback to init... whatever.
+    @FXML
     public Button go;
 
     @FXML
-    private BooleanProperty connectionSuccess = new SimpleBooleanProperty(false);
+    private final BooleanProperty connectionSuccess = new SimpleBooleanProperty(false);
     public BooleanProperty connectionSuccessProperty() { return connectionSuccess; }
     public boolean getConnectionSuccess() { return connectionSuccess.get(); }
     public void setConnectionSuccess(boolean value) {
         connectionSuccess.setValue(value);
         if(value) {
             updateSites();
+
+            try {
+                dbConnection.saveAll();
+            } catch (IOException e) {
+                // todo: log in debugger
+                //  results.setText("Error when trying to save config file. Error logged in debug tab");
+            }
         }
     }
 
-    DBConnection dbConnection = new DBConnection();
-    Properties prop;
+    DBConnection dbConnection;
+    public void loadModel(SaveFileHelper saveHelper) {
+        dbConnection = new DBConnection(saveHelper);
+        loadFieldsFromModel();
+        testConnection();
+        if(!getConnectionSuccess())
+            results.setText("PT4's default user/pass/name has failed. Please enter the correct info to continue");
+    }
 
     private Consumer<Player> playerSelectionConfirmedCallback;
     public void savePlayerSelectionConfirmedCallback(Consumer<Player> callback) {
@@ -77,10 +88,6 @@ public class DBConnectionController {
 
     public void initialize() {
         initializeControls();
-        initializeProp();
-        testConnection();
-        if(!getConnectionSuccess())
-            results.setText("PT4's default user/pass/name has failed. Please enter the correct info to continue");
     }
 
     @FXML
@@ -90,21 +97,26 @@ public class DBConnectionController {
 
         try {
             dbConnection.testConnection(url, DBUser.getText(), DBPassword.getText());
-            dbConnection.saveProperties(prop);
             reply = "Connection attempt succeeded. Fill in poker site & username info below to continue.";
         }  catch (SQLException ex) {
             reply = "Connect attempt failed. Error message has been posted in the debug tab.";
             setConnectionSuccess(false);
             return false;
+        }
+
+        results.setText(reply);
+
+        setConnectionSuccess(true);
+        updatePropsFromFields();
+
+        try {
+            dbConnection.saveAll();
         } catch (IOException e) {
             reply = "Database access succeeded, but saving the information to the config file has failed. " +
                     "Fill in poker site & username info below to continue. To have this auto-complete in the future" +
                     "ensure this program has file write permissions, or try running as Admin.";
         }
 
-        results.setText(reply);
-        setConnectionSuccess(true);
-        updatePropsFromFields();
         return true;
     }
 
@@ -147,38 +159,19 @@ public class DBConnectionController {
         });
     }
 
-    private void initializeProp() {
-        try {
-            prop = dbConnection.loadProperties();
-        } catch (IOException e) {
-            results.setText("Error when trying to load existing config file. Regeneration and save was successful.");
-        }
-
-        if(prop == null || prop.isEmpty()) {
-            prop = dbConnection.createDefaultProp();
-            try {
-                dbConnection.saveProperties(prop);
-            } catch (IOException e) {
-                results.setText("Failed to regenerate and save config file. Ensure you have write permissions. Or try to run as Admin.");
-            }
-        }
-
-        loadFieldsFromProp();
-    }
-
-    private void loadFieldsFromProp() {
-        DBAddress.setText(prop.getProperty("db.address"));
-        DBPort.setText(prop.getProperty("db.port"));
-        DBName.setText(prop.getProperty("db.name"));
-        DBUser.setText(prop.getProperty("db.user"));
-        DBPassword.setText(prop.getProperty("db.pass"));
+    void loadFieldsFromModel() {
+        DBAddress.setText(dbConnection.loadTextField("address"));
+        DBPort.setText(dbConnection.loadTextField("port"));
+        DBName.setText(dbConnection.loadTextField("name"));
+        DBUser.setText(dbConnection.loadTextField("user"));
+        DBPassword.setText(dbConnection.loadTextField("pass"));
     }
 
     private void updatePropsFromFields() {
-        prop.setProperty("db.address", DBAddress.getText());
-        prop.setProperty("db.port", DBPort.getText());
-        prop.setProperty("db.name", DBName.getText());
-        prop.setProperty("db.user", DBUser.getText());
-        prop.setProperty("db.pass", DBPassword.getText());
+        dbConnection.saveTextField("address", DBAddress.getText());
+        dbConnection.saveTextField("port", DBPort.getText());
+        dbConnection.saveTextField("name", DBName.getText());
+        dbConnection.saveTextField("user", DBUser.getText());
+        dbConnection.saveTextField("pass", DBPassword.getText());
     }
 }

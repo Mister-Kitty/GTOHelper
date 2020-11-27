@@ -1,21 +1,20 @@
 package com.gtohelper.datafetcher.controllers;
 
+import com.gtohelper.datafetcher.controllers.solversettings.RangeFilesController;
 import com.gtohelper.domain.*;
+import com.gtohelper.utility.SaveFileHelper;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 
 public class GTOHelperController  {
 
@@ -23,7 +22,7 @@ public class GTOHelperController  {
     DBConnectionController dbConnectionController;
 
     @FXML
-    SolverSettingsController solverSettingsController;
+    RangeFilesController rangeFilesController;
 
     @FXML
     HandAnalysisController handAnalysisController;
@@ -40,25 +39,28 @@ public class GTOHelperController  {
     @FXML
     private URL location;
 
-    @FXML
-    private ResourceBundle resources;
-
     private Stage stage;
+    private SaveFileHelper saveHelper = new SaveFileHelper();
 
     @FXML
     private void initialize() {
+        saveHelper.loadProperties();
         initializeControls();
-        initializeCallbacks();
+        initializeControllers();
     }
 
     public void setStage(Stage s) {
         stage = s;
     }
 
-    private void initializeCallbacks() {
+    private void initializeControllers() {
+        dbConnectionController.loadModel(saveHelper);
         dbConnectionController.savePlayerSelectionConfirmedCallback(this::playerSelectedDataPropagation);
+
         handAnalysisController.saveSolveHandsCallback(this::analyzeHands);
-        solverSettingsController.saveDisplayFolderChooserCallback(this::displayFileChooser);
+
+        rangeFilesController.loadModel(saveHelper);
+        rangeFilesController.saveDisplayFolderChooserCallback(this::displayFileChooser);
     }
 
     public File displayFileChooser(DirectoryChooser chooser) {
@@ -71,7 +73,7 @@ public class GTOHelperController  {
         mainTabPain.getSelectionModel().select(workQueueTab);
     }
 
-    // todo: this functionality shouldn't be here. It's not this controller's responcibility
+    // todo: this functionality shouldn't be here. It's not this controller's responsibility
     private List<SolveData> bundleAllHandsWithTreeSettings(List<HandData> hands) {
         ArrayList<SolveData> solveList = new ArrayList<>();
         GameTreeData treeData = defaultGameTreeData();
