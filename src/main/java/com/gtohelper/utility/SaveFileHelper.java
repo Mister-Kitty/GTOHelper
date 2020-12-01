@@ -3,9 +3,7 @@ package com.gtohelper.utility;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Properties;
+import java.util.*;
 
 public class SaveFileHelper {
     private static Properties props;
@@ -41,12 +39,32 @@ public class SaveFileHelper {
         props.forEach((k, v) -> {
             String key = k.toString();
             if(key.startsWith(nameWithDelimiter)) {
-                String fieldName = key.substring(key.lastIndexOf(".") + 1);
+                String fieldName = key.substring(key.indexOf(".") + 1);
                 results.put(fieldName, v.toString());
             }
         });
 
         return results;
+    }
+
+    public void deleteSubGroup(String subgroup) throws IOException {
+        // We're given something like BetSettings.setting1, so we need to add delimiter so we don't delete
+        // BetSettings.setting11.
+        String subgroupWithDelimiter = subgroup + ".";
+
+        // then we need to list all the keys, and remove them in a separate step to avoid loop modification exceptions
+        List<String> keyList = new LinkedList<>();
+        props.forEach((k, v) -> {
+            String key = k.toString();
+            if(key.startsWith(subgroupWithDelimiter)) {
+                keyList.add(k.toString());
+            }
+        });
+
+        keyList.forEach(k -> props.remove(k));
+
+        // write back changes to file.
+        saveAll();
     }
 
     public void loadProperties() {

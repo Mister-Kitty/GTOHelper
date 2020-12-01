@@ -14,14 +14,14 @@ public class GTOHelper extends Application {
         FXMLLoader rootLoader = new FXMLLoader(getClass().getResource("/com/gtohelper/fxml/GTOHelper.fxml"));
         Parent root = rootLoader.load();
 
-        Scene scene = new Scene(root, 720, 480);
+        Scene scene = new Scene(root, 900, 560);
         GTOHelperController controller = (GTOHelperController)rootLoader.getController();
         controller.setStage(primaryStage);
 
         primaryStage.setTitle("GTOHelper v 0.0");
         primaryStage.setScene(scene);
-        primaryStage.setMinWidth(720);
-        primaryStage.setMinWidth(480);
+        primaryStage.setMinWidth(900);
+        primaryStage.setMinWidth(560);
         primaryStage.show();
     }
 

@@ -3,12 +3,21 @@ package com.gtohelper.domain;
 import java.util.ArrayList;
 
 public class GameTreeData {
+    public final String name;
     public int effectiveStack;
     public int pot;
     public Options options = new Options();
 
-    public IPStreetAction IPFlop, IPTurn, IPRiver;
-    public OOPStreetAction OOPFlop, OOPTurn, OOPRiver;
+    public IPStreetAction IPFlop = new IPStreetAction(Street.FLOP),
+            IPTurn = new IPStreetAction(Street.TURN),
+            IPRiver = new IPStreetAction(Street.RIVER);
+    public OOPStreetAction OOPFlop = new OOPStreetAction(Street.FLOP),
+            OOPTurn = new OOPStreetAction(Street.TURN),
+            OOPRiver = new OOPStreetAction(Street.RIVER);
+
+    public GameTreeData(String name) {
+        this.name = name;
+    }
 
     public enum Street {
         PRE,
@@ -38,20 +47,27 @@ public class GameTreeData {
     public static abstract class StreetAction {
         Street street;
         boolean canAllIn;
-        Bets bets;
-        Raises raises;
+        Bets bets = new Bets();
+        Raises raises = new Raises();
 
         public Street getStreet() { return street; }
         public boolean getCanAllIn() { return canAllIn; }
+        public void setCanAllIn(boolean can) { canAllIn = can; }
         public Bets getBets() { return bets; }
+        public void setBets(String betsString) { bets = new Bets(betsString); }
         public Raises getRaises() { return raises; }
+        public void setRaises(String raiseString) { raises = new Raises(raiseString); }
     }
 
     public static class IPStreetAction extends StreetAction {
         boolean can3Bet;
 
-        public IPStreetAction(Street street, boolean canAllIn, boolean can3Bet, String betsString, String raisesString) {
-            this.street = street;
+        public boolean getCan3Bet() { return can3Bet; }
+        public void setCan3Bet(boolean canThreeBet) { can3Bet = canThreeBet; }
+
+        public IPStreetAction(Street s) { street = s; }
+
+        public void setActionData(boolean canAllIn, boolean can3Bet, String betsString, String raisesString) {
             this.canAllIn = canAllIn;
             this.can3Bet = can3Bet;
             this.bets = new Bets(betsString);
@@ -60,26 +76,31 @@ public class GameTreeData {
     }
 
     public static class OOPStreetAction extends StreetAction {
-        public Bets donks;
+        public Bets donks = new Bets();
 
-        public OOPStreetAction(Street street, boolean canAllIn, String betsString, String raisesString, String donksString) {
-            this.street = street;
+        public Bets getDonks() { return donks; }
+        public void setDonks(String donkBetString) { donks = new Bets(donkBetString); }
+
+        public OOPStreetAction(Street s) { street = s; }
+
+        public void setActionData(boolean canAllIn, String betsString, String raisesString, String donksString) {
             this.canAllIn = canAllIn;
             this.bets = new Bets(betsString);
             this.raises = new Raises(raisesString);
             this.donks = new Bets(donksString);
         }
-
-        public Bets getDonks() { return donks; }
     }
 
     public static class Bets {
         boolean allIn = false;
+        String initialString;
         ArrayList<Integer> percentOptions = new ArrayList<Integer>();
 
         private Bets() {}
 
+        // I should probably have setBetString be a function rather than passed into the constructor.... whatever.
         public Bets(String betsString) {
+            initialString = betsString;
             parseBetStrings(betsString);
         }
 
@@ -102,6 +123,8 @@ public class GameTreeData {
         public boolean getAllIn() {
             return allIn;
         }
+
+        public String getInitialString() { return initialString; }
 
         public ArrayList<Integer> getBetPercentList() {
             return percentOptions;
@@ -133,7 +156,10 @@ public class GameTreeData {
     public static class Raises extends Bets {
         ArrayList<Float> multiplierOptions = new ArrayList<Float>();
 
+        private Raises() {}
+
         public Raises(String raiseString) {
+            initialString = raiseString;
             parseBetStrings(raiseString);
         }
 

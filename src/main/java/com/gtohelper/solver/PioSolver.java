@@ -35,7 +35,7 @@ public class PioSolver implements ISolver {
         writeToOutput("set_recalc_accuracy 0.0025 0.001 0.0005");
         readNLinesFromInput(1);
 
-        currentGame = new GameTreeData();
+        currentGame = new GameTreeData("PioSolver");
     }
 
     @Override
@@ -64,7 +64,7 @@ public class PioSolver implements ISolver {
         currentGame.options.allInOnlyIfLessThanNPercent = allInOnlyIfLessThanNPercent;
 
         // TODO: Add logging in this instance.
-        if(forceOOPBet == true && forceOOPCheckIPBet == true)
+        if(forceOOPBet&& forceOOPCheckIPBet)
             return;
         currentGame.options.forceOOPBet = forceOOPBet;
         currentGame.options.forceOOPCheckIPBet = forceOOPCheckIPBet;
@@ -72,38 +72,32 @@ public class PioSolver implements ISolver {
 
     @Override
     public void setIPFlop(boolean addAllIn, boolean dont3Bet, String betSizesString, String raiseSizesString) {
-        GameTreeData.IPStreetAction action = new GameTreeData.IPStreetAction(GameTreeData.Street.FLOP, addAllIn, dont3Bet, betSizesString, raiseSizesString);
-        currentGame.IPFlop = action;
+        currentGame.IPFlop.setActionData(addAllIn, dont3Bet, betSizesString, raiseSizesString);
     }
 
     @Override
     public void setIPTurn(boolean addAllIn, boolean dont3Bet, String betSizesString, String raiseSizesString) {
-        GameTreeData.IPStreetAction action = new GameTreeData.IPStreetAction(GameTreeData.Street.TURN, addAllIn, dont3Bet, betSizesString, raiseSizesString);
-        currentGame.IPTurn = action;
+        currentGame.IPTurn.setActionData(addAllIn, dont3Bet, betSizesString, raiseSizesString);
     }
 
     @Override
     public void setIPRiver(boolean addAllIn, boolean dont3Bet, String betSizesString, String raiseSizesString) {
-        GameTreeData.IPStreetAction action = new GameTreeData.IPStreetAction(GameTreeData.Street.RIVER, addAllIn, dont3Bet, betSizesString, raiseSizesString);
-        currentGame.IPRiver = action;
+        currentGame.IPRiver.setActionData(addAllIn, dont3Bet, betSizesString, raiseSizesString);
     }
 
     @Override
     public void setOOPFlop(boolean addAllIn, String donkSizesString, String raiseSizesString) {
-        GameTreeData.OOPStreetAction action = new GameTreeData.OOPStreetAction(GameTreeData.Street.FLOP, addAllIn, "", raiseSizesString, donkSizesString);
-        currentGame.OOPFlop = action;
+        currentGame.OOPFlop.setActionData(addAllIn, "", raiseSizesString, donkSizesString);
     }
 
     @Override
     public void setOOPTurn(boolean addAllIn, String betSizesString, String raiseSizesString, String donkSizesString) {
-        GameTreeData.OOPStreetAction action = new GameTreeData.OOPStreetAction(GameTreeData.Street.TURN, addAllIn, betSizesString, raiseSizesString, donkSizesString);
-        currentGame.OOPTurn = action;
+        currentGame.OOPTurn.setActionData(addAllIn, betSizesString, raiseSizesString, donkSizesString);
     }
 
     @Override
     public void setOOPRiver(boolean addAllIn, String betSizesString, String raiseSizesString, String donkSizesString) {
-        GameTreeData.OOPStreetAction action = new GameTreeData.OOPStreetAction(GameTreeData.Street.RIVER, addAllIn, betSizesString, raiseSizesString, donkSizesString);
-        currentGame.OOPRiver = action;
+        currentGame.OOPRiver.setActionData(addAllIn, betSizesString, raiseSizesString, donkSizesString);
     }
 
     @Override

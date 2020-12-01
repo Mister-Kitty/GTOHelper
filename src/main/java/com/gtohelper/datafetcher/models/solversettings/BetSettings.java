@@ -2,6 +2,8 @@ package com.gtohelper.datafetcher.models.solversettings;
 
 import com.gtohelper.utility.SaveFileHelper;
 import com.gtohelper.utility.Saveable;
+import javafx.fxml.FXML;
+import javafx.scene.control.TextField;
 
 import java.util.HashMap;
 
@@ -13,6 +15,7 @@ public class BetSettings extends Saveable {
     @Override
     public HashMap<String, String> getDefaultValues() {
         HashMap<String, String> values = new HashMap<>();
+
 
         return values;
     }

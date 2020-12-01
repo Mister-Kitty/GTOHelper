@@ -87,7 +87,7 @@ public class GTOHelperController  {
     }
 
     private static GameTreeData defaultGameTreeData() {
-        GameTreeData data = new GameTreeData();
+        GameTreeData data = new GameTreeData("default");
         data.effectiveStack = 910;
         data.pot = 185;
 
@@ -96,14 +96,14 @@ public class GTOHelperController  {
         data.options.forceOOPBet = false;
         data.options.forceOOPCheckIPBet = false;
 
-        data.IPFlop = new GameTreeData.IPStreetAction(GameTreeData.Street.FLOP, false, false, "52", "2.5x");
-        data.IPTurn = new GameTreeData.IPStreetAction(GameTreeData.Street.TURN, false, false, "52", "3x");
-        data.IPRiver = new GameTreeData.IPStreetAction(GameTreeData.Street.RIVER, false, false, "52", "3x");
+        data.IPFlop.setActionData(false, false, "52", "2.5x");
+        data.IPTurn.setActionData(false, false, "52", "3x");
+        data.IPRiver.setActionData(false, false, "52", "3x");
 
 
-        data.OOPFlop = new GameTreeData.OOPStreetAction(GameTreeData.Street.FLOP, false, "", "2.5x", "52");
-        data.OOPTurn = new GameTreeData.OOPStreetAction(GameTreeData.Street.TURN, false, "52", "3x", "");
-        data.OOPRiver = new GameTreeData.OOPStreetAction(GameTreeData.Street.RIVER, false, "52", "3x", "");
+        data.OOPFlop.setActionData(false, "", "2.5x", "52");
+        data.OOPTurn.setActionData(false, "52", "3x", "");
+        data.OOPRiver.setActionData(false, "52", "3x", "");
 
         return data;
     }
