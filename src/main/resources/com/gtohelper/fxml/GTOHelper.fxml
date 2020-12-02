@@ -14,7 +14,7 @@
         <tabs>
           <Tab fx:id="workQueueTab"  id="workQueueTab" text="Work Queue">
             <content>
-              <AnchorPane minHeight="480.0" minWidth="720.0"/>
+              <fx:include fx:id="workQueue" source="/com/gtohelper/fxml/WorkQueue.fxml"/>
             </content>
           </Tab>
           <Tab fx:id="solverSettingsTab" id="solverSettingsTab" text="Solver Settings">

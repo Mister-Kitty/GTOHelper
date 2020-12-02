@@ -14,6 +14,8 @@ public class PioSolver implements ISolver {
     private GameTree tree;
     private GameTreeData currentGame;
 
+    private int pot, effectiveStack;
+
     @Override
     public void connectAndInit(String pioLocation) throws IOException {
         ProcessBuilder pb = new ProcessBuilder(pioLocation);
@@ -53,7 +55,7 @@ public class PioSolver implements ISolver {
     @Override
     public void setEffectiveStack(int stack) throws IOException {
         writeToOutput("set_eff_stack " + stack);
-        currentGame.effectiveStack = stack;
+        effectiveStack = stack;
         readNLinesFromInput(1);
     }
 
@@ -113,7 +115,7 @@ public class PioSolver implements ISolver {
     @Override
     public void setPotAndAccuracy(int oopInvestment, int ipInvestment, int pot, float chips) throws IOException {
         writeToOutput("set_pot " + oopInvestment + " " + ipInvestment + " " + pot);
-        currentGame.pot = pot;
+        pot = pot;
         readNLinesFromInput(1);
 
         writeToOutput("set_accuracy " + chips);
@@ -129,13 +131,25 @@ public class PioSolver implements ISolver {
     @Override
     public void buildTree() {
         tree = new GameTree();
-        tree.buildGameTree(currentGame);
+        tree.buildGameTree(currentGame, pot, effectiveStack);
     }
 
     @Override
     public void go() throws IOException {
         writeToOutput("go");
         readNLinesFromInput(1);
+    }
+
+    @Override
+    public void waitForReady() throws IOException, InterruptedException {
+        while(true) {
+            writeToOutput("is_ready");
+            String result = readNLinesFromInput(1);
+            if(result.trim().equals("is_ready ok!"))
+                return;
+            else
+                Thread.sleep(5000);
+        }
     }
 
     @Override

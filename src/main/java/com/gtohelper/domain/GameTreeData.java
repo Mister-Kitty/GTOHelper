@@ -4,8 +4,7 @@ import java.util.ArrayList;
 
 public class GameTreeData {
     public final String name;
-    public int effectiveStack;
-    public int pot;
+
     public Options options = new Options();
 
     public IPStreetAction IPFlop = new IPStreetAction(Street.FLOP),

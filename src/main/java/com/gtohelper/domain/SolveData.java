@@ -1,13 +1,20 @@
 package com.gtohelper.domain;
 
 public class SolveData {
-
-    public HandData hand;
+    public HandData handData;
     public GameTreeData gameTree;
+    SolveResults solveResults;
 
     public SolveData(HandData h, GameTreeData t) {
-        hand = h;
+        handData = h;
         gameTree = t;
     }
 
+    public SolveResults getSolveResults() {
+        return solveResults;
+    }
+
+    public void saveSolveResults(SolveResults results) {
+        solveResults = results;
+    }
 }

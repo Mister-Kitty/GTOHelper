@@ -88,8 +88,6 @@ public class GTOHelperController  {
 
     private static GameTreeData defaultGameTreeData() {
         GameTreeData data = new GameTreeData("default");
-        data.effectiveStack = 910;
-        data.pot = 185;
 
         data.options.allInThresholdPercent = 100;
         data.options.allInOnlyIfLessThanNPercent = 500;

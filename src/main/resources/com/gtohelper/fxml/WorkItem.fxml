@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<GridPane fx:id="rootGridPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Label fx:id="titleLabel" graphicTextGap="0.0" text="Review hands for Dec 16" GridPane.columnSpan="2147483647" GridPane.rowIndex="1" />
+      <Label fx:id="ETALabel" text="ETA (Work in progress):" GridPane.rowIndex="2" />
+      <Text fx:id="currentHandText" text="Current Hand:" GridPane.rowIndex="3" />
+      <ProgressBar fx:id="progressBar" prefWidth="160.0" progress="0.33" GridPane.rowIndex="4" />
+
+      <Text fx:id="handXofYText" strokeType="OUTSIDE" strokeWidth="0.0" text="XY / 204" GridPane.columnIndex="1" GridPane.rowIndex="4">
+         <GridPane.margin>
+            <Insets left="4.0" right="4.0" />
+         </GridPane.margin>
+      </Text>
+   </children>
+   <columnConstraints>
+      <ColumnConstraints />
+      <ColumnConstraints minWidth="10.0" />
+   </columnConstraints>
+   <rowConstraints>
+      <RowConstraints />
+      <RowConstraints minHeight="10.0" />
+      <RowConstraints minHeight="10.0" />
+      <RowConstraints minHeight="10.0" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" />
+   </rowConstraints>
+   <padding>
+      <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+   </padding>
+</GridPane>

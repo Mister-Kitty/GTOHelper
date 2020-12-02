@@ -36,8 +36,8 @@ enum Action {
 public class GameTree {
     private Node root;
 
-    public void buildGameTree(GameTreeData data) {
-        root = new Node(data);
+    public void buildGameTree(GameTreeData data, int pot, int effectiveStack) {
+        root = new Node(data, pot, effectiveStack);
     }
 
     public ArrayList<String> getAllInLeaves() {
@@ -68,10 +68,10 @@ class Node {
     ArrayList<Node> betRaiseNodes;
 
     //root node
-    public Node(GameTreeData treeData) {
+    public Node(GameTreeData treeData, int pot, int effectiveStack) {
         nodeData = new NodeData();
-        nodeData.currentPot = treeData.pot;
-        nodeData.effectiveStack = treeData.effectiveStack;
+        nodeData.currentPot = pot;
+        nodeData.effectiveStack = effectiveStack;
         nodeData.street = GameTreeData.Street.PRE;
         nodeData.curActor = null;
         nodeData.parentAction = Action.CHECK; // Helps the logic. Could maybe be null and add checks...

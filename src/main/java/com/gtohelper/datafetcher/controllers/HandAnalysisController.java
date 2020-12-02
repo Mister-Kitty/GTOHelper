@@ -3,12 +3,7 @@ package com.gtohelper.datafetcher.controllers;
 import com.gtohelper.datafetcher.models.HandAnalysis;
 import com.gtohelper.domain.*;
 import com.gtohelper.utility.CardResolver;
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableFloatValue;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -21,7 +16,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class HandAnalysisController {
 
@@ -136,8 +130,7 @@ public class HandAnalysisController {
 
         handsTableCardsColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<HandData, String>, ObservableValue<String>>() {
             public ObservableValue<String> call(TableColumn.CellDataFeatures<HandData, String> p) {
-                String result = CardResolver.resolveToString(p.getValue().holecard_1) + " " +
-                    CardResolver.resolveToString(p.getValue().holecard_2);
+                String result = CardResolver.getHandString(p.getValue());
 
                 return new SimpleStringProperty(result);
             }
@@ -145,11 +138,7 @@ public class HandAnalysisController {
 
         handsTableRunoutColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<HandData, String>, ObservableValue<String>>() {
             public ObservableValue<String> call(TableColumn.CellDataFeatures<HandData, String> p) {
-                String runout = CardResolver.resolveToString(p.getValue().card_1) + " " +
-                        CardResolver.resolveToString(p.getValue().card_2) + " " +
-                        CardResolver.resolveToString(p.getValue().card_3) + " " +
-                        CardResolver.resolveToString(p.getValue().card_4) + " " +
-                        CardResolver.resolveToString(p.getValue().card_5);
+                String runout = CardResolver.getBoardString(p.getValue());
                 return new SimpleStringProperty(runout);
             }
         });

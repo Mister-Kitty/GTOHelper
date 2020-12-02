@@ -1,5 +1,7 @@
 package com.gtohelper.utility;
 
+import com.gtohelper.domain.HandData;
+
 public class CardResolver {
 
  /* 1 is 2c
@@ -43,7 +45,23 @@ public class CardResolver {
         return (result += suit);
     }
 
+    public static String getHandString(HandData data) {
+        return resolveToString(data.holecard_1) + " " + resolveToString(data.holecard_2);
+    }
 
+    public static String getBoardString(HandData data) {
+        String flop = resolveToString(data.card_1) + " " +
+                resolveToString(data.card_2) + " " +
+                resolveToString(data.card_3);
 
+        if(data.card_4 == 0)
+            return flop;
 
+        String turn = resolveToString(data.card_4);
+        if(data.card_5 == 0)
+            return flop + " " + turn;
+
+        String river = resolveToString(data.card_5);
+        return flop + " " + turn + " " + river;
+    }
 }
