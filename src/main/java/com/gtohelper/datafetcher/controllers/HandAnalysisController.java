@@ -3,19 +3,18 @@ package com.gtohelper.datafetcher.controllers;
 import com.gtohelper.datafetcher.models.HandAnalysis;
 import com.gtohelper.domain.*;
 import com.gtohelper.utility.CardResolver;
+import com.gtohelper.utility.SaveFileHelper;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
-import javafx.util.Callback;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 public class HandAnalysisController {
 
@@ -31,15 +30,26 @@ public class HandAnalysisController {
     @FXML TableColumn<HandData, String> handsTableCardsColumn;
     @FXML TableColumn<HandData, String> handsTableRunoutColumn;
 
+    @FXML
+    ChoiceBox<String> scheduleChoiceBox;
+
+    @FXML
+    ChoiceBox<String> betSizingsChoiceBox;
+
     @FXML Button solveButton;
 
-    HandAnalysis handAnalysis = new HandAnalysis();
+    HandAnalysis handAnalysis;
     Player player;
 
     @FXML
     private void initialize()
     {
         initializeControls();
+    }
+
+    public void loadModel(SaveFileHelper saveHelper) {
+        handAnalysis = new HandAnalysis(saveHelper);
+        loadFieldsFromModel();
     }
 
     public void refreshTags(Player p) {
@@ -54,6 +64,13 @@ public class HandAnalysisController {
         }
     }
 
+    public void refreshBetSettings(List<String> betSettings) {
+        betSizingsChoiceBox.getItems().clear();
+        betSizingsChoiceBox.getItems().addAll(betSettings);
+        if(betSettings.size() > 0)
+            betSizingsChoiceBox.getSelectionModel().select(0);
+    }
+
     @FXML
     private void selectAll() {
         handsTable.getSelectionModel().selectAll();
@@ -62,15 +79,18 @@ public class HandAnalysisController {
     @FXML
     private void solveSelected() {
        List<HandData> handsToSolve = handsTable.getSelectionModel().getSelectedItems();
-        solveHandsCallback.accept(handsToSolve);
+       String betSettingName = betSizingsChoiceBox.getSelectionModel().getSelectedItem();
+       solveHandsCallback.accept(handsToSolve, betSettingName);
     }
 
-    private Consumer<List<HandData>> solveHandsCallback;
-    public void saveSolveHandsCallback(Consumer<List<HandData>> callback) {
+    private BiConsumer<List<HandData>, String> solveHandsCallback;
+    public void saveSolveHandsCallback(BiConsumer<List<HandData>, String> callback) {
         solveHandsCallback = callback;
     }
 
     private void initializeControls() {
+        scheduleChoiceBox.getItems().add("Right Now");
+        scheduleChoiceBox.getSelectionModel().select("Right Now");
 
         handsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         handsTable.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
@@ -82,17 +102,8 @@ public class HandAnalysisController {
         );
 
         // I could annotate the domain objects to make this more elegant... I may do it latter.
-        tagTableIdColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Tag, String>, ObservableValue<String>>() {
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<Tag, String> p) {
-                return new SimpleStringProperty("" + p.getValue().id_tag);
-            }
-        });
-
-        tagTableTagColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Tag, String>, ObservableValue<String>>() {
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<Tag, String> p) {
-                return new SimpleStringProperty(p.getValue().tag);
-            }
-        });
+        tagTableIdColumn.setCellValueFactory(p -> new SimpleStringProperty("" + p.getValue().id_tag));
+        tagTableTagColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().tag));
 
         tagTable.setRowFactory(tv -> {
             TableRow<Tag> row = new TableRow<>();
@@ -115,32 +126,14 @@ public class HandAnalysisController {
             return row ;
         });
 
-        handsTableDateColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<HandData, String>, ObservableValue<String>>() {
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<HandData, String> p) {
-                return new SimpleStringProperty(p.getValue().date_played.toString());
-            }
-        });
+        handsTableDateColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().date_played.toString()));
+        handsTableCWonColumn.setCellValueFactory(p -> new SimpleStringProperty("" + p.getValue().amt_pot));
+        handsTableCardsColumn.setCellValueFactory(p -> new SimpleStringProperty(CardResolver.getHandString(p.getValue())));
+        handsTableRunoutColumn.setCellValueFactory(p -> new SimpleStringProperty(CardResolver.getBoardString(p.getValue())));
+    }
 
-        handsTableCWonColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<HandData, String>, ObservableValue<String>>() {
-            @Override
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<HandData, String> p) {
-                return new SimpleStringProperty("" + p.getValue().amt_pot);
-            }
-        });
+    void loadFieldsFromModel() {
 
-        handsTableCardsColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<HandData, String>, ObservableValue<String>>() {
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<HandData, String> p) {
-                String result = CardResolver.getHandString(p.getValue());
 
-                return new SimpleStringProperty(result);
-            }
-        });
-
-        handsTableRunoutColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<HandData, String>, ObservableValue<String>>() {
-            public ObservableValue<String> call(TableColumn.CellDataFeatures<HandData, String> p) {
-                String runout = CardResolver.getBoardString(p.getValue());
-                return new SimpleStringProperty(runout);
-            }
-        });
     }
 }

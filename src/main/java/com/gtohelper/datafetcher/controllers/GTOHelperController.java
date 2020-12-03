@@ -1,6 +1,5 @@
 package com.gtohelper.datafetcher.controllers;
 
-import com.gtohelper.datafetcher.controllers.solversettings.RangeFilesController;
 import com.gtohelper.datafetcher.controllers.solversettings.SolverSettingsController;
 import com.gtohelper.domain.*;
 import com.gtohelper.utility.SaveFileHelper;
@@ -13,7 +12,6 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,9 +35,6 @@ public class GTOHelperController  {
     @FXML Tab workQueueTab;
     @FXML Tab dbConnectionTab;
 
-    @FXML
-    private URL location;
-
     private Stage stage;
     private SaveFileHelper saveHelper = new SaveFileHelper();
 
@@ -55,60 +50,54 @@ public class GTOHelperController  {
         stage = s;
     }
 
+    /*
+        This controller is a hub for passing the minimal ammount of data between tabs.
+        here we save and direct callbacks for data requests.
+     */
+
     private void initializeControllers() {
-        dbConnectionController.loadModel(saveHelper);
+        // Save the callbacks before loading models. Some models use these.
         dbConnectionController.savePlayerSelectionConfirmedCallback(this::playerSelectedDataPropagation);
-
-        handAnalysisController.saveSolveHandsCallback(this::analyzeHands);
-
-        solverSettingsController.loadModels(saveHelper);
         solverSettingsController.saveDisplayFolderChooserCallback(this::displayFileChooser);
+        handAnalysisController.saveSolveHandsCallback(this::analyzeHands);
+        solverSettingsController.saveBetSettingsChangedCallback(this::betSettingsUpdatedDataPropogation);
+
+        dbConnectionController.loadModel(saveHelper);
+        handAnalysisController.loadModel(saveHelper);
+        solverSettingsController.loadModels(saveHelper);
     }
+
+    /*
+        Callbacks section
+     */
 
     public File displayFileChooser(DirectoryChooser chooser) {
         return chooser.showDialog(stage);
     }
 
-    public void analyzeHands(List<HandData> hands) {
-        //todo: when tree specifying is done, it should hook up here instead of this hard coded crap.
-        workQueueController.receiveNewWork(new Work(bundleAllHandsWithTreeSettings(hands)));
+    public void playerSelectedDataPropagation(Player player) {
+        handAnalysisController.refreshTags(dbConnectionController.getPlayer());
+        mainTabPain.getSelectionModel().select(handAnalysisTab);
+    }
+
+    public void betSettingsUpdatedDataPropogation(List<String> betSettings) {
+        handAnalysisController.refreshBetSettings(betSettings);
+    }
+
+    public void analyzeHands(List<HandData> hands, String betSettingName) {
+        workQueueController.receiveNewWork(buildWork(hands, betSettingName));
         mainTabPain.getSelectionModel().select(workQueueTab);
     }
 
-    // todo: this functionality shouldn't be here. It's not this controller's responsibility
-    private List<SolveData> bundleAllHandsWithTreeSettings(List<HandData> hands) {
+    private Work buildWork(List<HandData> hands, String betSettingName) {
         ArrayList<SolveData> solveList = new ArrayList<>();
-        GameTreeData treeData = defaultGameTreeData();
+
+        GameTreeData treeData = solverSettingsController.getBetSettingByName(betSettingName);
         for(HandData hand : hands) {
             solveList.add(new SolveData(hand, treeData));
         }
 
-        return solveList;
-    }
-
-    private static GameTreeData defaultGameTreeData() {
-        GameTreeData data = new GameTreeData("default");
-
-        data.options.allInThresholdPercent = 100;
-        data.options.allInOnlyIfLessThanNPercent = 500;
-        data.options.forceOOPBet = false;
-        data.options.forceOOPCheckIPBet = false;
-
-        data.IPFlop.setActionData(false, false, "52", "2.5x");
-        data.IPTurn.setActionData(false, false, "52", "3x");
-        data.IPRiver.setActionData(false, false, "52", "3x");
-
-
-        data.OOPFlop.setActionData(false, "", "2.5x", "52");
-        data.OOPTurn.setActionData(false, "52", "3x", "");
-        data.OOPRiver.setActionData(false, "52", "3x", "");
-
-        return data;
-    }
-
-    public void playerSelectedDataPropagation(Player player) {
-        handAnalysisController.refreshTags(dbConnectionController.getPlayer());
-        mainTabPain.getSelectionModel().select(handAnalysisTab);
+        return new Work(solveList);
     }
 
     private void initializeControls() {

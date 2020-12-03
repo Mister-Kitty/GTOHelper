@@ -9,6 +9,7 @@ import javafx.scene.control.*;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Consumer;
 
 public class BetSettingsController {
 
@@ -32,6 +33,9 @@ public class BetSettingsController {
     Button saveButton, deleteButton;
 
     boolean saveIsOverwrite = false;
+
+    Consumer<List<String>> callback;
+
     BetSettings betSettings;
 
     private GameTreeData buildGameTreeData() {
@@ -51,6 +55,10 @@ public class BetSettingsController {
     public void loadModel(SaveFileHelper saveHelper) {
         betSettings = new BetSettings(saveHelper);
         loadFieldsFromModel();
+    }
+
+    public void saveBetSettingsChangedCallback(Consumer<List<String>> callback) {
+        this.callback = callback;
     }
 
     @FXML
@@ -133,6 +141,7 @@ public class BetSettingsController {
         else
             listOfSettingsNames += "," + settingName;
         betSettings.saveTextField("betSettingsNames", listOfSettingsNames);
+        callback.accept(Arrays.asList(listOfSettingsNames.split(",")));
     }
 
     private void deleteFromBetSettingsNames(String settingName) {
@@ -208,6 +217,17 @@ public class BetSettingsController {
 
         savedBetSettingsTable.getItems().clear();
         savedBetSettingsTable.getItems().addAll(settingNameToTreeData);
+
+        callback.accept(Arrays.asList(listOfSettingsNames.split(",")));
+    }
+
+    public GameTreeData getBetSettingByName(String name) {
+        for(GameTreeData data :savedBetSettingsTable.getItems()) {
+            if(data.name.equals(name))
+                return data;
+        }
+        assert false;
+        return null;
     }
 
     private void loadTreeDataIntoGUI(GameTreeData treeData) {

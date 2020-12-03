@@ -9,12 +9,18 @@ import com.gtohelper.datamanager.IHandSummaryDM;
 import com.gtohelper.datamanager.ILookupDM;
 import com.gtohelper.domain.HandData;
 import com.gtohelper.domain.Tag;
+import com.gtohelper.utility.SaveFileHelper;
+import com.gtohelper.utility.Saveable;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
-public class HandAnalysis {
+public class HandAnalysis extends Saveable {
+    public HandAnalysis(SaveFileHelper saveHelper) {
+        super(saveHelper, "HandAnalysis");
+    }
 
     public ArrayList<Tag> getHandTags() throws SQLException {
         try (Connection con = Database.getConnection();) {
@@ -32,4 +38,10 @@ public class HandAnalysis {
         }
     }
 
+    @Override
+    public HashMap<String, String> getDefaultValues() {
+        HashMap<String, String> values = new HashMap<>();
+
+        return values;
+    }
 }
