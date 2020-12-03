@@ -3,6 +3,7 @@ package com.gtohelper.domain;
 import com.gtohelper.utility.CardResolver;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class Work {
     ArrayList<SolveData> workTasks;
@@ -10,6 +11,7 @@ public class Work {
     public String name = "Review Hands for Dec 16";
     private int currentWorkIndex = 0;
     public int overridePriority = 9999;
+    Consumer<Work> progressCallback;
 
     public int getCurrentWorkIndex() {
         return currentWorkIndex;
@@ -19,7 +21,13 @@ public class Work {
         return workTasks.size();
     }
 
-    //public bool
+    public boolean isCompleted() {
+        return getCurrentWorkIndex() >= getTotalWorkItems();
+    }
+
+    public void setProgressCallback(Consumer<Work> callback) {
+        progressCallback = callback;
+    }
 
     public SolveData getCurrentTask() {
         return workTasks.get(currentWorkIndex);
@@ -34,13 +42,14 @@ public class Work {
     }
 
     public Work(List<SolveData> w) {
+        assert w.size() != 0;
         workTasks = new ArrayList<>(w);
     }
 
     public void workFinished() {
         assert getCurrentTask().getSolveResults() != null;
-
         currentWorkIndex++;
+        if(progressCallback != null)
+            progressCallback.accept(this);
     }
-
 }

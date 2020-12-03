@@ -37,8 +37,8 @@ public class WorkItem {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/gtohelper/fxml/WorkItem.fxml"));
         fxmlLoader.setController(this);
 
+        // The fxml elements haven't been loaded yet, so we save and fill the data in Initialize below.
         work = w;
-
 
         try
         {
@@ -52,21 +52,25 @@ public class WorkItem {
 
     @FXML
     void initialize() {
-
-
-        //updateFieldsFromWork(work);
+        updateFieldsFromWork(work);
+        work.setProgressCallback(this::updateFieldsFromWork);
     }
 
-    private void updateFieldsFromWork(Work w) {
+    // we could hook our fields up to these properties directly ~ but doing so would require we declare and
+    // bind fxml into the Work domain object. Instead we'll just do a callback.
+    public void updateFieldsFromWork(Work w) {
         titleLabel.setText(w.name);
-        //ETALabel.setText()
-        currentHandText.setText(w.getCurrentHand() + " - " + w.getCurrentBoard());
-        progressBar.setProgress(w.getCurrentWorkIndex() + w.getTotalWorkItems());
-        handXofYText.setText("Hand " + w.getCurrentWorkIndex() + " of " + w.getTotalWorkItems());
+        if(w.isCompleted()) {
+            currentHandText.setText("Completed");
+            handXofYText.setText("");
+        } else {
+            currentHandText.setText(w.getCurrentHand() + " - " + w.getCurrentBoard());
+            handXofYText.setText("Hand " + w.getCurrentWorkIndex() + " of " + w.getTotalWorkItems());
+        }
+        progressBar.setProgress(w.getCurrentWorkIndex() / w.getTotalWorkItems());
     }
 
     public GridPane getRootGridPane() {
         return rootGridPane;
     }
-
 }

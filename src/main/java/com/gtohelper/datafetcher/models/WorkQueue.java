@@ -95,8 +95,9 @@ public class WorkQueue {
         }
 
         private void doWork(Work work) throws InterruptedException {
-            SolveData currentSolve = work.getCurrentTask();
-            dispatchSolve(currentSolve);
+            while(!work.isCompleted()) {
+                SolveData currentSolve = work.getCurrentTask();
+                dispatchSolve(currentSolve);
 
             /*try {
                 String calcResults = solver.waitForSolve();
@@ -104,9 +105,10 @@ public class WorkQueue {
                 e.printStackTrace();
             }*/
 
-            SolveResults results = new SolveResults();
-            currentSolve.saveSolveResults(results);
-            work.workFinished();
+                SolveResults results = new SolveResults();
+                currentSolve.saveSolveResults(results);
+                work.workFinished();
+            }
         }
 
         private void dispatchSolve(SolveData solve) throws InterruptedException {
