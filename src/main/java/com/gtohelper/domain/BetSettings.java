@@ -2,7 +2,7 @@ package com.gtohelper.domain;
 
 import java.util.ArrayList;
 
-public class GameTreeData {
+public class BetSettings {
     public final String name;
 
     public Options options = new Options();
@@ -14,7 +14,7 @@ public class GameTreeData {
             OOPTurn = new OOPStreetAction(Street.TURN),
             OOPRiver = new OOPStreetAction(Street.RIVER);
 
-    public GameTreeData(String name) {
+    public BetSettings(String name) {
         this.name = name;
     }
 

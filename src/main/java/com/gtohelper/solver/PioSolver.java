@@ -1,6 +1,6 @@
 package com.gtohelper.solver;
 
-import com.gtohelper.domain.GameTreeData;
+import com.gtohelper.domain.BetSettings;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -12,7 +12,7 @@ public class PioSolver implements ISolver {
     private BufferedWriter output;
 
     private GameTree tree;
-    private GameTreeData currentGame;
+    private BetSettings currentGame;
 
     private int pot, effectiveStack;
 
@@ -37,7 +37,7 @@ public class PioSolver implements ISolver {
         writeToOutput("set_recalc_accuracy 0.0025 0.001 0.0005");
         readNLinesFromInput(1);
 
-        currentGame = new GameTreeData("PioSolver");
+        currentGame = new BetSettings("PioSolver");
     }
 
     @Override

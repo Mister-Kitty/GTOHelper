@@ -4,12 +4,12 @@ package com.gtohelper.solver;
 import java.util.ArrayList;
 import java.util.function.Function;
 
-import com.gtohelper.domain.GameTreeData;
-import com.gtohelper.domain.GameTreeData.Bets;
-import com.gtohelper.domain.GameTreeData.Raises;
-import com.gtohelper.domain.GameTreeData.Street;
-import com.gtohelper.domain.GameTreeData.StreetAction;
-import com.gtohelper.domain.GameTreeData.OOPStreetAction;
+import com.gtohelper.domain.BetSettings;
+import com.gtohelper.domain.BetSettings.Bets;
+import com.gtohelper.domain.BetSettings.Raises;
+import com.gtohelper.domain.BetSettings.Street;
+import com.gtohelper.domain.BetSettings.StreetAction;
+import com.gtohelper.domain.BetSettings.OOPStreetAction;
 
 enum Actor {
     IP,
@@ -36,7 +36,7 @@ enum Action {
 public class GameTree {
     private Node root;
 
-    public void buildGameTree(GameTreeData data, int pot, int effectiveStack) {
+    public void buildGameTree(BetSettings data, int pot, int effectiveStack) {
         root = new Node(data, pot, effectiveStack);
     }
 
@@ -68,11 +68,11 @@ class Node {
     ArrayList<Node> betRaiseNodes;
 
     //root node
-    public Node(GameTreeData treeData, int pot, int effectiveStack) {
+    public Node(BetSettings treeData, int pot, int effectiveStack) {
         nodeData = new NodeData();
         nodeData.currentPot = pot;
         nodeData.effectiveStack = effectiveStack;
-        nodeData.street = GameTreeData.Street.PRE;
+        nodeData.street = BetSettings.Street.PRE;
         nodeData.curActor = null;
         nodeData.parentAction = Action.CHECK; // Helps the logic. Could maybe be null and add checks...
 
@@ -82,7 +82,7 @@ class Node {
             betRaiseNodes = generateBetRaiseNodes(treeData);
     }
 
-    public Node(Node p, GameTreeData treeData, NodeData d) {
+    public Node(Node p, BetSettings treeData, NodeData d) {
         parent = p;
         nodeData = d;
 
@@ -169,23 +169,23 @@ class Node {
 
      */
 
-    private Node generateFoldNode(GameTreeData treeData) {
+    private Node generateFoldNode(BetSettings treeData) {
         return new Node(this, treeData, getNextFoldNodeData(this, treeData));
     }
 
-    private Node generateCheckNode(GameTreeData treeData) {
+    private Node generateCheckNode(BetSettings treeData) {
          return new Node(this, treeData, getNextCheckNodeData(this, treeData));
     }
 
-    private Node generateCallNode(GameTreeData treeData) {
+    private Node generateCallNode(BetSettings treeData) {
         return new Node(this, treeData, getNextCallNodeData(this, treeData));
     }
 
-    private Node generateBetNode(GameTreeData treeData, int betSize) {
+    private Node generateBetNode(BetSettings treeData, int betSize) {
         return new Node(this, treeData, getNextBetNodeData(this, treeData, betSize));
     }
 
-    private ArrayList<Node> generateBetRaiseNodes(GameTreeData treeData) {
+    private ArrayList<Node> generateBetRaiseNodes(BetSettings treeData) {
         ArrayList<Node> betRaiseNodes = new ArrayList<Node>();
         StreetAction actions = getStreetActions(treeData, nodeData.street, nodeData.curActor);
 
@@ -228,7 +228,7 @@ class Node {
 
     // In the next few functions it is very very important to remember that we use the copy constructor for ease,
     // but we are making these fields to be successor fields for a set parent node's actions.
-    private NodeData getNextFoldNodeData(Node parent, GameTreeData treeData) {
+    private NodeData getNextFoldNodeData(Node parent, BetSettings treeData) {
         NodeData newNode = new NodeData(parent.nodeData);
         newNode.parentAction = Action.FOLD;
         newNode.facingBet = parent.nodeData.facingBet;
@@ -238,7 +238,7 @@ class Node {
         return newNode;
     }
 
-    private NodeData getNextCheckNodeData(Node parent, GameTreeData treeData) {
+    private NodeData getNextCheckNodeData(Node parent, BetSettings treeData) {
         NodeData newNode = new NodeData(parent.nodeData);
         newNode.parentAction = Action.CHECK;
 
@@ -258,7 +258,7 @@ class Node {
         return newNode;
     }
 
-    private NodeData getNextCallNodeData(Node parent, GameTreeData treeData) {
+    private NodeData getNextCallNodeData(Node parent, BetSettings treeData) {
         int bet = parent.nodeData.facingBet;
 
         NodeData newNode = new NodeData(parent.nodeData);
@@ -274,7 +274,7 @@ class Node {
         return newNode;
     }
 
-    private NodeData getNextBetNodeData(Node parent, GameTreeData treeData, int betsize) {
+    private NodeData getNextBetNodeData(Node parent, BetSettings treeData, int betsize) {
         NodeData newNode = new NodeData(parent.nodeData);
         newNode.parentAction = Action.BET;
         newNode.maxChipsInvestedByAPlayer += betsize;
@@ -293,7 +293,7 @@ class Node {
         return newNode;
     }
 
-    private NodeData getNextRaiseNodeData(Node parent, GameTreeData treeData, int raiseATotalOf) {
+    private NodeData getNextRaiseNodeData(Node parent, BetSettings treeData, int raiseATotalOf) {
         // We need 'how much more on top' to adjust node stats properly.
         // So if we 3x from 50 to 150, the effective stack only drops by 100.
         int currentRaiseAfterCall = raiseATotalOf - nodeData.facingBet;
@@ -309,7 +309,7 @@ class Node {
         return newNode;
     }
 
-    public static StreetAction getStreetActions(GameTreeData data, Street currentStreet, Actor act) {
+    public static StreetAction getStreetActions(BetSettings data, Street currentStreet, Actor act) {
         if(currentStreet == Street.PRE) {
             return data.OOPFlop;
         } else if(currentStreet.equals(Street.FLOP)) {
