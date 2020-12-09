@@ -1,6 +1,7 @@
 package com.gtohelper.datafetcher.controllers.solversettings;
 
-import com.gtohelper.domain.BetSettings;
+import com.gtohelper.datafetcher.models.solversettings.BetSettings;
+import com.gtohelper.domain.BettingOptions;
 import com.gtohelper.utility.SaveFileHelper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
@@ -13,8 +14,8 @@ import java.util.function.Consumer;
 public class BetSettingsController {
 
     @FXML
-    TableView<BetSettings> savedBetSettingsTable;
-    @FXML TableColumn<BetSettings, String> savedBetSettingsTableNameColumn;
+    TableView<BettingOptions> savedBetSettingsTable;
+    @FXML TableColumn<BettingOptions, String> savedBetSettingsTableNameColumn;
 
     @FXML
     TextField settingsName;
@@ -35,10 +36,10 @@ public class BetSettingsController {
 
     Consumer<List<String>> callback;
 
-    com.gtohelper.datafetcher.models.solversettings.BetSettings betSettings;
+    BetSettings betSettings;
 
-    private BetSettings buildGameTreeData() {
-        BetSettings data = new BetSettings(settingsName.getText());
+    private BettingOptions buildGameTreeData() {
+        BettingOptions data = new BettingOptions(settingsName.getText());
 
         data.IPFlop.setActionData(false, false, flopBetIP.getText(), flopRaiseIP.getText());
         data.IPTurn.setActionData(false, false, turnBetIP.getText(), turnRaiseIP.getText());
@@ -52,7 +53,7 @@ public class BetSettingsController {
     }
 
     public void loadModel(SaveFileHelper saveHelper) {
-        betSettings = new com.gtohelper.datafetcher.models.solversettings.BetSettings(saveHelper);
+        betSettings = new BetSettings(saveHelper);
         loadFieldsFromModel();
     }
 
@@ -75,7 +76,7 @@ public class BetSettingsController {
                 saveButton.textProperty().setValue("New Save");
                 saveIsOverwrite = false;
 
-                for(BetSettings data : savedBetSettingsTable.getItems()) {
+                for(BettingOptions data : savedBetSettingsTable.getItems()) {
                     if(data.name.equals(newValue)) {
                         saveButton.setText("Overwrite '" + newValue + "'");
                         saveIsOverwrite = true;
@@ -89,7 +90,7 @@ public class BetSettingsController {
 
         savedBetSettingsTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if(newValue != null) {
-                BetSettings selectedItem = savedBetSettingsTable.getSelectionModel().getSelectedItem();
+                BettingOptions selectedItem = savedBetSettingsTable.getSelectionModel().getSelectedItem();
                 loadTreeDataIntoGUI(selectedItem);
                 deleteButton.disableProperty().set(false);
             } else {
@@ -105,7 +106,7 @@ public class BetSettingsController {
             String settingName = settingsName.getText();
             saveToBetSettingsNames(settingName);
 
-            BetSettings newItem = buildGameTreeData();
+            BettingOptions newItem = buildGameTreeData();
             savedBetSettingsTable.getItems().add(newItem);
             savedBetSettingsTable.getSelectionModel().select(newItem);
 
@@ -163,7 +164,7 @@ public class BetSettingsController {
     private void onDeleteButtonPress() {
         try {
             // Let's try to remove the data before we purge the GUI
-            BetSettings item = savedBetSettingsTable.getSelectionModel().getSelectedItem();
+            BettingOptions item = savedBetSettingsTable.getSelectionModel().getSelectedItem();
             deleteFromBetSettingsNames(item.name);
             betSettings.deleteSubGroup(item.name);
 
@@ -181,9 +182,9 @@ public class BetSettingsController {
         String listOfSettingsNames = betSettings.loadTextField("betSettingsNames");
 
         // Because we don't enforce ordering in the props file, we create buckets for each Bet Setting
-        ArrayList<BetSettings> settingNameToTreeData = new ArrayList<>();
+        ArrayList<BettingOptions> settingNameToTreeData = new ArrayList<>();
         for(String settingName : listOfSettingsNames.split(","))
-            settingNameToTreeData.add(new BetSettings(settingName));
+            settingNameToTreeData.add(new BettingOptions(settingName));
 
         // Then we bucketize the read in settings.
         HashMap<String, String> valuesToLoad = betSettings.getAllOurSavedValues();
@@ -197,8 +198,8 @@ public class BetSettingsController {
                 return;
 
             // There's probably a more elegant data structure for this... but I can't think of it ATM
-            BetSettings treeData = null;
-            for(BetSettings data : settingNameToTreeData) {
+            BettingOptions treeData = null;
+            for(BettingOptions data : settingNameToTreeData) {
                 if(data.name.equals(splitResult[0])) {
                     treeData = data;
                     break;
@@ -220,8 +221,8 @@ public class BetSettingsController {
         callback.accept(Arrays.asList(listOfSettingsNames.split(",")));
     }
 
-    public BetSettings getBetSettingByName(String name) {
-        for(BetSettings data :savedBetSettingsTable.getItems()) {
+    public BettingOptions getBetSettingByName(String name) {
+        for(BettingOptions data :savedBetSettingsTable.getItems()) {
             if(data.name.equals(name))
                 return data;
         }
@@ -229,7 +230,7 @@ public class BetSettingsController {
         return null;
     }
 
-    private void loadTreeDataIntoGUI(BetSettings treeData) {
+    private void loadTreeDataIntoGUI(BettingOptions treeData) {
         settingsName.setText(treeData.name);
 
         flopBetIP.setText(treeData.IPFlop.getBets().getInitialString());
@@ -250,7 +251,7 @@ public class BetSettingsController {
         riverRaiseOOP.setText(treeData.OOPRiver.getRaises().getInitialString());
     }
 
-    private void loadIntoTreeData(BetSettings treeData, String key, String value) {
+    private void loadIntoTreeData(BettingOptions treeData, String key, String value) {
         switch(key) {
             case "flopBetIP":
                 treeData.IPFlop.setBets(value);

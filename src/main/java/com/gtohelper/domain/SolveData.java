@@ -2,10 +2,10 @@ package com.gtohelper.domain;
 
 public class SolveData {
     public HandData handData;
-    public BetSettings gameTree;
+    public BettingOptions gameTree;
     SolveResults solveResults;
 
-    public SolveData(HandData h, BetSettings t) {
+    public SolveData(HandData h, BettingOptions t) {
         handData = h;
         gameTree = t;
     }

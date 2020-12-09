@@ -14,7 +14,7 @@ public class RangeFiles extends Saveable {
     @Override
     public HashMap<String, String> getDefaultValues() {
         HashMap<String, String> values = new HashMap<>();
-        values.put("rangeFolderLocation", "C:\\PioSolver Edge\\Ranges");
+        values.put("rangeFolderLocation", "");
         return values;
     }
 

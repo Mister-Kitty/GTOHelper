@@ -6,7 +6,7 @@ import java.net.URL;
 import java.util.*;
 
 public class SaveFileHelper {
-    private static Properties props;
+    private static SortedProperties props;
 
     private ArrayList<Saveable> saveables = new ArrayList<Saveable>();
     public void addSaveable(Saveable saveable) {
@@ -69,7 +69,7 @@ public class SaveFileHelper {
 
     public void loadProperties() {
         try {
-            props = new Properties();
+            props = new SortedProperties();
 
             try (InputStream output = Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties")) {
                 props.load(output);

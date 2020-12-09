@@ -1,7 +1,7 @@
 package com.gtohelper.datafetcher.controllers.solversettings;
 
 import com.gtohelper.datafetcher.models.solversettings.SolverSettings;
-import com.gtohelper.domain.BetSettings;
+import com.gtohelper.domain.BettingOptions;
 import com.gtohelper.utility.SaveFileHelper;
 import javafx.fxml.FXML;
 import javafx.stage.DirectoryChooser;
@@ -40,7 +40,7 @@ public class SolverSettingsController {
         betSettingsController.saveBetSettingsChangedCallback(callback);
     }
 
-    public BetSettings getBetSettingByName(String name) {
+    public BettingOptions getBetSettingByName(String name) {
         return betSettingsController.getBetSettingByName(name);
     }
 

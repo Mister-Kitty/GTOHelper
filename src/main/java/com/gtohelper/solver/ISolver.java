@@ -28,11 +28,17 @@ public interface ISolver {
     String getEstimateSchematicTree() throws IOException;
     String getShowMemory() throws IOException;
     String getCalcResults() throws IOException;
-    ArrayList<String> getAllInLeaves(); // an internal function that's available for debugging purposes.
+
     void go() throws IOException;
 
     void waitForReady() throws IOException, InterruptedException;
     String waitForSolve() throws IOException;
 
     void disconnect();
+
+    // debug commands
+    String runCustomCommand(String command) throws IOException;
+    String runCustomCommandUntilEnd(String command) throws IOException;
+    ArrayList<String> getAllInLeaves();
+
 }

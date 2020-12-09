@@ -92,7 +92,7 @@ public class GTOHelperController  {
     private Work buildWork(List<HandData> hands, String betSettingName) {
         ArrayList<SolveData> solveList = new ArrayList<>();
 
-        BetSettings treeData = solverSettingsController.getBetSettingByName(betSettingName);
+        BettingOptions treeData = solverSettingsController.getBetSettingByName(betSettingName);
         for(HandData hand : hands) {
             solveList.add(new SolveData(hand, treeData));
         }

@@ -2,7 +2,7 @@ package com.gtohelper.domain;
 
 import java.util.ArrayList;
 
-public class BetSettings {
+public class BettingOptions {
     public final String name;
 
     public Options options = new Options();
@@ -14,7 +14,7 @@ public class BetSettings {
             OOPTurn = new OOPStreetAction(Street.TURN),
             OOPRiver = new OOPStreetAction(Street.RIVER);
 
-    public BetSettings(String name) {
+    public BettingOptions(String name) {
         this.name = name;
     }
 
