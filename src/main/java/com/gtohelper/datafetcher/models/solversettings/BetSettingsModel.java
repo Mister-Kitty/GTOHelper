@@ -7,8 +7,8 @@ import javafx.scene.control.TextField;
 
 import java.util.HashMap;
 
-public class BetSettings extends Saveable {
-    public BetSettings(SaveFileHelper saveHelper) {
+public class BetSettingsModel extends Saveable {
+    public BetSettingsModel(SaveFileHelper saveHelper) {
         super(saveHelper, "BetSettings");
     }
 

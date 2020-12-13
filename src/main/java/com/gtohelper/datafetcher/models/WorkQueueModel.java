@@ -13,13 +13,13 @@ import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class WorkQueue {
+public class WorkQueueModel {
     QueueWorker worker = new QueueWorker();
     final int defaultInitialCapacity = 15;
     public volatile PriorityBlockingQueue<Work> currentWorkQueue;
     public volatile PriorityBlockingQueue<Work> finishedWorkQueue;
 
-    public WorkQueue() {
+    public WorkQueueModel() {
         currentWorkQueue = new PriorityBlockingQueue<>(defaultInitialCapacity, leastWorkToDoFirst);
         worker.start();
     }

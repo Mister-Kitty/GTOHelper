@@ -1,6 +1,5 @@
 package com.gtohelper.datafetcher;
 
-import com.gtohelper.datafetcher.models.GTOHelper;
 import org.junit.jupiter.api.Test;
 
 class DataFetcherTest {

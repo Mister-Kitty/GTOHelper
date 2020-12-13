@@ -1,7 +1,6 @@
 package com.gtohelper.datafetcher.controllers;
 
-import com.gtohelper.database.Database;
-import com.gtohelper.datafetcher.models.DBConnection;
+import com.gtohelper.datafetcher.models.DBConnectionModel;
 import com.gtohelper.domain.Player;
 import com.gtohelper.domain.Site;
 import com.gtohelper.utility.SaveFileHelper;
@@ -59,7 +58,7 @@ public class DBConnectionController {
             updateSites();
 
             try {
-                dbConnection.saveAll();
+                dbConnectionModel.saveAll();
             } catch (IOException e) {
                 // todo: log in debugger
                 //  results.setText("Error when trying to save config file. Error logged in debug tab");
@@ -67,9 +66,9 @@ public class DBConnectionController {
         }
     }
 
-    DBConnection dbConnection;
+    DBConnectionModel dbConnectionModel;
     public void loadModel(SaveFileHelper saveHelper) {
-        dbConnection = new DBConnection(saveHelper);
+        dbConnectionModel = new DBConnectionModel(saveHelper);
         loadFieldsFromModel();
         testConnection();
         if(!getConnectionSuccess())
@@ -96,7 +95,7 @@ public class DBConnectionController {
         String reply;
 
         try {
-            dbConnection.testConnection(url, DBUser.getText(), DBPassword.getText());
+            dbConnectionModel.testConnection(url, DBUser.getText(), DBPassword.getText());
             reply = "Connection attempt succeeded. Fill in poker site & username info below to continue.";
         }  catch (SQLException ex) {
             reply = "Connect attempt failed. Error message has been posted in the debug tab.";
@@ -110,7 +109,7 @@ public class DBConnectionController {
         updatePropsFromFields();
 
         try {
-            dbConnection.saveAll();
+            dbConnectionModel.saveAll();
         } catch (IOException e) {
             reply = "Database access succeeded, but saving the information to the config file has failed. " +
                     "Fill in poker site & username info below to continue. To have this auto-complete in the future" +
@@ -122,7 +121,7 @@ public class DBConnectionController {
 
     private void updateSites() {
         try {
-            ObservableList<Site> t = FXCollections.observableList(dbConnection.getSites());
+            ObservableList<Site> t = FXCollections.observableList(dbConnectionModel.getSites());
             site.getItems().clear();
             site.getItems().addAll(t);
         } catch (SQLException ex) {
@@ -145,7 +144,7 @@ public class DBConnectionController {
 
                 try {
                     ObservableList<Player> t =
-                            FXCollections.observableList(dbConnection.getSortedPlayersBySite(newValue.id_site, 15));
+                            FXCollections.observableList(dbConnectionModel.getSortedPlayersBySite(newValue.id_site, 15));
                     player.getItems().clear();
                     player.getItems().addAll(t);
                     player.getSelectionModel().selectFirst();
@@ -160,18 +159,18 @@ public class DBConnectionController {
     }
 
     void loadFieldsFromModel() {
-        DBAddress.setText(dbConnection.loadTextField("address"));
-        DBPort.setText(dbConnection.loadTextField("port"));
-        DBName.setText(dbConnection.loadTextField("name"));
-        DBUser.setText(dbConnection.loadTextField("user"));
-        DBPassword.setText(dbConnection.loadTextField("pass"));
+        DBAddress.setText(dbConnectionModel.loadTextField("address"));
+        DBPort.setText(dbConnectionModel.loadTextField("port"));
+        DBName.setText(dbConnectionModel.loadTextField("name"));
+        DBUser.setText(dbConnectionModel.loadTextField("user"));
+        DBPassword.setText(dbConnectionModel.loadTextField("pass"));
     }
 
     private void updatePropsFromFields() {
-        dbConnection.saveTextField("address", DBAddress.getText());
-        dbConnection.saveTextField("port", DBPort.getText());
-        dbConnection.saveTextField("name", DBName.getText());
-        dbConnection.saveTextField("user", DBUser.getText());
-        dbConnection.saveTextField("pass", DBPassword.getText());
+        dbConnectionModel.saveTextField("address", DBAddress.getText());
+        dbConnectionModel.saveTextField("port", DBPort.getText());
+        dbConnectionModel.saveTextField("name", DBName.getText());
+        dbConnectionModel.saveTextField("user", DBUser.getText());
+        dbConnectionModel.saveTextField("pass", DBPassword.getText());
     }
 }

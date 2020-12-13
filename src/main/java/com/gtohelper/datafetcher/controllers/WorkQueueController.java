@@ -1,15 +1,13 @@
 package com.gtohelper.datafetcher.controllers;
 
-import com.gtohelper.datafetcher.models.WorkQueue;
+import com.gtohelper.datafetcher.models.WorkQueueModel;
 import com.gtohelper.domain.Work;
 import com.gtohelper.fxml.WorkListViewCell;
 import javafx.fxml.FXML;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
-import javafx.util.Callback;
 
 public class WorkQueueController {
-    WorkQueue workQueue = new WorkQueue();
+    WorkQueueModel workQueueModel = new WorkQueueModel();
 
     @FXML
     ListView<Work> currentWorkQueue;
@@ -23,6 +21,6 @@ public class WorkQueueController {
 
     public void receiveNewWork(Work work) {
         currentWorkQueue.getItems().add(work);
-        workQueue.receiveNewWork(work);
+        workQueueModel.receiveNewWork(work);
     }
 }

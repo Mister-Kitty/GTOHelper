@@ -17,8 +17,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class HandAnalysis extends Saveable {
-    public HandAnalysis(SaveFileHelper saveHelper) {
+public class HandAnalysisModel extends Saveable {
+    public HandAnalysisModel(SaveFileHelper saveHelper) {
         super(saveHelper, "HandAnalysis");
     }
 

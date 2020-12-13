@@ -1,6 +1,6 @@
 package com.gtohelper.datafetcher.controllers.solversettings;
 
-import com.gtohelper.datafetcher.models.solversettings.BetSettings;
+import com.gtohelper.datafetcher.models.solversettings.BetSettingsModel;
 import com.gtohelper.domain.BettingOptions;
 import com.gtohelper.utility.SaveFileHelper;
 import javafx.beans.property.SimpleStringProperty;
@@ -36,7 +36,7 @@ public class BetSettingsController {
 
     Consumer<List<String>> callback;
 
-    BetSettings betSettings;
+    BetSettingsModel betSettingsModel;
 
     private BettingOptions buildGameTreeData() {
         BettingOptions data = new BettingOptions(settingsName.getText());
@@ -53,7 +53,7 @@ public class BetSettingsController {
     }
 
     public void loadModel(SaveFileHelper saveHelper) {
-        betSettings = new BetSettings(saveHelper);
+        betSettingsModel = new BetSettingsModel(saveHelper);
         loadFieldsFromModel();
     }
 
@@ -110,42 +110,42 @@ public class BetSettingsController {
             savedBetSettingsTable.getItems().add(newItem);
             savedBetSettingsTable.getSelectionModel().select(newItem);
 
-            betSettings.saveSubGroupTextField(settingName, "flopBetIP", flopBetIP.getText());
-            betSettings.saveSubGroupTextField(settingName, "flopRaiseIP", flopRaiseIP.getText());
-            betSettings.saveSubGroupTextField(settingName, "turnBetIP", turnBetIP.getText());
-            betSettings.saveSubGroupTextField(settingName, "turnRaiseIP", turnRaiseIP.getText());
-            betSettings.saveSubGroupTextField(settingName, "riverBetIP", riverBetIP.getText());
-            betSettings.saveSubGroupTextField(settingName, "riverRaiseIP", riverRaiseIP.getText());
+            betSettingsModel.saveSubGroupTextField(settingName, "flopBetIP", flopBetIP.getText());
+            betSettingsModel.saveSubGroupTextField(settingName, "flopRaiseIP", flopRaiseIP.getText());
+            betSettingsModel.saveSubGroupTextField(settingName, "turnBetIP", turnBetIP.getText());
+            betSettingsModel.saveSubGroupTextField(settingName, "turnRaiseIP", turnRaiseIP.getText());
+            betSettingsModel.saveSubGroupTextField(settingName, "riverBetIP", riverBetIP.getText());
+            betSettingsModel.saveSubGroupTextField(settingName, "riverRaiseIP", riverRaiseIP.getText());
 
-            betSettings.saveSubGroupTextField(settingName, "flopCBetOOP", flopCBetOOP.getText());
-            betSettings.saveSubGroupTextField(settingName, "flopDonkOOP", flopDonkOOP.getText());
-            betSettings.saveSubGroupTextField(settingName, "flopRaiseOOP", flopRaiseOOP.getText());
-            betSettings.saveSubGroupTextField(settingName, "turnBetOOP", turnBetOOP.getText());
-            betSettings.saveSubGroupTextField(settingName, "turnDonkOOP", turnDonkOOP.getText());
-            betSettings.saveSubGroupTextField(settingName, "turnRaiseOOP", turnRaiseOOP.getText());
-            betSettings.saveSubGroupTextField(settingName, "riverBetOOP", riverBetOOP.getText());
-            betSettings.saveSubGroupTextField(settingName, "riverDonkOOP", riverDonkOOP.getText());
-            betSettings.saveSubGroupTextField(settingName, "riverRaiseOOP", riverRaiseOOP.getText());
+            betSettingsModel.saveSubGroupTextField(settingName, "flopCBetOOP", flopCBetOOP.getText());
+            betSettingsModel.saveSubGroupTextField(settingName, "flopDonkOOP", flopDonkOOP.getText());
+            betSettingsModel.saveSubGroupTextField(settingName, "flopRaiseOOP", flopRaiseOOP.getText());
+            betSettingsModel.saveSubGroupTextField(settingName, "turnBetOOP", turnBetOOP.getText());
+            betSettingsModel.saveSubGroupTextField(settingName, "turnDonkOOP", turnDonkOOP.getText());
+            betSettingsModel.saveSubGroupTextField(settingName, "turnRaiseOOP", turnRaiseOOP.getText());
+            betSettingsModel.saveSubGroupTextField(settingName, "riverBetOOP", riverBetOOP.getText());
+            betSettingsModel.saveSubGroupTextField(settingName, "riverDonkOOP", riverDonkOOP.getText());
+            betSettingsModel.saveSubGroupTextField(settingName, "riverRaiseOOP", riverRaiseOOP.getText());
 
 
-            betSettings.saveAll();
+            betSettingsModel.saveAll();
         } catch (IOException e) {
             //todo log error
         }
     }
 
     private void saveToBetSettingsNames(String settingName) {
-        String listOfSettingsNames = betSettings.loadTextField("betSettingsNames");
+        String listOfSettingsNames = betSettingsModel.loadTextField("betSettingsNames");
         if(listOfSettingsNames.isEmpty())
             listOfSettingsNames = settingName;
         else
             listOfSettingsNames += "," + settingName;
-        betSettings.saveTextField("betSettingsNames", listOfSettingsNames);
+        betSettingsModel.saveTextField("betSettingsNames", listOfSettingsNames);
         callback.accept(Arrays.asList(listOfSettingsNames.split(",")));
     }
 
     private void deleteFromBetSettingsNames(String settingName) {
-        String listOfSettingsNames = betSettings.loadTextField("betSettingsNames");
+        String listOfSettingsNames = betSettingsModel.loadTextField("betSettingsNames");
 
         String result = null;
         for(String name : listOfSettingsNames.split(",")) {
@@ -157,7 +157,7 @@ public class BetSettingsController {
             }
         }
 
-        betSettings.saveTextField("betSettingsNames", result);
+        betSettingsModel.saveTextField("betSettingsNames", result);
     }
 
     @FXML
@@ -166,7 +166,7 @@ public class BetSettingsController {
             // Let's try to remove the data before we purge the GUI
             BettingOptions item = savedBetSettingsTable.getSelectionModel().getSelectedItem();
             deleteFromBetSettingsNames(item.name);
-            betSettings.deleteSubGroup(item.name);
+            betSettingsModel.deleteSubGroup(item.name);
 
             // Still here? Cool, delete from props succeeded. Remove from GUI
             savedBetSettingsTable.getItems().remove(item);
@@ -179,7 +179,7 @@ public class BetSettingsController {
 
     void loadFieldsFromModel() {
         // We save a list of all subfields (aka all saved bet settings) in a list.
-        String listOfSettingsNames = betSettings.loadTextField("betSettingsNames");
+        String listOfSettingsNames = betSettingsModel.loadTextField("betSettingsNames");
 
         // Because we don't enforce ordering in the props file, we create buckets for each Bet Setting
         ArrayList<BettingOptions> settingNameToTreeData = new ArrayList<>();
@@ -187,7 +187,7 @@ public class BetSettingsController {
             settingNameToTreeData.add(new BettingOptions(settingName));
 
         // Then we bucketize the read in settings.
-        HashMap<String, String> valuesToLoad = betSettings.getAllOurSavedValues();
+        HashMap<String, String> valuesToLoad = betSettingsModel.getAllOurSavedValues();
         valuesToLoad.forEach((k, v) -> {
             if(k.equals("betSettingsNames"))
                 return;

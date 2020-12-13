@@ -93,6 +93,7 @@ public class GTOHelperController  {
         ArrayList<SolveData> solveList = new ArrayList<>();
 
         BettingOptions treeData = solverSettingsController.getBetSettingByName(betSettingName);
+        Ranges workRanges = solverSettingsController.loadRangeFiles();
         for(HandData hand : hands) {
             solveList.add(new SolveData(hand, treeData));
         }

@@ -4,9 +4,9 @@ import com.gtohelper.utility.SaveFileHelper;
 import com.gtohelper.utility.Saveable;
 
 import java.util.HashMap;
-public class SolverSettings extends Saveable {
+public class SolverSettingsModel extends Saveable {
 
-    public SolverSettings(SaveFileHelper saveHelper) {
+    public SolverSettingsModel(SaveFileHelper saveHelper) {
         super(saveHelper, "SolverSettings");
     }
 

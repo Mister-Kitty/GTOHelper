@@ -1,7 +1,8 @@
 package com.gtohelper.datafetcher.controllers.solversettings;
 
-import com.gtohelper.datafetcher.models.solversettings.SolverSettings;
+import com.gtohelper.datafetcher.models.solversettings.SolverSettingsModel;
 import com.gtohelper.domain.BettingOptions;
+import com.gtohelper.domain.Ranges;
 import com.gtohelper.utility.SaveFileHelper;
 import javafx.fxml.FXML;
 import javafx.stage.DirectoryChooser;
@@ -19,7 +20,7 @@ public class SolverSettingsController {
     @FXML
     RangeFilesController rangeFilesController;
 
-    SolverSettings solverSettings;
+    SolverSettingsModel solverSettingsModel;
 
     @FXML
     private void initialize() {
@@ -27,7 +28,7 @@ public class SolverSettingsController {
     }
 
     public void loadModels(SaveFileHelper saveHelper) {
-        solverSettings = new SolverSettings(saveHelper);
+        solverSettingsModel = new SolverSettingsModel(saveHelper);
         rangeFilesController.loadModel(saveHelper);
         betSettingsController.loadModel(saveHelper);
     }
@@ -42,6 +43,10 @@ public class SolverSettingsController {
 
     public BettingOptions getBetSettingByName(String name) {
         return betSettingsController.getBetSettingByName(name);
+    }
+
+    public Ranges loadRangeFiles() {
+        return rangeFilesController.loadRangeFiles();
     }
 
 }

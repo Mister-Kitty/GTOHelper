@@ -16,8 +16,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class DBConnection extends Saveable {
-    public DBConnection(SaveFileHelper saveHelper) {
+public class DBConnectionModel extends Saveable {
+    public DBConnectionModel(SaveFileHelper saveHelper) {
         super(saveHelper, "DBConnection");
     }
 

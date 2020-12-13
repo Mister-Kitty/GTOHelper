@@ -1,6 +1,6 @@
 package com.gtohelper.datafetcher.controllers;
 
-import com.gtohelper.datafetcher.models.HandAnalysis;
+import com.gtohelper.datafetcher.models.HandAnalysisModel;
 import com.gtohelper.domain.*;
 import com.gtohelper.utility.CardResolver;
 import com.gtohelper.utility.SaveFileHelper;
@@ -38,7 +38,7 @@ public class HandAnalysisController {
 
     @FXML Button solveButton;
 
-    HandAnalysis handAnalysis;
+    HandAnalysisModel handAnalysisModel;
     Player player;
 
     @FXML
@@ -48,14 +48,14 @@ public class HandAnalysisController {
     }
 
     public void loadModel(SaveFileHelper saveHelper) {
-        handAnalysis = new HandAnalysis(saveHelper);
+        handAnalysisModel = new HandAnalysisModel(saveHelper);
         loadFieldsFromModel();
     }
 
     public void refreshTags(Player p) {
         try {
             player = p;
-            ArrayList<Tag> newHandTags = handAnalysis.getHandTags();
+            ArrayList<Tag> newHandTags = handAnalysisModel.getHandTags();
             ObservableList<Tag> t = FXCollections.observableList(newHandTags);
 
             tagTable.getItems().clear();
@@ -113,7 +113,7 @@ public class HandAnalysisController {
 
                     Tag clickedRow = row.getItem();
                     try {
-                        ArrayList<HandData> handSummaries = handAnalysis.getHandSummariesByTag(clickedRow.id_tag, player.id_player);
+                        ArrayList<HandData> handSummaries = handAnalysisModel.getHandSummariesByTag(clickedRow.id_tag, player.id_player);
                         ObservableList<HandData> t = FXCollections.observableList(handSummaries);
 
                         handsTable.getItems().clear();
