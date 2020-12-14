@@ -28,11 +28,22 @@ public class RangeData {
         // The enumeration format is the last one we support. From here we split on commas.
         // Iterate through every split and go until we're done. Note that "" is valid.
         String[] commaSplit = rangeString.split(",");
+
+        // The above split function will return an empty 1 index array on blank file input.
+        // Ensure we skip over that, but not other valid 1 index arrays, by checking the value.
+        if(commaSplit[0].isEmpty())
+            return;
+
         for(String nugget : commaSplit) {
             String[] splitNugget = nugget.split("[:]");
 
             String hand = splitNugget[0];
-            float fraction = Float.parseFloat(splitNugget[1]);
+            // If a value is absent, then it's an implied '1'.
+            float fraction;
+            if(splitNugget.length == 1)
+                fraction = 1;
+            else
+                fraction = Float.parseFloat(splitNugget[1]);
 
             // Hand can represent sets of hands or individual hands, eg - JhTs  AA   AJs
             // So let's expand these into an array of specific hands, which we'll then loop over.

@@ -1,6 +1,7 @@
 package com.gtohelper.datafetcher.controllers.solversettings;
 
 import com.gtohelper.datafetcher.models.solversettings.RangeFilesModel;
+import com.gtohelper.domain.Ranges;
 import com.gtohelper.utility.FileTreeItem;
 import com.gtohelper.utility.SaveFileHelper;
 import javafx.beans.property.SimpleStringProperty;
@@ -21,8 +22,8 @@ public class RangeFilesController {
     @FXML TreeTableColumn<File, String> rangeFileTableBoundActionColumn;
 
     @FXML
-    TreeTableView<ActionPosition> actionPositionTable;
-    @FXML TreeTableColumn<ActionPosition, String> actionPositionTableActionColumn;
+    TreeTableView<String> actionPositionTable;
+    @FXML TreeTableColumn<String, String> actionPositionTableActionColumn;
 
     @FXML
     TextField rangeFolderLocation;
@@ -34,8 +35,8 @@ public class RangeFilesController {
     Button saveBindingsButton;
 
     // Use 2 maps to simulate a bidirectional mapping
-    HashMap<ActionPosition, File> actionToRangeFileMap = new HashMap<>();
-    HashMap<File, ActionPosition> rangeFileToActionMap = new HashMap<>();
+    HashMap<String, File> actionToRangeFileMap = new HashMap<>();
+    HashMap<File, String> rangeFileToActionMap = new HashMap<>();
 
     DirectoryChooser folderChooser = new DirectoryChooser();
 
@@ -77,7 +78,7 @@ public class RangeFilesController {
     @FXML
     private void onBindButtonPress() {
         File selectedFile = rangeFileTable.getSelectionModel().getSelectedItem().getValue();
-        ActionPosition selectedAction = actionPositionTable.getSelectionModel().getSelectedItem().getValue();
+        String selectedAction = actionPositionTable.getSelectionModel().getSelectedItem().getValue();
 
         actionToRangeFileMap.put(selectedAction, selectedFile);
         rangeFileToActionMap.put(selectedFile, selectedAction);
@@ -92,21 +93,21 @@ public class RangeFilesController {
     }
 
     private void initializeControls() {
-        actionPositionTableActionColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getValue().actionString));
+        actionPositionTableActionColumn.setCellValueFactory(p -> new SimpleStringProperty(getChildActionFromFullAction(p.getValue().getValue())));
         rangeFileTableFilePathColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getValue().getName()));
 
         rangeFileTableBoundActionColumn.setCellValueFactory(p -> {
-            ActionPosition boundAction = rangeFileToActionMap.get(new File(p.getValue().getValue().getAbsolutePath()));
+            String boundAction = rangeFileToActionMap.get(new File(p.getValue().getValue().getAbsolutePath()));
 
             if(boundAction == null)
                 return new SimpleStringProperty("");
             else
-                return new SimpleStringProperty(boundAction.fullActionString);
+                return new SimpleStringProperty(boundAction);
         });
 
         // We can't bind on the selected item's isLeaf property because the selected item keeps changing. So we do it the hard way.
         rangeFileTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            TreeItem<ActionPosition> actionTableItem = actionPositionTable.getSelectionModel().getSelectedItem();
+            TreeItem<String> actionTableItem = actionPositionTable.getSelectionModel().getSelectedItem();
 
             if(newValue == null) // Unsure why this triggers. Will look into it.
                 return;
@@ -124,7 +125,7 @@ public class RangeFilesController {
         try {
             actionToRangeFileMap.forEach((k, v) -> {
                 String relativePath = getFilePathRelativeToFolder(rangeFolderLocation.getText(), v.getAbsolutePath());
-                rangeFilesModel.saveTextField(k.fullActionString, relativePath);
+                rangeFilesModel.saveTextField(k, relativePath);
             });
             rangeFilesModel.saveAll();
         } catch (IOException e) {
@@ -134,6 +135,10 @@ public class RangeFilesController {
 
     private String getFilePathRelativeToFolder(String folderPath, String filePath) {
         return filePath.substring(folderPath.length());
+    }
+
+    public Ranges loadRangeFiles() {
+        return rangeFilesModel.loadRangeFiles(actionToRangeFileMap);
     }
 
     void loadFieldsFromModel() {
@@ -149,14 +154,13 @@ public class RangeFilesController {
             if(k.equals("rangeFolderLocation") || k.contains(" "))
                 return;
 
-            ActionPosition newK = new ActionPosition(k);
             String relativeLocation = rangeFolderLocation.getText() + v;
 
             try {
                 File newV = new File(relativeLocation);
 
-                actionToRangeFileMap.put(newK, newV);
-                rangeFileToActionMap.put(newV, newK);
+                actionToRangeFileMap.put(k, newV);
+                rangeFileToActionMap.put(newV, k);
             } catch(Exception e) {
                 //todo: log and pro
             }
@@ -167,94 +171,79 @@ public class RangeFilesController {
         Data and objects for the Ranges tab
      */
 
-    static class ActionPosition {
-        public String actionString;
-        public String fullActionString;
-        public final static String delimiter = "-";
+    public final static String delimiter = "-";
 
-        public ActionPosition(String fullAction) {
-            fullActionString = fullAction;
-            actionString = getChildActionFromFullAction();
-        }
+    private String getChildActionFromFullAction(String fullAction) {
+        int lastDelimiterIndex = fullAction.lastIndexOf(delimiter);
+        if(lastDelimiterIndex == -1)
+            return fullAction;
 
-        public ActionPosition(ActionPosition parentAction, String action) {
-            actionString = action;
-            fullActionString = parentAction.fullActionString + delimiter + action;
-        }
-
-        private String getChildActionFromFullAction() {
-            int lastDelimiterIndex = fullActionString.lastIndexOf(delimiter);
-            if(lastDelimiterIndex == -1)
-                return fullActionString;
-
-            return fullActionString.substring(lastDelimiterIndex + 1);
-        }
+        return fullAction.substring(lastDelimiterIndex + 1);
     }
 
+    private TreeItem<String> buildActionTableItems() {
+        TreeItem<String> sixMax = new TreeItem<>("6Max");
 
-    private TreeItem<ActionPosition> buildActionTableItems() {
-        TreeItem<ActionPosition> sixMax = new TreeItem<>(new ActionPosition("6Max"));
-
-        TreeItem<ActionPosition> rfi = buildChildActionTreeItem(sixMax, "RFI");
+        TreeItem<String> rfi = buildChildActionTreeItem(sixMax, "RFI");
         addSixMaxSeatsToTree(rfi);
         sixMax.getChildren().add(rfi);
 
-        TreeItem<ActionPosition> vsRfi = buildChildActionTreeItem(sixMax, "vRFI");
+        TreeItem<String> vsRfi = buildChildActionTreeItem(sixMax, "vRFI");
         addSixMaxSeatsToVSTree(vsRfi);
         sixMax.getChildren().add(vsRfi);
 
-        TreeItem<ActionPosition> vs3bet = buildChildActionTreeItem(sixMax, "v3Bet");
+        TreeItem<String> vs3bet = buildChildActionTreeItem(sixMax, "v3Bet");
         addSixMaxSeatsVS3betToTree(vs3bet);
         sixMax.getChildren().add(vs3bet);
 
-        TreeItem<ActionPosition> vs4bet = buildChildActionTreeItem(sixMax, "v4Bet");
+        TreeItem<String> vs4bet = buildChildActionTreeItem(sixMax, "v4Bet");
         addSixMaxSeatsToVSTree(vs4bet);
         sixMax.getChildren().add(vs4bet);
 
         return sixMax;
     }
 
-    private void addSixMaxSeatsToTree(TreeItem<ActionPosition> root) {
-        TreeItem<ActionPosition> LJ = buildChildActionTreeItem(root, "LJ");
+    private void addSixMaxSeatsToTree(TreeItem<String> root) {
+        TreeItem<String> LJ = buildChildActionTreeItem(root, "LJ");
         root.getChildren().add(LJ);
 
-        TreeItem<ActionPosition> HJ = buildChildActionTreeItem(root, "HJ");
+        TreeItem<String> HJ = buildChildActionTreeItem(root, "HJ");
         root.getChildren().add(HJ);
 
-        TreeItem<ActionPosition> CO = buildChildActionTreeItem(root, "CO");
+        TreeItem<String> CO = buildChildActionTreeItem(root, "CO");
         root.getChildren().add(CO);
 
-        TreeItem<ActionPosition> BU = buildChildActionTreeItem(root, "BTN");
+        TreeItem<String> BU = buildChildActionTreeItem(root, "BTN");
         root.getChildren().add(BU);
 
-        TreeItem<ActionPosition> SB = buildChildActionTreeItem(root, "SB");
+        TreeItem<String> SB = buildChildActionTreeItem(root, "SB");
         root.getChildren().add(SB);
     }
 
-    private void addSixMaxSeatsToVSTree(TreeItem<ActionPosition> root) {
-        TreeItem<ActionPosition> SB = buildChildActionTreeItem(root, "vSB");
+    private void addSixMaxSeatsToVSTree(TreeItem<String> root) {
+        TreeItem<String> SB = buildChildActionTreeItem(root, "vSB");
         addCallRaiseToNode(addNewNodeToNode(SB, "BB"));
         root.getChildren().add(SB);
 
-        TreeItem<ActionPosition> BU = buildChildActionTreeItem(root, "vBTN");
+        TreeItem<String> BU = buildChildActionTreeItem(root, "vBTN");
         addCallRaiseToNode(addNewNodeToNode(BU, "SB"));
         addCallRaiseToNode(addNewNodeToNode(BU, "BB"));
         root.getChildren().add(BU);
 
-        TreeItem<ActionPosition> CO = buildChildActionTreeItem(root, "vCO");
+        TreeItem<String> CO = buildChildActionTreeItem(root, "vCO");
         addCallRaiseToNode(addNewNodeToNode(CO, "BTN"));
         addCallRaiseToNode(addNewNodeToNode(CO, "SB"));
         addCallRaiseToNode(addNewNodeToNode(CO, "BB"));
         root.getChildren().add(CO);
 
-        TreeItem<ActionPosition> HJ = buildChildActionTreeItem(root, "vHJ");
+        TreeItem<String> HJ = buildChildActionTreeItem(root, "vHJ");
         addCallRaiseToNode(addNewNodeToNode(HJ, "CO"));
         addCallRaiseToNode(addNewNodeToNode(HJ, "BTN"));
         addCallRaiseToNode(addNewNodeToNode(HJ, "SB"));
         addCallRaiseToNode(addNewNodeToNode(HJ, "BB"));
         root.getChildren().add(HJ);
 
-        TreeItem<ActionPosition> LJ = buildChildActionTreeItem(root, "vLJ");
+        TreeItem<String> LJ = buildChildActionTreeItem(root, "vLJ");
         addCallRaiseToNode(addNewNodeToNode(LJ, "HJ"));
         addCallRaiseToNode(addNewNodeToNode(LJ, "CO"));
         addCallRaiseToNode(addNewNodeToNode(LJ, "BTN"));
@@ -263,30 +252,30 @@ public class RangeFilesController {
         root.getChildren().add(LJ);
     }
 
-    private void addSixMaxSeatsVS3betToTree(TreeItem<ActionPosition> root) {
-        TreeItem<ActionPosition> SB = buildChildActionTreeItem(root, "SB");
+    private void addSixMaxSeatsVS3betToTree(TreeItem<String> root) {
+        TreeItem<String> SB = buildChildActionTreeItem(root, "SB");
         addCallRaiseToNode(addNewNodeToNode(SB, "vBB"));
         root.getChildren().add(SB);
 
-        TreeItem<ActionPosition> BU = buildChildActionTreeItem(root, "BTN");
+        TreeItem<String> BU = buildChildActionTreeItem(root, "BTN");
         addCallRaiseToNode(addNewNodeToNode(BU, "vSB"));
         addCallRaiseToNode(addNewNodeToNode(BU, "vBB"));
         root.getChildren().add(BU);
 
-        TreeItem<ActionPosition> CO = buildChildActionTreeItem(root, "CO");
+        TreeItem<String> CO = buildChildActionTreeItem(root, "CO");
         addCallRaiseToNode(addNewNodeToNode(CO, "vBTN"));
         addCallRaiseToNode(addNewNodeToNode(CO, "vSB"));
         addCallRaiseToNode(addNewNodeToNode(CO, "vBB"));
         root.getChildren().add(CO);
 
-        TreeItem<ActionPosition> HJ = buildChildActionTreeItem(root, "HJ");
+        TreeItem<String> HJ = buildChildActionTreeItem(root, "HJ");
         addCallRaiseToNode(addNewNodeToNode(HJ, "vCO"));
         addCallRaiseToNode(addNewNodeToNode(HJ, "vBTN"));
         addCallRaiseToNode(addNewNodeToNode(HJ, "vSB"));
         addCallRaiseToNode(addNewNodeToNode(HJ, "vBB"));
         root.getChildren().add(HJ);
 
-        TreeItem<ActionPosition> LJ = buildChildActionTreeItem(root, "LJ");
+        TreeItem<String> LJ = buildChildActionTreeItem(root, "LJ");
         addCallRaiseToNode(addNewNodeToNode(LJ, "vHJ"));
         addCallRaiseToNode(addNewNodeToNode(LJ, "vCO"));
         addCallRaiseToNode(addNewNodeToNode(LJ, "vBTN"));
@@ -295,18 +284,18 @@ public class RangeFilesController {
         root.getChildren().add(LJ);
     }
 
-    private TreeItem<ActionPosition> addNewNodeToNode(TreeItem<ActionPosition> parent, String childString) {
-        TreeItem<ActionPosition> child = buildChildActionTreeItem(parent, childString);
+    private TreeItem<String> addNewNodeToNode(TreeItem<String> parent, String childString) {
+        TreeItem<String> child = buildChildActionTreeItem(parent, childString);
         parent.getChildren().add(child);
         return child;
     }
 
-    private void addCallRaiseToNode(TreeItem<ActionPosition> parent) {
+    private void addCallRaiseToNode(TreeItem<String> parent) {
         addNewNodeToNode(parent, "Call");
         addNewNodeToNode(parent, "Raise");
     }
 
-    private TreeItem<ActionPosition> buildChildActionTreeItem(TreeItem<ActionPosition> parent, String childString) {
-        return new TreeItem<>(new ActionPosition(parent.getValue(), childString));
+    private TreeItem<String> buildChildActionTreeItem(TreeItem<String> parent, String childString) {
+        return new TreeItem<>(parent.getValue() + delimiter + childString);
     }
 }

@@ -1,11 +1,11 @@
 package com.gtohelper.datafetcher.models.solversettings;
 
-import com.gtohelper.datafetcher.controllers.solversettings.RangeFilesController.ActionPosition;
+import com.gtohelper.domain.RangeData;
 import com.gtohelper.domain.Ranges;
 import com.gtohelper.utility.SaveFileHelper;
 import com.gtohelper.utility.Saveable;
 
-import java.io.File;
+import java.io.*;
 import java.util.HashMap;
 
 public class RangeFilesModel extends Saveable {
@@ -20,21 +20,33 @@ public class RangeFilesModel extends Saveable {
         return values;
     }
 
-    public Ranges loadRangeFiles(HashMap<ActionPosition, File> actionToRangeFileMap) {
+    public Ranges loadRangeFiles(HashMap<String, File> actionToRangeFileMap) {
         Ranges ranges = new Ranges();
 
         actionToRangeFileMap.forEach((k, v) -> {
+            Ranges.ActionAndSeat action = new Ranges.ActionAndSeat(k);
+            RangeData data;
 
+            try {
+                data = new RangeData(loadFile(v));
+            } catch (IOException e) {
+               //Todo: log and flag this error
+                return;
+            }
 
-
+            ranges.addRangeForAction(action, data);
         });
 
 
         return ranges;
     }
 
+    private String loadFile(File file) throws IOException {
+        FileInputStream fis = new FileInputStream(file);
+        byte[] data = new byte[(int) file.length()];
+        fis.read(data);
+        fis.close();
 
-
-
-
+        return new String(data, "UTF-8");
+    }
 }

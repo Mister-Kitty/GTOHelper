@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 
 public class Work {
     ArrayList<SolveData> workTasks;
+    Ranges ranges;
 
     public String name = "Review Hands for Dec 16";
     private int currentWorkIndex = 0;
@@ -41,9 +42,10 @@ public class Work {
         return CardResolver.getBoardString(getCurrentTask().handData);
     }
 
-    public Work(List<SolveData> w) {
+    public Work(List<SolveData> w, Ranges r) {
         assert w.size() != 0;
         workTasks = new ArrayList<>(w);
+        ranges = r;
     }
 
     public void workFinished() {

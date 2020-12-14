@@ -98,7 +98,7 @@ public class GTOHelperController  {
             solveList.add(new SolveData(hand, treeData));
         }
 
-        return new Work(solveList);
+        return new Work(solveList, workRanges);
     }
 
     private void initializeControls() {
