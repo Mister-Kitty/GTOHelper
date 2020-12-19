@@ -128,7 +128,7 @@ public class HandAnalysisController {
 
         handsTableDateColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().date_played.toString()));
         handsTableCWonColumn.setCellValueFactory(p -> new SimpleStringProperty("" + p.getValue().amt_pot));
-        handsTableCardsColumn.setCellValueFactory(p -> new SimpleStringProperty(CardResolver.getHandString(p.getValue())));
+        handsTableCardsColumn.setCellValueFactory(p -> new SimpleStringProperty(CardResolver.getHandStringForPlayerElseOOP(player, p.getValue())));
         handsTableRunoutColumn.setCellValueFactory(p -> new SimpleStringProperty(CardResolver.getBoardString(p.getValue())));
     }
 

@@ -55,6 +55,17 @@ public class RangeData {
         }
     }
 
+    public String getRangeAsString() {
+        String result = "";
+        for(int i = 0; i < floats.length - 1; i++) {
+            result += floats[i] + " ";
+        }
+        // make sure we don't append " ".
+        result += floats[floats.length - 1];
+
+        return result;
+    }
+
 
     public static String[] expandHands(String hands) {
         // let's cheat and deduce what we're dealing with by length

@@ -1,10 +1,12 @@
 package com.gtohelper.datafetcher.models;
 
+import com.gtohelper.domain.Ranges;
 import com.gtohelper.domain.SolveData;
 import com.gtohelper.domain.SolveResults;
 import com.gtohelper.domain.Work;
 import com.gtohelper.solver.ISolver;
 import com.gtohelper.solver.PioSolver;
+import com.gtohelper.utility.CardResolver;
 
 import java.io.IOException;
 import java.util.Comparator;
@@ -95,9 +97,17 @@ public class WorkQueueModel {
         }
 
         private void doWork(Work work) throws InterruptedException {
+            Ranges ranges = work.getRanges();
+
             while(!work.isCompleted()) {
                 SolveData currentSolve = work.getCurrentTask();
-                dispatchSolve(currentSolve);
+
+
+                try {
+                    dispatchSolve(currentSolve, ranges);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
             /*try {
                 String calcResults = solver.waitForSolve();
@@ -111,15 +121,13 @@ public class WorkQueueModel {
             }
         }
 
-        private void dispatchSolve(SolveData solve) throws InterruptedException {
-            Thread.sleep(4000);
-
-            /*
-
+        private void dispatchSolve(SolveData solve, Ranges ranges) throws InterruptedException, IOException {
+       //     Thread.sleep(4000);
+/*
                 solver.setRange("IP", IPRange1);
                 solver.setRange("OOP", OOPRange1);
 
-                solver.setBoard(test1Board);
+                solver.setBoard(CardResolver.getBoardString(solve.handData));
                 solver.setPotAndAccuracy(0, 0, 185, 1.628F);
                 solver.setEffectiveStack(910);
 
@@ -155,7 +163,7 @@ public class WorkQueueModel {
                 String calc = solver.getCalcResults();
 
                 solver.go();
-             */
+*/
 
         }
     }

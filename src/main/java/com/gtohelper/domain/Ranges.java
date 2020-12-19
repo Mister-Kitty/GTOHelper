@@ -35,6 +35,7 @@ public class Ranges {
         // The 'position' of the seat is it's Enum.ordinal() value.
         BTN("BTN"), CO("CO"), HJ("HJ"),
         LJ("LJ"), UTG2("UTG+2"), UTG1("UTG+1"),
+        TthSeat("Tenth Seat"),
         UTG("UTG"), BB("BB"), SB("SB");
 
         public String name;

@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 public class Work {
+    Player hero;
     ArrayList<SolveData> workTasks;
     Ranges ranges;
 
@@ -34,18 +35,21 @@ public class Work {
         return workTasks.get(currentWorkIndex);
     }
 
+    public Ranges getRanges() { return ranges; }
+
     public String getCurrentHand() {
-        return CardResolver.getHandString(getCurrentTask().handData);
+        return CardResolver.getHandStringForPlayerElseOOP(hero, getCurrentTask().handData);
     }
 
     public String getCurrentBoard() {
         return CardResolver.getBoardString(getCurrentTask().handData);
     }
 
-    public Work(List<SolveData> w, Ranges r) {
+    public Work(List<SolveData> w, Ranges r, Player h) {
         assert w.size() != 0;
         workTasks = new ArrayList<>(w);
         ranges = r;
+        hero = h;
     }
 
     public void workFinished() {
