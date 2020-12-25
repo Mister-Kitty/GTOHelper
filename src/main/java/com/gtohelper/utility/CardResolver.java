@@ -3,6 +3,8 @@ package com.gtohelper.utility;
 import com.gtohelper.domain.HandData;
 import com.gtohelper.domain.Player;
 
+import java.util.Optional;
+
 public class CardResolver {
 
  /* 1 is 2c
@@ -81,11 +83,13 @@ public class CardResolver {
     }
 */
 
-    public static String getHandStringForPlayerElseOOP(Player p, HandData data) {
+    public static String getHandStringForPlayer(Player p, HandData data) {
         // if IP is hero, get IP hand. Else get OOP hand ('cause it's hero or there is no hero).
-        HandData.PlayerHandData playerHand = (data.ipPlayer.id_player == p.id_player) ? data.ipPlayer : data.oopPlayer;
-
-        return resolveToString(playerHand.holecard_1) + " " + resolveToString(playerHand.holecard_2);
+        Optional<HandData.PlayerHandData> playerHand = data.playerHandData.stream().filter(t -> t.id_player == p.id_player).findFirst();
+        if(playerHand.isPresent())
+            return resolveToString(playerHand.get().holecard_1) + " " + resolveToString(playerHand.get().holecard_2);
+        else
+            return "";
     }
 
     public static String getBoardString(HandData data) {

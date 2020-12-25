@@ -1,9 +1,6 @@
 package com.gtohelper.datafetcher.models;
 
-import com.gtohelper.domain.Ranges;
-import com.gtohelper.domain.SolveData;
-import com.gtohelper.domain.SolveResults;
-import com.gtohelper.domain.Work;
+import com.gtohelper.domain.*;
 import com.gtohelper.solver.ISolver;
 import com.gtohelper.solver.PioSolver;
 import com.gtohelper.utility.CardResolver;
@@ -122,49 +119,53 @@ public class WorkQueueModel {
         }
 
         private void dispatchSolve(SolveData solve, Ranges ranges) throws InterruptedException, IOException {
-       //     Thread.sleep(4000);
+
+            Thread.sleep(1000);
+
+            RangeData oopRange = ranges.getRangeForHand(solve.getHandData().oopPlayer);
+            RangeData ipRange = ranges.getRangeForHand(solve.getHandData().ipPlayer);
 /*
-                solver.setRange("IP", IPRange1);
-                solver.setRange("OOP", OOPRange1);
+            solver.setRange("IP", ipRange.toString());
+            solver.setRange("OOP", oopRange.toString());
 
-                solver.setBoard(CardResolver.getBoardString(solve.handData));
-                solver.setPotAndAccuracy(0, 0, 185, 1.628F);
-                solver.setEffectiveStack(910);
+            solver.setBoard(CardResolver.getBoardString(solve.handData));
+            solver.setPotAndAccuracy(0, 0, 185, 1.628F);
+            solver.setEffectiveStack(910);
 
-                int allInThresholdPercent = 100;
-                int allInOnlyIfLessThanNPercent = 500;
-                final boolean forceOOPBet = false;
-                final boolean forceOOPCheckIPBet = false;
-                solver.setGameTreeOptions(allInThresholdPercent, allInOnlyIfLessThanNPercent, forceOOPBet, forceOOPCheckIPBet);
+            int allInThresholdPercent = 100;
+            int allInOnlyIfLessThanNPercent = 500;
+            final boolean forceOOPBet = false;
+            final boolean forceOOPCheckIPBet = false;
+            solver.setGameTreeOptions(allInThresholdPercent, allInOnlyIfLessThanNPercent, forceOOPBet, forceOOPCheckIPBet);
 
-                final boolean flopIso = true;
-                final boolean turnIso = false;
-                solver.setIsomorphism(flopIso, turnIso);
+            final boolean flopIso = true;
+            final boolean turnIso = false;
+            solver.setIsomorphism(flopIso, turnIso);
 
-                solver.setIPFlop(false, false, "52", "2.5x");
-                solver.setOOPFlop(false, "52", "2.5x");
+            solver.setIPFlop(false, false, "52", "2.5x");
+            solver.setOOPFlop(false, "52", "2.5x");
 
-                solver.setIPTurn(false, false, "52", "3x");
-                solver.setOOPTurn(false, "52", "3x", "");
+            solver.setIPTurn(false, false, "52", "3x");
+            solver.setOOPTurn(false, "52", "3x", "");
 
-                solver.setIPRiver(false, false, "52", "3x");
-                solver.setOOPRiver(false, "52", "3x", "");
+            solver.setIPRiver(false, false, "52", "3x");
+            solver.setOOPRiver(false, "52", "3x", "");
 
-                solver.clearLines();
-                solver.buildTree();
+            solver.clearLines();
+            solver.buildTree();
 
 
-                solver.setBuiltTreeAsActive();
+            solver.setBuiltTreeAsActive();
 
-                String treeSize = solver.getEstimateSchematicTree();
+            String treeSize = solver.getEstimateSchematicTree();
 
-                String showMemory = solver.getShowMemory();
+            String showMemory = solver.getShowMemory();
 
-                String calc = solver.getCalcResults();
+            String calc = solver.getCalcResults();
 
-                solver.go();
+            solver.go();
+
 */
-
         }
     }
 

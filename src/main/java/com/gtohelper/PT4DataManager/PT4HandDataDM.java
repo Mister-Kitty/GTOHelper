@@ -4,6 +4,7 @@ import com.gtohelper.datamanager.DataManagerBase;
 import com.gtohelper.datamanager.IHandDataDM;
 import com.gtohelper.domain.HandData;
 import com.gtohelper.domain.Player;
+import com.gtohelper.domain.Ranges;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -39,7 +40,72 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
         }
 
         assert handsIndex == hands.size() - 1;
+
+        // And finally, there are computed fields in the objects that need their numbers crunched.
+        // I'm not sure exectly where this code should be placed... I'll put it here and move it later if needed.
+        computeCalculatedFieldsForHandData(hands);
+
         return hands;
+    }
+
+    private void computeCalculatedFieldsForHandData(ArrayList<HandData> hands) {
+
+        for(HandData hand : hands) {
+            hand.highestPreflopBetLevel = hand.str_aggressors_p.length();
+
+            // Manually handle the all-limp case, to make edge cases in the next code chunk easier.
+            if(hand.highestPreflopBetLevel == 1) {
+                for(HandData.PlayerHandData handData : hand.playerHandData) {
+                    handData.p_betLevel = 1;
+                    handData.p_vsPosition = 8; // 8 is BB
+                    handData.last_p_action = Ranges.LastAction.CALL;
+                }
+                continue;
+            }
+
+            // We can't directly resolve what action was taken against which seat via the stats table.
+            // Instead, we have to actually 'replay' the action in order to figure out what 'vs range' we use.
+            int lastAggressorsIndex = 0; // index within str_aggressors_p
+            short currentBetLevel = 1; // eg. 1bet, 2bet, 3bet, etc.
+            int lastAggressorSeat = 8; // == Character.getNumericValue(hand.str_actors_p.charAt(aggressorsIndex)
+            int nextAggressorSeat = Character.getNumericValue(hand.str_aggressors_p.charAt(lastAggressorsIndex + 1));
+            for(int currentActorIndex = 0; currentActorIndex < hand.str_actors_p.length(); currentActorIndex++) {
+                int currentPlayerPosition = Character.getNumericValue(hand.str_actors_p.charAt(currentActorIndex));
+                HandData.PlayerHandData handDataForSeat = hand.getHandDataForPosition(currentPlayerPosition);
+
+                if(currentPlayerPosition == nextAggressorSeat) {
+                    // If we're the next aggressor, update as such.
+                    currentBetLevel++; // Technically = to lastAggressorIndex - 1, but separated out for clarity.
+                    handDataForSeat.last_p_action = Ranges.LastAction.RAISE;
+                    handDataForSeat.p_betLevel = currentBetLevel;
+                    handDataForSeat.p_vsPosition = (short)lastAggressorSeat;
+
+                    //_if_ another aggressor exists, update the field, else set it to -1 if we're the last aggressor.
+                    lastAggressorsIndex++;
+                    nextAggressorSeat = (lastAggressorsIndex >= hand.str_aggressors_p.length() - 1) ? -1 :
+                            Character.getNumericValue(hand.str_aggressors_p.charAt(lastAggressorsIndex + 1));
+                    lastAggressorSeat = currentPlayerPosition;
+                } else {
+                    // Otherwise we're just calling
+                    handDataForSeat.last_p_action = Ranges.LastAction.CALL;
+                    handDataForSeat.p_betLevel = currentBetLevel;
+                    handDataForSeat.p_vsPosition = (short)lastAggressorSeat;
+                }
+            }
+
+
+            // Then resolve the principal players based upon whomever won and lost the most money.
+            HandData.PlayerHandData winner = hand.getBiggestWinner();
+            HandData.PlayerHandData loser = hand.getBiggestLoser();
+
+            boolean winnerIsOOP = winner.position > loser.position;
+            hand.oopPlayer = winnerIsOOP ? winner : loser;
+            hand.ipPlayer = winnerIsOOP ? loser : winner;
+            if(hand.oopPlayer.seat == hand.ipPlayer.seat)
+                assert false;
+        }
+
+
     }
 
     private ArrayList<HandData> getHandSummaryData(String innerQuery) throws SQLException {
@@ -72,7 +138,7 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
     private ArrayList<HandData.PlayerHandData> getPlayerHandData(String innerQuery) throws SQLException {
         final String handPlayerStatsOuterQuerySql =
                 "SELECT stats.id_hand, p_actions.action as p_action, f_actions.action as f_action, t_actions.action as t_action, r_actions.action as r_action,\n" +
-                        "  stats.id_player, stats.holecard_1, stats.holecard_2, stats.position, stats.amt_before\n" +
+                        "  stats.id_player, stats.holecard_1, stats.holecard_2, stats.amt_before, stats.amt_won, stats.position \n" +
                         "FROM cash_hand_player_statistics as stats\n" +
                         "\n" +
                         "INNER JOIN lookup_actions as p_actions\n" +
@@ -132,7 +198,9 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
         data.holecard_1 = rs.getShort("holecard_1");
         data.holecard_2 = rs.getShort("holecard_2");
         data.amt_before = rs.getFloat("amt_before");
+        data.amt_won = rs.getFloat("amt_won");
         data.position = rs.getShort("position");
+        data.seat = Ranges.Seat.values[data.position];
         data.p_action = rs.getString("p_action");
         data.f_action = rs.getString("f_action");
         data.t_action = rs.getString("t_action");

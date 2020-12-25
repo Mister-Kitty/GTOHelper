@@ -10,10 +10,11 @@ public class SolveData {
         gameTree = t;
     }
 
+    public HandData getHandData() { return handData; }
+
     public SolveResults getSolveResults() {
         return solveResults;
     }
-
     public void saveSolveResults(SolveResults results) {
         solveResults = results;
     }

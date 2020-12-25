@@ -6,6 +6,7 @@ import java.util.Arrays;
 
 public class RangeData {
     float[] floats;
+    boolean isTheEmptyRange = true;
 
     public RangeData(float[] otherFloats) {
         assert otherFloats.length == 1326;
@@ -21,6 +22,8 @@ public class RangeData {
         if(spaceSplit.length == 1326) {
             for (int i = 0; i < spaceSplit.length; i++) {
                 floats[i] = Float.parseFloat(spaceSplit[i]);
+                if(!spaceSplit[i].equals("0"))
+                    isTheEmptyRange = false;
             }
             return;
         }
@@ -33,6 +36,8 @@ public class RangeData {
         // Ensure we skip over that, but not other valid 1 index arrays, by checking the value.
         if(commaSplit[0].isEmpty())
             return;
+        else
+            isTheEmptyRange = false;
 
         for(String nugget : commaSplit) {
             String[] splitNugget = nugget.split("[:]");
@@ -55,7 +60,8 @@ public class RangeData {
         }
     }
 
-    public String getRangeAsString() {
+    @Override
+    public String toString() {
         String result = "";
         for(int i = 0; i < floats.length - 1; i++) {
             result += floats[i] + " ";

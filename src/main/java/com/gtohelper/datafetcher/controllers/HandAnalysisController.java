@@ -119,7 +119,8 @@ public class HandAnalysisController {
                         handsTable.getItems().clear();
                         handsTable.getItems().addAll(t);
                     } catch (SQLException throwables) {
-                        //throwables.printStackTrace();
+                        // todo: log and popup error.
+                        throwables.printStackTrace();
                     }
                 }
             });
@@ -128,7 +129,7 @@ public class HandAnalysisController {
 
         handsTableDateColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().date_played.toString()));
         handsTableCWonColumn.setCellValueFactory(p -> new SimpleStringProperty("" + p.getValue().amt_pot));
-        handsTableCardsColumn.setCellValueFactory(p -> new SimpleStringProperty(CardResolver.getHandStringForPlayerElseOOP(player, p.getValue())));
+        handsTableCardsColumn.setCellValueFactory(p -> new SimpleStringProperty(CardResolver.getHandStringForPlayer(player, p.getValue())));
         handsTableRunoutColumn.setCellValueFactory(p -> new SimpleStringProperty(CardResolver.getBoardString(p.getValue())));
     }
 

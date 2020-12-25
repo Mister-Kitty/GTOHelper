@@ -38,7 +38,7 @@ public class Work {
     public Ranges getRanges() { return ranges; }
 
     public String getCurrentHand() {
-        return CardResolver.getHandStringForPlayerElseOOP(hero, getCurrentTask().handData);
+        return CardResolver.getHandStringForPlayer(hero, getCurrentTask().handData);
     }
 
     public String getCurrentBoard() {
