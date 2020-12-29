@@ -124,6 +124,11 @@ public class WorkQueueModel {
 
             RangeData oopRange = ranges.getRangeForHand(solve.getHandData().oopPlayer);
             RangeData ipRange = ranges.getRangeForHand(solve.getHandData().ipPlayer);
+
+            if(ipRange == null || oopRange == null) {
+                //todo log error
+                return;
+            }
 /*
             solver.setRange("IP", ipRange.toString());
             solver.setRange("OOP", oopRange.toString());

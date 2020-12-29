@@ -3,7 +3,6 @@ package com.gtohelper.PT4DataManager;
 import com.gtohelper.datamanager.DataManagerBase;
 import com.gtohelper.datamanager.IHandDataDM;
 import com.gtohelper.domain.HandData;
-import com.gtohelper.domain.Player;
 import com.gtohelper.domain.Ranges;
 
 import java.sql.Connection;
@@ -200,7 +199,7 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
         data.amt_before = rs.getFloat("amt_before");
         data.amt_won = rs.getFloat("amt_won");
         data.position = rs.getShort("position");
-        data.seat = Ranges.Seat.values[data.position];
+        data.seat = Ranges.Seat.valuesByTrackerPosition[data.position];
         data.p_action = rs.getString("p_action");
         data.f_action = rs.getString("f_action");
         data.t_action = rs.getString("t_action");

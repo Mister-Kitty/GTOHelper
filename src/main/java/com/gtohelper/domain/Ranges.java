@@ -15,6 +15,10 @@ public class Ranges {
         rangesMap.put(action, data);
     }
 
+    public void fillEmptyRanges() {
+        rangesMap.fillEmptyRanges();
+    }
+
     class RangesMap extends HashMap<ActionAndSeat, RangeData> {
         // We could just use one HashMap<ActionAndSeat, RangeData>. Instead, we'll break down
         // this hashmap by position, as it'll make our use case way easier.
@@ -23,6 +27,113 @@ public class Ranges {
         HashMap<ActionAndSeat, RangeData> vRFIMap = new HashMap<>();
         HashMap<ActionAndSeat, RangeData> v3BetMap = new HashMap<>();
         HashMap<ActionAndSeat, RangeData> v4BetMap = new HashMap<>();
+        HashMap<ActionAndSeat, RangeData> call5BetMap = new HashMap<>();
+
+        public void fillEmptyRanges() {
+            if(!LimpMap.isEmpty())
+                fillNoVillainMap(LimpMap, Situation.LIMP, LastAction.CALL);
+
+            fillNoVillainMap(RFIMap, Situation.RFI, LastAction.RAISE);
+
+            fillOOPVillainMap(vRFIMap, Situation.VRFI, LastAction.CALL);
+            fillOOPVillainMap(vRFIMap, Situation.VRFI, LastAction.RAISE);
+
+            fillIPVillainMap(v3BetMap, Situation.V3BET, LastAction.CALL);
+            fillIPVillainMap(v3BetMap, Situation.V3BET, LastAction.RAISE);
+
+            fillOOPVillainMap(v4BetMap, Situation.V4BET, LastAction.CALL);
+            fillOOPVillainMap(v4BetMap, Situation.V4BET, LastAction.RAISE);
+
+            if(!call5BetMap.isEmpty())
+                fillIPVillainMap(call5BetMap, Situation.CALL5BET, LastAction.CALL);
+        }
+
+        private void fillNoVillainMap(HashMap<ActionAndSeat, RangeData> map, Situation sit, LastAction lastAction) {
+            ActionAndSeat action = new ActionAndSeat();
+            action.lastHeroAction = lastAction;
+            action.situation = sit;
+            action.villainSeat = Seat.BB;
+
+            RangeData lastRangeData = null;
+            for(int heroIndex = 0; heroIndex < Seat.preflopPositionsDESC.length; heroIndex++) {
+                action.heroSeat = Seat.preflopPositionsDESC[heroIndex];
+
+                RangeData data = map.get(action);
+                if (data == null || data.isTheEmptyRange)
+                    map.put(new ActionAndSeat(action), lastRangeData);
+                else
+                    lastRangeData = data;
+            }
+        }
+
+        // by oopVillain, we mean preflop oop.
+        private void fillOOPVillainMap(HashMap<ActionAndSeat, RangeData> map, Situation sit, LastAction lastAction) {
+            ActionAndSeat action = new ActionAndSeat();
+            action.situation = sit;
+            action.lastHeroAction = lastAction;
+
+            // This is outside of both loops on purpose. If we're only given 6max ranges, we want HJvLJ to propogate to FR seats.
+            RangeData lastRangeData = null;
+            for(int heroIndex = 0; heroIndex < Seat.preflopPositionsDESC.length - 1; heroIndex++) {
+                action.heroSeat = Seat.preflopPositionsDESC[heroIndex];
+
+                for(int villainIndex = heroIndex + 1; villainIndex < Seat.preflopPositionsDESC.length; villainIndex++) {
+                    action.villainSeat = Seat.preflopPositionsDESC[villainIndex];
+
+                    RangeData data = map.get(action);
+                    if (data == null || data.isTheEmptyRange)
+                        map.put(new ActionAndSeat(action), lastRangeData);
+                    else
+                        lastRangeData = data;
+                }
+            }
+        }
+
+        // by ipVillain, we mean preflop ip.
+        private void fillIPVillainMap(HashMap<ActionAndSeat, RangeData> map, Situation sit, LastAction lastAction) {
+            ActionAndSeat action = new ActionAndSeat();
+            action.situation = sit;
+            action.lastHeroAction = lastAction;
+
+            for(int heroIndex = 1; heroIndex < Seat.preflopPositionsDESC.length; heroIndex++) {
+                action.heroSeat = Seat.preflopPositionsDESC[heroIndex];
+
+                // Placed here to refresh on hero seat change. When villain moves from HJ to BB after loop refresh when
+                // hero moves, we don't want to use a villain HJ seat on the BB.
+                RangeData lastRangeData = null;
+                for(int villainIndex = 0; villainIndex < heroIndex; villainIndex++) {
+                    action.villainSeat = Seat.preflopPositionsDESC[villainIndex];
+
+                    RangeData data = map.get(action);
+                    if ((data == null || data.isTheEmptyRange) && lastRangeData != null) {
+                        // lastRangeData resets every time hero position moves towards UTG.
+                        // If it's not null, then we have an entry for this hero seat. We use that.
+                        map.put(new ActionAndSeat(action), lastRangeData);
+                    } else if (data == null || data.isTheEmptyRange) {
+                        // If lastRangeData is null, then no earlier data for our hero seat (eg, UTG+2), exists.
+                        // As such we need to use values from earlier hero seats (eg, LJ for UTG+2) and use those values.
+                        assert action.heroSeat.isFullRingOnlySeat();
+
+                        // Because all prior heroSeats have been completely filled in, we are assured map enteries exist
+                        // for all (heroSeat - 1, villainSeat)'s ~ except the very tail case where heroSeat-1 = villainSeat.
+                        // Ie, hero is LJ. HJ will be filled for all villain from BB->CO, but obv not (HJ, HJ).
+                        boolean villainAndHeroAreAdjacent = (heroIndex - 1 == villainIndex);
+
+                        ActionAndSeat newAction = new ActionAndSeat(action);
+                        if(villainAndHeroAreAdjacent)
+                            newAction.villainSeat = Seat.preflopPositionsDESC[villainIndex - 1];
+                        newAction.heroSeat = Seat.preflopPositionsDESC[heroIndex - 1];
+
+                        data = map.get(newAction);
+                        map.put(new ActionAndSeat(action), data);
+
+                        assert data != null;
+                    } else {
+                        lastRangeData = data;
+                    }
+                }
+            }
+        }
 
         @Override
         public RangeData put(ActionAndSeat action, RangeData data) {
@@ -41,6 +152,9 @@ public class Ranges {
                     break;
                 case V4BET:
                     v4BetMap.put(action, data);
+                    break;
+                case CALL5BET:
+                    call5BetMap.put(action, data);
                     break;
                 default:
                     assert false;
@@ -65,204 +179,32 @@ public class Ranges {
             // This really sucks, but the behavior of the maps are different and need to be broken apart.
             switch (action.situation) {
                 case LIMP:
-                    return getBestLimpMatch(action);
+                    return LimpMap.get(action);
                 case RFI:
-                    return getBestRFIMatch(action);
+                    if(action.lastHeroAction == LastAction.RAISE)
+                        return RFIMap.get(action);
                 case VRFI:
-                    return getBestvRFIMatch(action);
+                    boolean isHeroAfterVillain = action.heroSeat.preflopPosition > action.villainSeat.preflopPosition;
+                    if(isHeroAfterVillain)
+                        return vRFIMap.get(action);
+
+                    // If we didn't raise and we are here, it's because we limp-called like an asshole.
+                    // Just give him the BB call vs villain RFI seat.
+                    ActionAndSeat newAction = new ActionAndSeat(action);
+                    newAction.villainSeat = action.heroSeat;
+                    newAction.heroSeat = Seat.BB;
+                    return vRFIMap.get(newAction);
                 case V3BET:
-                    return getBestv3BetMatch(action);
+                    return v3BetMap.get(action);
                 case V4BET:
-                    return getBestv4BetMatch(action);
+                    return v4BetMap.get(action);
+                case CALL5BET:
+                    return call5BetMap.get(action);
                 default:
                     assert false;
             }
             return null;
         }
-
-        private RangeData getBestLimpMatch(ActionAndSeat a) {
-            ActionAndSeat action = new ActionAndSeat(a);
-
-            if(!LimpMap.isEmpty()) { // one of the few valid empty maps.
-                RangeData getAttempt = LimpMap.get(action);
-                if (getAttempt != null)
-                    return getAttempt;
-
-                // We keep going clockwise until we get a non-empty limp. We never look at earlier positions.
-                while(action.heroSeat != Seat.UTG) {
-                    action.heroSeat = action.heroSeat.getNextSeat();
-                    getAttempt = LimpMap.get(action);
-                    if (getAttempt != null)
-                        return getAttempt;
-                }
-            }
-
-            // If we're here, there are no valid limps. So instead we'll use the BB flat calling vRFI range.
-            action.villainSeat = a.heroSeat;
-            action.heroSeat = Seat.BB;
-            action.situation = Situation.VRFI;
-            return vRFIMap.get(action);
-        }
-
-        private RangeData getBestRFIMatch(ActionAndSeat a) {
-            RangeData getAttempt = RFIMap.get(a);
-            if (getAttempt != null)
-                return getAttempt;
-
-            // All 6max RFI are required, so just set it to LJ.
-            ActionAndSeat action = new ActionAndSeat(a);
-            action.heroSeat = Seat.LJ;
-            return RFIMap.get(action);
-        }
-
-        private RangeData getBestvRFIMatch(ActionAndSeat a) {
-            ActionAndSeat action = new ActionAndSeat(a);
-
-            // Here's the first not obvious match.
-            // Since people can limp/call OOP, or flat call IP.
-            boolean isHeroAfterVillain = action.heroSeat.preflopPosition > action.villainSeat.preflopPosition;
-            if(isHeroAfterVillain) {
-
-                // Then we have a flat call after villain preflop.
-                RangeData getAttempt = vRFIMap.get(action);
-                if (getAttempt != null && !getAttempt.isTheEmptyRange) {
-                    return getAttempt;
-                } else if (getAttempt != null) {
-                    // If we have the empty range, a flat is defined as not an option.
-                    // So instead, we'll work clockwise until we find a flat. BB must have flat range, so stop there.
-                    return getFirstNonEmptyCallRange(action, vRFIMap);
-                }
-
-                // Since all vRFI for 6max are required, we must be here for FR seats
-                assert (a.heroSeat.isFullRingOnlySeat() || a.villainSeat.isFullRingOnlySeat());
-
-                normalizeFullRingSeats(action);
-                getAttempt = vRFIMap.get(action);
-                if (getAttempt != null && !getAttempt.isTheEmptyRange) {
-                    return getAttempt;
-                }
-
-                // Especially after normalizing FR to 6max, we'll have LJ v HJ/CO etc with no flat range.
-                assert getAttempt != null;
-                return getFirstNonEmptyCallRange(action, vRFIMap);
-            } else {
-                // If we're here then hero is preflop OOP vRFI and must have limp/called like an asshole.
-                // Just give him the BB call vs villain RFI seat.
-                action.villainSeat = action.heroSeat;
-                action.heroSeat = Seat.BB;
-
-                RangeData getAttempt = vRFIMap.get(action);
-                if (getAttempt != null)
-                    return getAttempt;
-
-                // if our BB flat didn't return something, it must be because the FR seats aren't defined
-                assert (a.heroSeat.isFullRingOnlySeat() || a.villainSeat.isFullRingOnlySeat());
-
-                action.villainSeat = Seat.LJ;
-                return vRFIMap.get(action);
-            }
-        }
-
-        private RangeData getBestv3BetMatch(ActionAndSeat a) {
-            // This gets a bit easier than vRFI, since we no longer have to care about no-flat ranges.
-            ActionAndSeat action = new ActionAndSeat(a);
-
-            boolean isHeroAfterVillain = action.heroSeat.preflopPosition > action.villainSeat.preflopPosition;
-            if(isHeroAfterVillain) {
-                // If we're IP, it's because we did the raising on the vRFI chart
-                assert action.lastHeroAction == LastAction.RAISE;
-                RangeData getAttempt = vRFIMap.get(action);
-                if (getAttempt != null)
-                    return getAttempt;
-
-                assert (action.heroSeat.isFullRingOnlySeat() || action.villainSeat.isFullRingOnlySeat());
-
-                normalizeFullRingSeats(action);
-
-                return vRFIMap.get(action);
-            } else {
-                // If we're OOP, then it's because we called after RFIing
-                assert action.lastHeroAction == LastAction.CALL;
-                RangeData getAttempt = v3BetMap.get(action);
-                if (getAttempt != null)
-                    return getAttempt;
-
-                assert (action.heroSeat.isFullRingOnlySeat() || action.villainSeat.isFullRingOnlySeat());
-
-                normalizeFullRingSeats(action);
-
-                return v3BetMap.get(action);
-            }
-        }
-
-        private RangeData getBestv4BetMatch(ActionAndSeat a) {
-            // This gets a bit easier than vRFI, since we no longer have to care about no-flat ranges.
-            ActionAndSeat action = new ActionAndSeat(a);
-
-            boolean isHeroAfterVillain = action.heroSeat.preflopPosition > action.villainSeat.preflopPosition;
-            if(isHeroAfterVillain) {
-                // If we're IP, it's because we called the 4bet
-                assert action.lastHeroAction == LastAction.CALL;
-                RangeData getAttempt = v3BetMap.get(action);
-                if (getAttempt != null)
-                    return getAttempt;
-
-                assert (action.heroSeat.isFullRingOnlySeat() || action.villainSeat.isFullRingOnlySeat());
-
-                normalizeFullRingSeats(action);
-
-                return v3BetMap.get(action);
-            } else {
-                // If we're OOP, then it's because we raised the 4bet
-                assert action.lastHeroAction == LastAction.RAISE;
-                RangeData getAttempt = v4BetMap.get(action);
-                if (getAttempt != null)
-                    return getAttempt;
-
-                assert (action.heroSeat.isFullRingOnlySeat() || action.villainSeat.isFullRingOnlySeat());
-
-                normalizeFullRingSeats(action);
-
-                return v4BetMap.get(action);
-            }
-        }
-
-        private RangeData getFirstNonEmptyCallRange(ActionAndSeat a, HashMap<ActionAndSeat, RangeData> map) {
-            ActionAndSeat action = new ActionAndSeat(a);
-            while(action.heroSeat != Seat.BB) {
-                RangeData getAttempt = map.get(a);
-                if (getAttempt != null && !getAttempt.isTheEmptyRange)
-                    return getAttempt;
-                action.heroSeat = action.heroSeat.getNextSeat();
-            }
-
-            // If we reach here, we're on the BB.
-            return map.get(a);
-        }
-
-        private void normalizeFullRingSeats(ActionAndSeat action) {
-            boolean isHeroAfterVillain = action.heroSeat.preflopPosition < action.villainSeat.preflopPosition;
-
-            if(action.heroSeat.isFullRingOnlySeat() && action.villainSeat.isFullRingOnlySeat()) {
-                if(isHeroAfterVillain) {
-                    action.heroSeat = Seat.HJ;
-                    action.villainSeat = Seat.LJ;
-                } else {
-                    action.heroSeat = Seat.LJ;
-                    action.villainSeat = Seat.HJ;
-                }
-            } else if(action.heroSeat.isFullRingOnlySeat()) {
-                action.heroSeat = Seat.LJ;
-                if(action.villainSeat == Seat.LJ)
-                    action.villainSeat = Seat.HJ;
-            } else if(action.villainSeat.isFullRingOnlySeat()) {
-                action.villainSeat = Seat.LJ;
-                if(action.heroSeat == Seat.LJ)
-                    action.heroSeat = Seat.HJ;
-            }
-        }
-
-
     }
 
     public enum Seat {
@@ -272,7 +214,11 @@ public class Ranges {
         UTG("UTG", 1, 3), TthSeat("Tenth Seat", 0, 2),
         BB("BB", 9, 1), SB("SB", 8, 0);
 
-        public static final Seat values[] = values();
+        public static final Seat valuesByTrackerPosition[] = values();
+        public static final Seat preflopPositionsASC[] = { TthSeat, UTG, UTG1, UTG2, LJ, HJ, CO, BTN, SB, BB };
+        public static final Seat preflopPositionsDESC[] = { BB, SB, BTN, CO, HJ, LJ, UTG2, UTG1, UTG, TthSeat };
+        public static final Seat postflopPositionsASC[] = { SB, BB, UTG, TthSeat, UTG1, UTG2, LJ, HJ, CO, BTN };
+        public static final Seat postflopPositionsDESC[] = { BTN, CO, HJ, LJ, UTG2, UTG1, UTG, TthSeat, SB, BB };
         public String name;
         public int preflopPosition, postflopPosition; // acting order, starting at 0 and increasing.
         Seat(String name, int preflopPosition, int postflopPosition) {
@@ -282,7 +228,7 @@ public class Ranges {
         }
 
         public boolean isFullRingOnlySeat() {
-            return ordinal() >= 4 && ordinal() <= 7;
+            return postflopPosition > 1 && postflopPosition < 6;
         }
         public boolean isBlindSeat() { return name.equals("SB") || name.equals("BB"); }
 
@@ -291,7 +237,7 @@ public class Ranges {
             if(name.equals(BTN))
                 return Seat.SB;
             else
-                return values[ordinal() - 1];
+                return valuesByTrackerPosition[ordinal() - 1];
         }
 
         public static Seat fromString(String text) {
@@ -305,7 +251,7 @@ public class Ranges {
     }
 
     public enum Situation {
-        LIMP("Limp"), RFI("RFI"), VRFI("vRFI"), V3BET("v3Bet"), V4BET("v4Bet");
+        LIMP("Limp"), RFI("RFI"), VRFI("vRFI"), V3BET("v3Bet"), V4BET("v4Bet"), CALL5BET("call5Bet");
 
         public static final Situation values[] = values();
         public String name;
@@ -352,6 +298,8 @@ public class Ranges {
             fromString(string);
         }
 
+        public ActionAndSeat() {}
+
         public ActionAndSeat(ActionAndSeat action) {
             situation = action.situation;
             heroSeat = action.heroSeat;
@@ -362,13 +310,12 @@ public class Ranges {
         public ActionAndSeat(HandData.PlayerHandData playerHand) {
             // not sure if this should even be here, really... whatever
             heroSeat = playerHand.seat;
-            villainSeat = Seat.values[playerHand.p_vsPosition];
+            villainSeat = Seat.valuesByTrackerPosition[playerHand.p_vsPosition];
             lastHeroAction = playerHand.last_p_action;
 
             if(playerHand.p_betLevel == 1) {
                 situation = Situation.LIMP;
-            }
-            else if(playerHand.p_betLevel == 2) {
+            } else if(playerHand.p_betLevel == 2) {
                 if(lastHeroAction == LastAction.RAISE)
                     situation = Situation.RFI;
                 else
@@ -383,9 +330,14 @@ public class Ranges {
                     situation = Situation.V3BET;
                 else
                     situation = Situation.V4BET;
-            } else if(playerHand.p_betLevel >= 5) {
-                // Not sure if we support calling 5bets pre...
-                situation = Situation.V4BET;
+            } else if(playerHand.p_betLevel == 5) {
+                if(lastHeroAction == LastAction.RAISE)
+                    situation = Situation.V4BET;
+                else
+                    situation = Situation.CALL5BET;
+            } else {
+                assert(playerHand.p_betLevel == 5);
+                situation = Situation.CALL5BET;
             }
         }
 
@@ -420,8 +372,12 @@ public class Ranges {
                 v3BetFromString(splitStrings[index + 1], splitStrings[index], splitStrings[index + 2]);
             } else if(situation == Situation.V4BET) {
                 v4BetFromString(splitStrings[index], splitStrings[index + 1], splitStrings[index + 2]);
-            } else
+            } else if(situation == Situation.CALL5BET) {
+                call5BetFromString(splitStrings[index + 1], splitStrings[index], splitStrings[index + 2]);
+            } else {
+                // todo: log error.
                 assert false;
+            }
 
         }
 
@@ -457,6 +413,8 @@ public class Ranges {
                 return v3BetToString();
             else if(situation == Situation.V4BET)
                 return v4BetToString();
+            else if(situation == Situation.CALL5BET)
+                return call5BetToString();
             else
                 return "";
         }
@@ -510,56 +468,15 @@ public class Ranges {
         private String v4BetToString() {
             return situation.name + delimiter + "v" + villainSeat.name + delimiter + heroSeat.name + delimiter + lastHeroAction;
         }
+
+        private void call5BetFromString(String villainPosition, String heroPosition, String lastAction) {
+            heroSeat = Seat.fromString(heroPosition);
+            villainSeat = Seat.fromString(villainPosition.substring(1)); // remove the starting "v"
+            lastHeroAction = LastAction.fromString(lastAction);
+        }
+
+        private String call5BetToString() {
+            return situation.name + delimiter + heroSeat.name + delimiter + "v" + villainSeat.name + delimiter + lastHeroAction;
+        }
     }
 }
-
-
-
-
-        /*
-            I'm not convinced that this code should yet work by rotating clockwise, rather than just defaulting to
-            Lojack if FR ranges are missing. Keep it here for now, as this may be an alternative setting.
-
-        RangeData getMatchClockwiseFromSeat(HashMap<ActionAndSeat, RangeData> map, ActionAndSeat a) {
-            // Copy the input, as we might fuck with it.
-            ActionAndSeat action = new ActionAndSeat(a);
-
-            // LIMP and RFI have villain set to BB
-            while(action.villainSeat.isFullRingOnlySeat()) {
-                RangeData getAttempt = map.get(action);
-                if(getAttempt != null)
-                    return getAttempt;
-
-                // Looks like our fetch DNE. So shift villain (and hero, if he's adjacent) toward the button and try again.
-                action.villainSeat = action.villainSeat.getNextSeat();
-
-                if(action.heroSeat == action.villainSeat)
-                    action.heroSeat = action.heroSeat.getNextSeat();
-            }
-
-            // If we're here, villain is at earliest case the LJ. Hero can still be Full ring though,
-            // if hero was always FR and also earlier than villain.
-            while(action.heroSeat.isFullRingOnlySeat()) {
-                RangeData getAttempt = map.get(action);
-                if (getAttempt != null)
-                    return getAttempt;
-
-                action.heroSeat = action.heroSeat.getNextSeat();
-
-                if(action.villainSeat == action.heroSeat)
-                    action.villainSeat = action.villainSeat.getNextSeat();
-            }
-
-            // hero and villain are now in 6max ranges
-            // do one last fetch (we did not try a fetch if we triggered the WHILE loop's exit condition.
-            RangeData getAttempt = map.get(action);
-            if (getAttempt != null)
-                return getAttempt;
-
-            assert action.lastHeroAction != LastAction.RAISE;
-
-            // Okay, so if we're here then it's because we didn't find a non-empty call
-
-
-
-        }*/

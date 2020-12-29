@@ -37,7 +37,7 @@ public class RangeFilesModel extends Saveable {
             ranges.addRangeForAction(action, data);
         });
 
-
+        ranges.fillEmptyRanges();
         return ranges;
     }
 

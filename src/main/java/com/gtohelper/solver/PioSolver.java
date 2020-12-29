@@ -115,7 +115,7 @@ public class PioSolver implements ISolver {
     @Override
     public void setPotAndAccuracy(int oopInvestment, int ipInvestment, int pot, float chips) throws IOException {
         writeToOutput("set_pot " + oopInvestment + " " + ipInvestment + " " + pot);
-        pot = pot;
+        this.pot = pot;
         readNLinesFromInput(1);
 
         writeToOutput("set_accuracy " + chips);
