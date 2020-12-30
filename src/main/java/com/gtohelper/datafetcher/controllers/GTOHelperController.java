@@ -95,8 +95,10 @@ public class GTOHelperController  {
         Player hero = dbConnectionController.getPlayer();
         BettingOptions treeData = solverSettingsController.getBetSettingByName(betSettingName);
         Ranges workRanges = solverSettingsController.loadRangeFiles();
+        SolverSettings solverSettings = new SolverSettings(.5f);
+
         for(HandData hand : hands) {
-            solveList.add(new SolveData(hand, treeData));
+            solveList.add(new SolveData(hand, treeData, solverSettings));
         }
 
         return new Work(solveList, workRanges, hero);

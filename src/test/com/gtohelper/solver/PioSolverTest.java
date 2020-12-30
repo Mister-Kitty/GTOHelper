@@ -48,7 +48,7 @@ class PioSolverTest {
 
     void setBetsizes1Test() {
         solver.setIPFlop(false, false, "52", "2.5x");
-        solver.setOOPFlop(false, "52", "2.5x");
+        solver.setOOPFlop(false, "","2.5x", "52");
 
         solver.setIPTurn(false, false, "52", "3x");
         solver.setOOPTurn(false, "52", "3x", "");
@@ -75,7 +75,8 @@ class PioSolverTest {
         }
 
         for(String s : test1Results) {
-            assert(test1SolverResults.contains(s));
+            if(!test1SolverResults.contains(s))
+                assert(test1SolverResults.contains(s));
         }
 
         // Results have been validated. Send the tree to Pio and validate the tree size estimate
@@ -98,14 +99,6 @@ class PioSolverTest {
         String calcResults = solver.waitForSolve();
         assert(!calcResults.isEmpty());
     }
-
-
-
-
-
-
-
-
 
     final String test1Board = "Qs Jh 2h";
 

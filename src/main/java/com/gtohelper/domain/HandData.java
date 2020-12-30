@@ -15,15 +15,32 @@ public class HandData {
     public short card_5;
     public String str_actors_p;
     public String str_aggressors_p;
+    public float amt_pot_f;
+
+    // cash_limit fields
+    public String limit_name;
+    public float amt_sb;
+    public float amt_bb;
 
     // Calculated fields
     public PlayerHandData oopPlayer;
     public PlayerHandData ipPlayer;
     public int highestPreflopBetLevel; // eg, 1bet, 2bet, 3bet
 
-    // Default sorted by the data manager to be by position DESC
+    // utility functions
+    public int getValueAsChips(float value) {
+        // We want 1BB = 100 chips.
+        // Convert value into number of BB.
+        // max effective stack is 65535 chips in pio. This gives us ~6500BB max stack
+        float numberOfBB = (value / amt_bb);
+        return (int) (numberOfBB * 100);
+    }
+
+    // PlayerHandData and associated functions
     public ArrayList<PlayerHandData> playerHandData = new ArrayList<>();
+
     public PlayerHandData getHandDataForPosition(int position) {
+        // Default sorted by the data manager to be by position DESC
         for(PlayerHandData handData : playerHandData) {
             if(handData.position == position)
                 return handData;

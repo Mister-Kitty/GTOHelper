@@ -92,10 +92,14 @@ public class CardResolver {
             return "";
     }
 
-    public static String getBoardString(HandData data) {
-        String flop = resolveToString(data.card_1) + " " +
+    public static String getFlopString(HandData data) {
+        return resolveToString(data.card_1) + " " +
                 resolveToString(data.card_2) + " " +
                 resolveToString(data.card_3);
+    }
+
+    public static String getBoardString(HandData data) {
+        String flop = getFlopString(data);
 
         if(data.card_4 == 0)
             return flop;

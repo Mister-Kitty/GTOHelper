@@ -7,10 +7,7 @@ import com.gtohelper.utility.CardResolver;
 
 import java.io.IOException;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class WorkQueueModel {
     QueueWorker worker = new QueueWorker();
@@ -96,21 +93,20 @@ public class WorkQueueModel {
         private void doWork(Work work) throws InterruptedException {
             Ranges ranges = work.getRanges();
 
+
             while(!work.isCompleted()) {
                 SolveData currentSolve = work.getCurrentTask();
-
+                String saveFolder = currentSolve.getSolverSettings().getSolveSaveLocation() + "\\" + work.name + "\\";
+                String fileName = currentSolve.getHandData().limit_name + "-" + CardResolver.getBoardString(currentSolve.getHandData()) +
+                        "-" + currentSolve.getHandData().id_hand;
 
                 try {
                     dispatchSolve(currentSolve, ranges);
+                    solver.dumpTree("\"" + saveFolder + fileName + "\"", "no_rivers");
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
-            /*try {
-                String calcResults = solver.waitForSolve();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }*/
 
                 SolveResults results = new SolveResults();
                 currentSolve.saveSolveResults(results);
@@ -119,9 +115,6 @@ public class WorkQueueModel {
         }
 
         private void dispatchSolve(SolveData solve, Ranges ranges) throws InterruptedException, IOException {
-
-            Thread.sleep(1000);
-
             RangeData oopRange = ranges.getRangeForHand(solve.getHandData().oopPlayer);
             RangeData ipRange = ranges.getRangeForHand(solve.getHandData().ipPlayer);
 
@@ -129,13 +122,21 @@ public class WorkQueueModel {
                 //todo log error
                 return;
             }
-/*
+
+            HandData handData = solve.getHandData();
+            int pot = handData.getValueAsChips(handData.amt_pot_f);
+            float solveAccuracy = solve.getSolverSettings().getAccuracyInChips(pot);
+            boolean oopIsBiggestStack = (handData.oopPlayer.amt_before >= handData.ipPlayer.amt_before);
+            float effectiveStack = oopIsBiggestStack ? handData.oopPlayer.amt_before : handData.ipPlayer.amt_before;
+
             solver.setRange("IP", ipRange.toString());
             solver.setRange("OOP", oopRange.toString());
 
-            solver.setBoard(CardResolver.getBoardString(solve.handData));
-            solver.setPotAndAccuracy(0, 0, 185, 1.628F);
-            solver.setEffectiveStack(910);
+            solver.setBoard(CardResolver.getFlopString(handData));
+            solver.setPotAndAccuracy(0, 0, pot, solveAccuracy);
+            solver.setEffectiveStack(handData.getValueAsChips(effectiveStack));
+
+            BettingOptions bettingOptions = solve.getBettingOptions();
 
             int allInThresholdPercent = 100;
             int allInOnlyIfLessThanNPercent = 500;
@@ -147,18 +148,23 @@ public class WorkQueueModel {
             final boolean turnIso = false;
             solver.setIsomorphism(flopIso, turnIso);
 
-            solver.setIPFlop(false, false, "52", "2.5x");
-            solver.setOOPFlop(false, "52", "2.5x");
+            solver.setIPFlop(bettingOptions.IPFlop.getCanAllIn(), !bettingOptions.IPFlop.getCan3Bet(),
+                    bettingOptions.IPFlop.getBets().getInitialString(), bettingOptions.IPFlop.getRaises().getInitialString());
+            solver.setOOPFlop(bettingOptions.OOPFlop.getCanAllIn(), bettingOptions.OOPFlop.getBets().getInitialString(),
+                    bettingOptions.OOPFlop.getDonks().getInitialString(), bettingOptions.OOPFlop.getRaises().getInitialString());
 
-            solver.setIPTurn(false, false, "52", "3x");
-            solver.setOOPTurn(false, "52", "3x", "");
+            solver.setIPTurn(bettingOptions.IPTurn.getCanAllIn(), !bettingOptions.IPTurn.getCan3Bet(),
+                    bettingOptions.IPTurn.getBets().getInitialString(), bettingOptions.IPTurn.getRaises().getInitialString());
+            solver.setOOPTurn(bettingOptions.OOPTurn.getCanAllIn(), bettingOptions.OOPTurn.getBets().getInitialString(),
+                    bettingOptions.OOPTurn.getDonks().getInitialString(), bettingOptions.OOPTurn.getRaises().getInitialString());
 
-            solver.setIPRiver(false, false, "52", "3x");
-            solver.setOOPRiver(false, "52", "3x", "");
+            solver.setIPRiver(bettingOptions.IPRiver.getCanAllIn(), !bettingOptions.IPRiver.getCan3Bet(),
+                    bettingOptions.IPRiver.getBets().getInitialString(), bettingOptions.IPRiver.getRaises().getInitialString());
+            solver.setOOPRiver(bettingOptions.OOPRiver.getCanAllIn(), bettingOptions.OOPRiver.getBets().getInitialString(),
+                    bettingOptions.OOPRiver.getDonks().getInitialString(), bettingOptions.OOPRiver.getRaises().getInitialString());
 
             solver.clearLines();
             solver.buildTree();
-
 
             solver.setBuiltTreeAsActive();
 
@@ -170,7 +176,7 @@ public class WorkQueueModel {
 
             solver.go();
 
-*/
+            String calcResults = solver.waitForSolve();
         }
     }
 

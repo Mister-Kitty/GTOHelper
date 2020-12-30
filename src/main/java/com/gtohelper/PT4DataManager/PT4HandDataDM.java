@@ -111,8 +111,11 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
         final String handSummaryOuterQuerySql =
                 "SELECT summary.id_hand, summary.date_played, summary.amt_pot, summary.card_1,\n" +
                 "       summary.card_2, summary.card_3, summary.card_4, summary.card_5,\n" +
-                "       summary.str_actors_p, summary.str_aggressors_p\n" +
+                "       summary.str_actors_p, summary.str_aggressors_p, summary.amt_pot_f,\n" +
+                "       table_limit.limit_name, table_limit.amt_sb, table_limit.amt_bb\n" +
                 "FROM cash_hand_summary as summary\n" +
+                "INNER JOIN cash_limit as table_limit\n" +
+                "  on summary.id_limit = table_limit.id_limit\n" +
                 "WHERE summary.cnt_players_f > 1 AND\n" +
                 "summary.id_hand in\n" +
                 "(\n" +
@@ -185,6 +188,11 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
         hand.card_5 = rs.getShort("card_5");
         hand.str_actors_p = rs.getString("str_actors_p");
         hand.str_aggressors_p = rs.getString("str_aggressors_p");
+        hand.amt_pot_f = rs.getFloat("amt_pot_f");
+
+        hand.limit_name = rs.getString("limit_name");
+        hand.amt_sb = rs.getFloat("amt_sb");
+        hand.amt_bb = rs.getFloat("amt_bb");
 
         return hand;
     }

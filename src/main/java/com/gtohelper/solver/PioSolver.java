@@ -88,8 +88,8 @@ public class PioSolver implements ISolver {
     }
 
     @Override
-    public void setOOPFlop(boolean addAllIn, String donkSizesString, String raiseSizesString) {
-        currentGame.OOPFlop.setActionData(addAllIn, "", raiseSizesString, donkSizesString);
+    public void setOOPFlop(boolean addAllIn, String cbetSizesString, String raiseSizesString, String donkSizesString) {
+        currentGame.OOPFlop.setActionData(addAllIn, cbetSizesString, raiseSizesString, donkSizesString);
     }
 
     @Override
@@ -207,6 +207,12 @@ public class PioSolver implements ISolver {
     }
 
     @Override
+    public void dumpTree(String saveLocation, String options) throws IOException {
+        writeToOutput("dump_tree " + saveLocation + " " + options);
+        readNLinesFromInput(1);
+    }
+
+    @Override
     public void disconnect() {
         try { input.close(); } catch (IOException e) {}
         try { output.close(); } catch (IOException e) {}
@@ -239,11 +245,11 @@ public class PioSolver implements ISolver {
         String results = "";
         String currentLine;
         while ((currentLine = input.readLine()) != null) {
+            System.out.println(currentLine.trim());
             if(currentLine.trim().startsWith(terminalPrefix))
                 break;
             results += currentLine  + "\n";
         }
-        System.out.println(results.trim());
         return results.trim();
     }
 }

@@ -16,7 +16,7 @@ public interface ISolver {
     void setIPFlop(boolean addAllIn, boolean dont3Bet, String betSizesString, String raiseSizesString);
     void setIPTurn(boolean addAllIn, boolean dont3Bet, String betSizesString, String raiseSizesString);
     void setIPRiver(boolean addAllIn, boolean dont3Bet, String betSizesString, String raiseSizesString);
-    void setOOPFlop(boolean addAllIn, String donkSizesString, String raiseSizesString);
+    void setOOPFlop(boolean addAllIn, String cbetSizesString, String raiseSizesString, String donkSizesString);
     void setOOPTurn(boolean addAllIn, String betSizesString, String raiseSizesString, String donkSizesString);
     void setOOPRiver(boolean addAllIn, String betSizesString, String raiseSizesString, String donkSizesString);
 
@@ -34,6 +34,7 @@ public interface ISolver {
     void waitForReady() throws IOException, InterruptedException;
     String waitForSolve() throws IOException;
 
+    void dumpTree(String saveLocation, String options) throws IOException;
     void disconnect();
 
     // debug commands
