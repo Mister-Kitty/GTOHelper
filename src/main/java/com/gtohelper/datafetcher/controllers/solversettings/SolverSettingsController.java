@@ -6,6 +6,7 @@ import com.gtohelper.domain.Ranges;
 import com.gtohelper.utility.SaveFileHelper;
 import javafx.fxml.FXML;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 
 import java.io.File;
 import java.util.List;
@@ -20,6 +21,9 @@ public class SolverSettingsController {
     @FXML
     RangeFilesController rangeFilesController;
 
+    @FXML
+    OtherSettingsController otherSettingsController;
+
     SolverSettingsModel solverSettingsModel;
 
     @FXML
@@ -31,14 +35,23 @@ public class SolverSettingsController {
         solverSettingsModel = new SolverSettingsModel(saveHelper);
         rangeFilesController.loadModel(saveHelper);
         betSettingsController.loadModel(saveHelper);
+        otherSettingsController.loadModel(saveHelper);
     }
 
     public void saveDisplayFolderChooserCallback(Function<DirectoryChooser, File> callback) {
         rangeFilesController.saveDisplayFolderChooserCallback(callback);
     }
 
+    public void saveDisplayFileChooserCallback(Function<FileChooser, File> callback) {
+        otherSettingsController.saveDisplayFileChooserCallback(callback);
+    }
+
     public void saveBetSettingsChangedCallback(Consumer<List<String>> callback) {
         betSettingsController.saveBetSettingsChangedCallback(callback);
+    }
+
+    public String getSolverLocation() {
+        return otherSettingsController.getSolverLocation();
     }
 
     public BettingOptions getBetSettingByName(String name) {

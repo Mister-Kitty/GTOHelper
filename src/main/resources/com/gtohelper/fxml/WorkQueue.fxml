@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.*?>
+<?import java.lang.*?>
+<?import javafx.scene.text.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
@@ -7,8 +10,62 @@
    <children>
       <HBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <ListView fx:id="currentWorkQueue" editable="true" prefHeight="400.0" prefWidth="232.0" HBox.hgrow="NEVER" />
+            <VBox>
+               <children>
+                  <AnchorPane VBox.vgrow="NEVER">
+                     <children>
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Finished Work" textAlignment="CENTER" wrappingWidth="232.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="NEVER">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </Text>
+                     </children>
+                  </AnchorPane>
+                  <ListView fx:id="finishedWork" editable="true" HBox.hgrow="NEVER" VBox.vgrow="ALWAYS" />
+               </children>
+            </VBox>
+            <VBox>
+               <children>
+                  <AnchorPane VBox.vgrow="NEVER">
+                     <children>
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Current Work Queue" textAlignment="CENTER" wrappingWidth="232.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="NEVER">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </Text>
+                     </children>
+                  </AnchorPane>
+                  <ListView fx:id="currentWorkQueue" editable="true" HBox.hgrow="NEVER" VBox.vgrow="ALWAYS" />
+               </children>
+            </VBox>
+            <VBox>
+               <children>
+                  <AnchorPane VBox.vgrow="NEVER">
+                     <children>
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Inspect Work Item" textAlignment="CENTER" wrappingWidth="232.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="NEVER">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </Text>
+                     </children>
+                  </AnchorPane>
+                  <AnchorPane VBox.vgrow="ALWAYS" />
+                  <AnchorPane VBox.vgrow="NEVER">
+                     <children>
+                        <ToolBar prefHeight="40.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                          <items>
+                            <Button mnemonicParsing="false" onAction="#startWorker" text="Start Solver" />
+                            <Button mnemonicParsing="false" onAction="#stopWorker" text="Stop Solver" />
+                          </items>
+                        </ToolBar>
+                     </children>
+                  </AnchorPane>
+               </children>
+            </VBox>
          </children>
       </HBox>
    </children>
+   <padding>
+      <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+   </padding>
 </AnchorPane>

@@ -16,14 +16,6 @@ public class SolverSettings {
     public String getSolveSaveLocation() {
         return solveSaveLocation;
     }
-/*
-    // Will make a SolverSettings object if this grows to more than 2 fields
-    public float percentOfPotAccuracy;
-    public float getPotAccuracyInChips() {
-        int potInChips = handData.getValueAsChips(handData.amt_pot_f);
-        return (percentOfPotAccuracy / 100) * potInChips;
-    }
-*/
 
 
 }

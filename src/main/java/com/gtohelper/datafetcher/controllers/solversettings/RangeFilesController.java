@@ -60,19 +60,14 @@ public class RangeFilesController {
 
     @FXML
     private void onChooseFolderPress() {
-        File result;
-        try {
-            File defaultFolder = new File(rangeFolderLocation.getText());
-            folderChooser.setInitialDirectory(defaultFolder);
-            result = displayFolderChooserCallback.apply(folderChooser);
-        } catch(Exception e) {
-            //if the default/loaded solver location fails, we load up our current executing directory.
-            File executingFolder = new File(""); // AFAIK this is the executing folder...?
-            folderChooser.setInitialDirectory(executingFolder);
-            result = displayFolderChooserCallback.apply(folderChooser);
-        }
+        File defaultFolder = new File(rangeFolderLocation.getText());
 
-        selectFolder(result);
+        if(defaultFolder.exists())
+            folderChooser.setInitialDirectory(defaultFolder);
+
+        File result = displayFolderChooserCallback.apply(folderChooser);
+        if(result != null)
+            selectFolder(result);
     }
 
     @FXML

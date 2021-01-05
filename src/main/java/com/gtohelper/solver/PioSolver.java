@@ -66,7 +66,7 @@ public class PioSolver implements ISolver {
         currentGame.options.allInOnlyIfLessThanNPercent = allInOnlyIfLessThanNPercent;
 
         // TODO: Add logging in this instance.
-        if(forceOOPBet&& forceOOPCheckIPBet)
+        if(forceOOPBet && forceOOPCheckIPBet)
             return;
         currentGame.options.forceOOPBet = forceOOPBet;
         currentGame.options.forceOOPCheckIPBet = forceOOPCheckIPBet;
@@ -141,6 +141,17 @@ public class PioSolver implements ISolver {
     }
 
     @Override
+    public void stop() throws IOException {
+        writeToOutput("stop");
+        readFromInputUntil("stop ok!");
+    }
+
+    @Override
+    public void shutdown() throws IOException {
+        writeToOutput("exit");
+    }
+
+    @Override
     public void waitForReady() throws IOException, InterruptedException {
         while(true) {
             writeToOutput("is_ready");
@@ -158,14 +169,14 @@ public class PioSolver implements ISolver {
     }
 
     @Override
-    public void setBuiltTreeAsActive() throws IOException {
+    public String setBuiltTreeAsActive() throws IOException {
         ArrayList<String> leaves = tree.getAllInLeaves();
         for(String leaf : leaves) {
             setAddLine(leaf);
         }
 
         writeToOutput("build_tree");
-        readNLinesFromInput(1);
+        return readNLinesFromInput(1);
     }
 
     public String runCustomCommand(String command) throws IOException {

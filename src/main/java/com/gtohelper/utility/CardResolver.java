@@ -8,6 +8,7 @@ import java.util.Optional;
 public class CardResolver {
 
  /* 1 is 2c
+    9 is Tc
     13 is Ac
 
     14 is 2d
@@ -34,13 +35,13 @@ public class CardResolver {
         String result;
         if(mod == 1)
             result = "A";
-        else if(mod <= 8)
+        else if(mod <= 9)
             result = String.valueOf(mod);
-        else if (mod == 9)
-            result = "T";
         else if (mod == 10)
-            result = "J";
+            result = "T";
         else if (mod == 11)
+            result = "J";
+        else if (mod == 12)
             result = "Q";
         else
             result = "K";

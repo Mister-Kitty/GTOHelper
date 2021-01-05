@@ -28,6 +28,11 @@
                     </content>
                 </Tab>
 
+                <Tab fx:id="otherSettingsTab" id="otherSettingsTab" text="Other Settings">
+                    <content>
+                        <fx:include fx:id="otherSettings" source="/com/gtohelper/fxml/OtherSettings.fxml"/>
+                    </content>
+                </Tab>
             </tabs>
         </TabPane>
     </children>

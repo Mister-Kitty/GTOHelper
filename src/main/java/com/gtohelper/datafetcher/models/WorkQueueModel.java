@@ -10,54 +10,61 @@ import java.util.Comparator;
 import java.util.concurrent.PriorityBlockingQueue;
 
 public class WorkQueueModel {
-    QueueWorker worker = new QueueWorker();
+    QueueWorker worker;
     final int defaultInitialCapacity = 15;
     public volatile PriorityBlockingQueue<Work> currentWorkQueue;
     public volatile PriorityBlockingQueue<Work> finishedWorkQueue;
 
     public WorkQueueModel() {
         currentWorkQueue = new PriorityBlockingQueue<>(defaultInitialCapacity, leastWorkToDoFirst);
-        worker.start();
     }
 
     public void receiveNewWork(Work work) {
-        // This call must come before the work is added.
-        boolean isAPriority = isThisNewWorkAPriority(work);
-
         currentWorkQueue.add(work);
-
-        if(isAPriority)
-            worker.interrupt();
     }
 
-    private boolean isThisNewWorkAPriority(Work work) {
-        if(worker.getCurrent() == null)
-            return false;
+    public void startWorker(String solverLocation) {
+        assert worker == null;
 
-        if(currentWorkQueue.comparator().compare(work, worker.getCurrent()) < 0)
-            return true;
+        worker = new QueueWorker(solverLocation);
+        worker.start();
+    }
 
-        return false;
+    public void stopWorker() {
+        assert worker != null;
+
+        if(worker != null) {
+            worker.stopSolver();
+        }
     }
 
     protected class QueueWorker extends Thread {
-        public QueueWorker() {}
+        private ISolver solver;
+        private volatile boolean stopRequested = false;
+        private Work current;
+        public Work getCurrent() { return current; }
 
-        ISolver solver = new PioSolver();
+        public QueueWorker(String solverLocation) {
+            try {
+                solver = new PioSolver();
+                solver.connectAndInit(solverLocation);
+            } catch (IOException e) {
+                // todo: log error.
+                return;
+            }
+        }
 
-        Work current = null;
-        public Work getCurrent() {
-            return current;
+        public void stopSolver() {
+            try {
+                stopRequested = true;
+                solver.stop(); // Breaks from active solve
+                worker.interrupt(); // Breaks from Queue wait.
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
 
         public void run() {
-            try {
-                solver.connectAndInit("C:\\PioSolver Edge\\PioSOLVER-edge.exe");
-            } catch (IOException e) {
-                // todo: log error. Also, try a relaunch of this thread if the solver path is updated.
-                return;
-            }
-
             while(true) {
                 current = null;
                 try {
@@ -65,62 +72,63 @@ public class WorkQueueModel {
                     solver.waitForReady();
                     doWork(current);
                 } catch(IOException e) {
-                    //todo: log e.
-                    return;
+                    //todo: log e. Work on next item should continue
                 } catch (InterruptedException e) {
-                    // Our work was interrupted by a new task of higher priority.
-                    // send clear_state commands to the solver & abort it's current work.
-                    try {
-                        solver.waitForReady();
-                    } catch (InterruptedException | IOException ex) {
-                        ex.printStackTrace();
-                        // critical problem. todo: kill ourselves and restart after logging
-                    }
+                    // stopRequest has already been set.
+                }
 
+                if(stopRequested) {
                     // Save our Work progress and reinsert it back into the queue ...
                     if(current != null) {
                         currentWorkQueue.add(current);
                     }
 
-                    // and when we continue, we break out and start working on the new item.
-                    continue;
+                    try {
+                        solver.shutdown();
+                        // We await no confirmation. Is that okay?
+                    } catch (IOException ioException) {
+                        // Ignore exception as we're shutting down anyway.
+                    }
+
+                    return;
                 }
             }
-
-            // solver.disconnect();
         }
 
-        private void doWork(Work work) throws InterruptedException {
+        private void doWork(Work work) {
             Ranges ranges = work.getRanges();
 
-
-            while(!work.isCompleted()) {
+            while(!work.isCompleted() && !stopRequested) {
                 SolveData currentSolve = work.getCurrentTask();
                 String saveFolder = currentSolve.getSolverSettings().getSolveSaveLocation() + "\\" + work.name + "\\";
                 String fileName = currentSolve.getHandData().limit_name + "-" + CardResolver.getBoardString(currentSolve.getHandData()) +
                         "-" + currentSolve.getHandData().id_hand;
 
                 try {
-                    dispatchSolve(currentSolve, ranges);
-                    solver.dumpTree("\"" + saveFolder + fileName + "\"", "no_rivers");
+                    SolveResults results = dispatchSolve(currentSolve, ranges);
+                    work.getCurrentTask().saveSolveResults(results);
+
+                    if(results.success)
+                        solver.dumpTree("\"" + saveFolder + fileName + "\"", "no_rivers");
 
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
 
-                SolveResults results = new SolveResults();
-                currentSolve.saveSolveResults(results);
-                work.workFinished();
+                if(!stopRequested)
+                    work.workFinished();
             }
         }
 
-        private void dispatchSolve(SolveData solve, Ranges ranges) throws InterruptedException, IOException {
+        private SolveResults dispatchSolve(SolveData solve, Ranges ranges) throws IOException {
+            SolveResults results = new SolveResults();
+
             RangeData oopRange = ranges.getRangeForHand(solve.getHandData().oopPlayer);
             RangeData ipRange = ranges.getRangeForHand(solve.getHandData().ipPlayer);
 
             if(ipRange == null || oopRange == null) {
                 //todo log error
-                return;
+                return results;
             }
 
             HandData handData = solve.getHandData();
@@ -166,7 +174,11 @@ public class WorkQueueModel {
             solver.clearLines();
             solver.buildTree();
 
-            solver.setBuiltTreeAsActive();
+            String builtTreeResults = solver.setBuiltTreeAsActive();
+            if(builtTreeResults.startsWith("ERROR")) {
+                // Todo: Log error. Likely insufficient ram.
+                return results;
+            }
 
             String treeSize = solver.getEstimateSchematicTree();
 
@@ -177,6 +189,11 @@ public class WorkQueueModel {
             solver.go();
 
             String calcResults = solver.waitForSolve();
+
+            if(!stopRequested)
+                results.success = true;
+
+            return results;
         }
     }
 

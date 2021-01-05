@@ -9,6 +9,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -58,9 +59,11 @@ public class GTOHelperController  {
     private void initializeControllers() {
         // Save the callbacks before loading models. Some models use these.
         dbConnectionController.savePlayerSelectionConfirmedCallback(this::playerSelectedDataPropagation);
-        solverSettingsController.saveDisplayFolderChooserCallback(this::displayFileChooser);
-        handAnalysisController.saveSolveHandsCallback(this::analyzeHands);
+        solverSettingsController.saveDisplayFolderChooserCallback(this::displayFolderChooser);
+        solverSettingsController.saveDisplayFileChooserCallback(this::displayFileChooser);
         solverSettingsController.saveBetSettingsChangedCallback(this::betSettingsUpdatedDataPropogation);
+        handAnalysisController.saveSolveHandsCallback(this::analyzeHands);
+        workQueueController.saveGetSolverLocationCallback(this::getSolverLocation);
 
         dbConnectionController.loadModel(saveHelper);
         handAnalysisController.loadModel(saveHelper);
@@ -71,8 +74,12 @@ public class GTOHelperController  {
         Callbacks section
      */
 
-    public File displayFileChooser(DirectoryChooser chooser) {
+    public File displayFolderChooser(DirectoryChooser chooser) {
         return chooser.showDialog(stage);
+    }
+
+    public File displayFileChooser(FileChooser chooser) {
+        return chooser.showOpenDialog(stage);
     }
 
     public void playerSelectedDataPropagation(Player player) {
@@ -87,6 +94,10 @@ public class GTOHelperController  {
     public void analyzeHands(List<HandData> hands, String betSettingName) {
         workQueueController.receiveNewWork(buildWork(hands, betSettingName));
         mainTabPain.getSelectionModel().select(workQueueTab);
+    }
+
+    public String getSolverLocation() {
+        return solverSettingsController.getSolverLocation();
     }
 
     private Work buildWork(List<HandData> hands, String betSettingName) {

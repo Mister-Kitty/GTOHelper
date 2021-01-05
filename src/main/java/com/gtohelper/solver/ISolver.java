@@ -22,7 +22,7 @@ public interface ISolver {
 
     void clearLines() throws IOException;
     void buildTree();
-    void setBuiltTreeAsActive() throws IOException; // aka add_lines function
+    String setBuiltTreeAsActive() throws IOException; // aka add_lines function
 
 
     String getEstimateSchematicTree() throws IOException;
@@ -30,6 +30,8 @@ public interface ISolver {
     String getCalcResults() throws IOException;
 
     void go() throws IOException;
+    void stop() throws IOException;
+    void shutdown() throws IOException;
 
     void waitForReady() throws IOException, InterruptedException;
     String waitForSolve() throws IOException;
