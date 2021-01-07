@@ -107,12 +107,17 @@ public class GTOHelperController  {
         BettingOptions treeData = solverSettingsController.getBetSettingByName(betSettingName);
         Ranges workRanges = solverSettingsController.loadRangeFiles();
         SolverSettings solverSettings = new SolverSettings(.5f);
+        RakeData rakeData = solverSettingsController.loadRakeData();
+
+        if(rakeData == null) {
+            // todo: log any null values, display popup, and abort.
+        }
 
         for(HandData hand : hands) {
             solveList.add(new SolveData(hand, treeData, solverSettings));
         }
 
-        return new Work(solveList, workRanges, hero);
+        return new Work(solveList, workRanges, rakeData, hero);
     }
 
     private void initializeControls() {

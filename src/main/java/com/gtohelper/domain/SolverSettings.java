@@ -3,9 +3,11 @@ package com.gtohelper.domain;
 public class SolverSettings {
 
     float percentOfPotAccuracy;
+    boolean useRake;
     String solveSaveLocation = "C:\\Users\\jordan\\IdeaProjects\\piohelper\\solver results";
 
     public SolverSettings(float percentPotAccuracy) {
+        useRake = true;
         percentOfPotAccuracy = percentPotAccuracy;
     }
 
@@ -16,6 +18,6 @@ public class SolverSettings {
     public String getSolveSaveLocation() {
         return solveSaveLocation;
     }
-
+    public boolean getUseRake() { return useRake; }
 
 }

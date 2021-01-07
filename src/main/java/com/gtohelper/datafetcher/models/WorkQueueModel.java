@@ -97,6 +97,7 @@ public class WorkQueueModel {
 
         private void doWork(Work work) {
             Ranges ranges = work.getRanges();
+            RakeData rakeData = work.getRakeData();
 
             while(!work.isCompleted() && !stopRequested) {
                 SolveData currentSolve = work.getCurrentTask();
@@ -105,7 +106,7 @@ public class WorkQueueModel {
                         "-" + currentSolve.getHandData().id_hand;
 
                 try {
-                    SolveResults results = dispatchSolve(currentSolve, ranges);
+                    SolveResults results = dispatchSolve(currentSolve, ranges, rakeData);
                     work.getCurrentTask().saveSolveResults(results);
 
                     if(results.success)
@@ -120,7 +121,7 @@ public class WorkQueueModel {
             }
         }
 
-        private SolveResults dispatchSolve(SolveData solve, Ranges ranges) throws IOException {
+        private SolveResults dispatchSolve(SolveData solve, Ranges ranges, RakeData rakeData) throws IOException {
             SolveResults results = new SolveResults();
 
             RangeData oopRange = ranges.getRangeForHand(solve.getHandData().oopPlayer);
@@ -178,6 +179,15 @@ public class WorkQueueModel {
             if(builtTreeResults.startsWith("ERROR")) {
                 // Todo: Log error. Likely insufficient ram.
                 return results;
+            }
+
+            // Rake is after tree building for some reason.
+            if(solve.getSolverSettings().getUseRake()) {
+                float percent = rakeData.getRakeForBB(handData.cnt_players);
+                float dollarCap = rakeData.getCapForBB(handData.amt_bb, handData.cnt_players);
+                float chipCap = handData.getValueAsChips(dollarCap);
+
+                solver.setRake(percent, chipCap);
             }
 
             String treeSize = solver.getEstimateSchematicTree();

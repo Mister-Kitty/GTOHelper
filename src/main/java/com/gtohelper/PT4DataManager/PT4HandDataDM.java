@@ -109,7 +109,7 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
 
     private ArrayList<HandData> getHandSummaryData(String innerQuery) throws SQLException {
         final String handSummaryOuterQuerySql =
-                "SELECT summary.id_hand, summary.date_played, summary.amt_pot, summary.card_1,\n" +
+                "SELECT summary.id_hand, summary.date_played, summary.cnt_players, summary.amt_pot, summary.card_1,\n" +
                 "       summary.card_2, summary.card_3, summary.card_4, summary.card_5,\n" +
                 "       summary.str_actors_p, summary.str_aggressors_p, summary.amt_pot_f,\n" +
                 "       table_limit.limit_name, table_limit.amt_sb, table_limit.amt_bb\n" +
@@ -180,6 +180,7 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
 
         hand.id_hand = rs.getInt("id_hand");
         hand.date_played = rs.getTimestamp("date_played");
+        hand.cnt_players = rs.getShort("cnt_players");
         hand.amt_pot = rs.getFloat("amt_pot");
         hand.card_1 = rs.getShort("card_1");
         hand.card_2 = rs.getShort("card_2");

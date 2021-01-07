@@ -9,6 +9,7 @@ public class Work {
     Player hero;
     ArrayList<SolveData> workTasks;
     Ranges ranges;
+    RakeData rakeData;
 
     public String name = "Review Hands for Dec 16";
     private int currentWorkIndex = 0;
@@ -37,6 +38,8 @@ public class Work {
 
     public Ranges getRanges() { return ranges; }
 
+    public RakeData getRakeData() { return rakeData; }
+
     public String getCurrentHand() {
         return CardResolver.getHandStringForPlayer(hero, getCurrentTask().handData);
     }
@@ -45,11 +48,12 @@ public class Work {
         return CardResolver.getBoardString(getCurrentTask().handData);
     }
 
-    public Work(List<SolveData> w, Ranges r, Player h) {
+    public Work(List<SolveData> w, Ranges r, RakeData rake, Player h) {
         assert w.size() != 0;
         workTasks = new ArrayList<>(w);
         ranges = r;
         hero = h;
+        rakeData = rake;
     }
 
     public void workFinished() {

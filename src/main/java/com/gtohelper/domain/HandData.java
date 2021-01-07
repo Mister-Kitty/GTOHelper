@@ -7,6 +7,7 @@ import java.util.ArrayList;
 public class HandData {
     public int id_hand;
     public Timestamp date_played;
+    public short cnt_players;
     public float amt_pot;
     public short card_1;
     public short card_2;
@@ -31,7 +32,7 @@ public class HandData {
     public int getValueAsChips(float value) {
         // We want 1BB = 100 chips.
         // Convert value into number of BB.
-        // max effective stack is 65535 chips in pio. This gives us ~6500BB max stack
+        // max effective stack is 65535 chips in pio. This gives us ~650BB max stack
         float numberOfBB = (value / amt_bb);
         return (int) (numberOfBB * 100);
     }

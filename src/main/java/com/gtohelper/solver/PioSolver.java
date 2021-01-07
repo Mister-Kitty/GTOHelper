@@ -103,6 +103,12 @@ public class PioSolver implements ISolver {
     }
 
     @Override
+    public void setRake(float percent, float chipCap) throws IOException {
+        writeToOutput("set_rake " + percent + " " + chipCap);
+        readNLinesFromInput(1);
+    }
+
+    @Override
     public void setIsomorphism(boolean flop, boolean turn) throws IOException {
         int flopIso, turnIso;
         if(flop) flopIso = 1; else flopIso = 0;

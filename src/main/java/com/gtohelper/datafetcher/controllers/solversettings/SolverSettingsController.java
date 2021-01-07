@@ -2,6 +2,7 @@ package com.gtohelper.datafetcher.controllers.solversettings;
 
 import com.gtohelper.datafetcher.models.solversettings.SolverSettingsModel;
 import com.gtohelper.domain.BettingOptions;
+import com.gtohelper.domain.RakeData;
 import com.gtohelper.domain.Ranges;
 import com.gtohelper.utility.SaveFileHelper;
 import javafx.fxml.FXML;
@@ -9,6 +10,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -62,4 +64,5 @@ public class SolverSettingsController {
         return rangeFilesController.loadRangeFiles();
     }
 
+    public RakeData loadRakeData() { return otherSettingsController.loadRakeData(); }
 }

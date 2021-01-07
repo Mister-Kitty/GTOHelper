@@ -19,6 +19,7 @@ public interface ISolver {
     void setOOPFlop(boolean addAllIn, String cbetSizesString, String raiseSizesString, String donkSizesString);
     void setOOPTurn(boolean addAllIn, String betSizesString, String raiseSizesString, String donkSizesString);
     void setOOPRiver(boolean addAllIn, String betSizesString, String raiseSizesString, String donkSizesString);
+    void setRake(float percent, float chipCap) throws IOException;
 
     void clearLines() throws IOException;
     void buildTree();
