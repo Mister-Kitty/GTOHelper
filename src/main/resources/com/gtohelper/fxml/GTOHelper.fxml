@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
-<?import java.lang.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.layout.GridPane?>
 
 
-<Pane xmlns="http://javafx.com/javafx/8"
+<AnchorPane xmlns="http://javafx.com/javafx/8"
           xmlns:fx="http://javafx.com/fxml/1"
           fx:controller="com.gtohelper.datafetcher.controllers.GTOHelperController">
    <children>
-      <TabPane fx:id="mainTabPain" prefWidth="${mainTabPain.parent.width}" prefHeight="${mainTabPain.parent.height}" tabClosingPolicy="UNAVAILABLE">
+      <TabPane fx:id="mainTabPain" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" tabClosingPolicy="UNAVAILABLE">
         <tabs>
           <Tab fx:id="workQueueTab"  id="workQueueTab" text="Work Queue">
             <content>
@@ -32,12 +30,12 @@
               <fx:include fx:id="dbConnection" source="/com/gtohelper/fxml/DBConnection.fxml"/>
             </content>
           </Tab>
-          <Tab text="Debug Output">
+          <Tab fx:id="debugOutputTab" id="debugOutput"  text="Debug Output">
             <content>
-              <TextArea wrapText="true"/>
-             </content>
+              <fx:include fx:id="debugOutput" source="/com/gtohelper/fxml/DebugOutput.fxml"/>
+            </content>
           </Tab>
         </tabs>
       </TabPane>
    </children>
-</Pane>
+</AnchorPane>

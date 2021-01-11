@@ -54,8 +54,8 @@
                      <children>
                         <ToolBar prefHeight="40.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                           <items>
-                            <Button mnemonicParsing="false" onAction="#startWorker" text="Start Solver" />
-                            <Button mnemonicParsing="false" onAction="#stopWorker" text="Stop Solver" />
+                            <Button fx:id="startButton" mnemonicParsing="false" onAction="#startWorker" text="Start Solver" />
+                            <Button fx:id="stopButton" disable="true" mnemonicParsing="false" onAction="#stopWorker" text="Stop Solver" />
                           </items>
                         </ToolBar>
                      </children>

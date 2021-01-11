@@ -1,6 +1,8 @@
 package com.gtohelper.solver;
 
 import com.gtohelper.domain.BettingOptions;
+import com.gtohelper.utility.Logger;
+import com.gtohelper.utility.Popups;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -159,13 +161,20 @@ public class PioSolver implements ISolver {
 
     @Override
     public void waitForReady() throws IOException, InterruptedException {
+        int count = 0;
         while(true) {
             writeToOutput("is_ready");
             String result = readNLinesFromInput(1);
             if(result.trim().equals("is_ready ok!"))
                 return;
-            else
+            else {
+                if(count == 12)
+                    Popups.showWarning("Warning: Piosolver has refused new work for over a minute. The process may not be responding.");
+
+                Logger.log(Logger.Channel.PIO, "is_ready returned false. Will try again after 5 seconds.");
                 Thread.sleep(5000);
+                count++;
+            }
         }
     }
 
@@ -240,6 +249,7 @@ public class PioSolver implements ISolver {
         output.write(command);
         output.newLine();
         output.flush();
+  //      Logger.log(Logger.Channel.PIO, command);
         System.out.println(command);
     }
 
@@ -250,6 +260,7 @@ public class PioSolver implements ISolver {
             results += currentLine + "\n";
             numLines--;
         }
+ //       Logger.log(Logger.Channel.PIO, results.trim());
         System.out.println(results.trim());
         return results.trim();
     }
@@ -263,6 +274,7 @@ public class PioSolver implements ISolver {
         String currentLine;
         while ((currentLine = input.readLine()) != null) {
             System.out.println(currentLine.trim());
+ //           Logger.log(Logger.Channel.PIO, currentLine.trim());
             if(currentLine.trim().startsWith(terminalPrefix))
                 break;
             results += currentLine  + "\n";

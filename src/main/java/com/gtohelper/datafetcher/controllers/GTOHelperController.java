@@ -2,6 +2,8 @@ package com.gtohelper.datafetcher.controllers;
 
 import com.gtohelper.datafetcher.controllers.solversettings.SolverSettingsController;
 import com.gtohelper.domain.*;
+import com.gtohelper.utility.Logger;
+import com.gtohelper.utility.Popups;
 import com.gtohelper.utility.SaveFileHelper;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -31,10 +33,14 @@ public class GTOHelperController  {
     WorkQueueController workQueueController;
 
     @FXML
+    DebugOutputController debugOutputController;
+
+    @FXML
     TabPane mainTabPain;
     @FXML Tab handAnalysisTab;
     @FXML Tab workQueueTab;
     @FXML Tab dbConnectionTab;
+    @FXML Tab debugOutputTab;
 
     private Stage stage;
     private SaveFileHelper saveHelper = new SaveFileHelper();
@@ -92,7 +98,11 @@ public class GTOHelperController  {
     }
 
     public void analyzeHands(List<HandData> hands, String betSettingName) {
-        workQueueController.receiveNewWork(buildWork(hands, betSettingName));
+        Work work = buildWork(hands, betSettingName);
+        if(work == null)
+            return;
+
+        workQueueController.receiveNewWork(work);
         mainTabPain.getSelectionModel().select(workQueueTab);
     }
 
@@ -102,15 +112,25 @@ public class GTOHelperController  {
 
     private Work buildWork(List<HandData> hands, String betSettingName) {
         ArrayList<SolveData> solveList = new ArrayList<>();
-
         Player hero = dbConnectionController.getPlayer();
-        BettingOptions treeData = solverSettingsController.getBetSettingByName(betSettingName);
-        Ranges workRanges = solverSettingsController.loadRangeFiles();
         SolverSettings solverSettings = new SolverSettings(.5f);
-        RakeData rakeData = solverSettingsController.loadRakeData();
 
+        BettingOptions treeData = solverSettingsController.getBetSettingByName(betSettingName);
+        if(treeData == null) {
+            Popups.showError("Failed to load bet settings for " + betSettingName);
+            return null;
+        }
+
+        Ranges workRanges = solverSettingsController.loadRangeFiles();
+        if(workRanges == null) {
+            Popups.showError("Failed to load required range files.");
+            return null;
+        }
+
+        RakeData rakeData = solverSettingsController.loadRakeData();
         if(rakeData == null) {
-            // todo: log any null values, display popup, and abort.
+            Popups.showError("Failed to load rake data. Fix this in the Bet Settings tab or select no rake and retry.");
+            return null;
         }
 
         for(HandData hand : hands) {

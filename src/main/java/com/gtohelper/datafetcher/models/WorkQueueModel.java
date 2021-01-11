@@ -4,30 +4,41 @@ import com.gtohelper.domain.*;
 import com.gtohelper.solver.ISolver;
 import com.gtohelper.solver.PioSolver;
 import com.gtohelper.utility.CardResolver;
+import com.gtohelper.utility.Logger;
 
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.function.Consumer;
 
 public class WorkQueueModel {
     QueueWorker worker;
     final int defaultInitialCapacity = 15;
+    Consumer<Boolean> updateSolverStatusCallback;
     public volatile PriorityBlockingQueue<Work> currentWorkQueue;
     public volatile PriorityBlockingQueue<Work> finishedWorkQueue;
 
-    public WorkQueueModel() {
+    public WorkQueueModel(Consumer<Boolean> solverStatusCallback) {
         currentWorkQueue = new PriorityBlockingQueue<>(defaultInitialCapacity, leastWorkToDoFirst);
+        updateSolverStatusCallback = solverStatusCallback;
     }
 
     public void receiveNewWork(Work work) {
         currentWorkQueue.add(work);
     }
 
-    public void startWorker(String solverLocation) {
+    public boolean startWorker(String solverLocation) {
         assert worker == null;
 
+        updateSolverStatusCallback.accept(true);
         worker = new QueueWorker(solverLocation);
+        if(worker.hasFatalErrorOccured()) {
+            updateSolverStatusCallback.accept(false);
+            return false;
+        }
+
         worker.start();
+        return true;
     }
 
     public void stopWorker() {
@@ -43,15 +54,21 @@ public class WorkQueueModel {
         private volatile boolean stopRequested = false;
         private Work current;
         public Work getCurrent() { return current; }
+        private boolean fatalErrorOccured = false;
 
         public QueueWorker(String solverLocation) {
             try {
                 solver = new PioSolver();
                 solver.connectAndInit(solverLocation);
             } catch (IOException e) {
-                // todo: log error.
-                return;
+                Logger.log(Logger.Channel.PIO, "Error occured launching Pio. Perhaps the executable address changed or we do not have read permission?\n" +
+                        e.toString());
+                fatalErrorOccured = true;
             }
+        }
+
+        public boolean hasFatalErrorOccured() {
+            return fatalErrorOccured;
         }
 
         public void stopSolver() {
@@ -65,33 +82,40 @@ public class WorkQueueModel {
         }
 
         public void run() {
-            while(true) {
-                current = null;
-                try {
-                    current = currentWorkQueue.take();
-                    solver.waitForReady();
-                    doWork(current);
-                } catch(IOException e) {
-                    //todo: log e. Work on next item should continue
-                } catch (InterruptedException e) {
-                    // stopRequest has already been set.
-                }
-
-                if(stopRequested) {
-                    // Save our Work progress and reinsert it back into the queue ...
-                    if(current != null) {
-                        currentWorkQueue.add(current);
-                    }
-
+            try {
+                while (true) {
+                    current = null;
                     try {
-                        solver.shutdown();
-                        // We await no confirmation. Is that okay?
-                    } catch (IOException ioException) {
-                        // Ignore exception as we're shutting down anyway.
+                        current = currentWorkQueue.take();
+                        solver.waitForReady();
+                        doWork(current);
+                    } catch (IOException e) {
+                        Logger.log("Error occured communicating with Pio. Perhaps the process crashed? Stopping...\n" +
+                                e.toString());
+                        fatalErrorOccured = true;
+                        stopSolver();
+                    } catch (InterruptedException e) {
+                        // stopRequest has already been set.
                     }
 
-                    return;
+                    if (stopRequested) {
+                        // Save our Work progress and reinsert it back into the queue ...
+                        if (current != null) {
+                            currentWorkQueue.add(current);
+                        }
+
+                        try {
+                            solver.shutdown();
+                            // We await no confirmation. Is that okay?
+                        } catch (IOException ioException) {
+                            // Ignore exception as we're shutting down anyway.
+                        }
+
+                        return;
+                    }
                 }
+            } finally {
+                updateSolverStatusCallback.accept(false);
             }
         }
 
@@ -128,7 +152,9 @@ public class WorkQueueModel {
             RangeData ipRange = ranges.getRangeForHand(solve.getHandData().ipPlayer);
 
             if(ipRange == null || oopRange == null) {
-                //todo log error
+                Logger.log(String.format("Could not resolve range files for handId = %d (aka board %s, %d bet pot, with aggressor seats %s)",
+                        solve.getHandData().id_hand, CardResolver.getBoardString(solve.getHandData()),
+                        solve.getHandData().highestPreflopBetLevel, solve.getHandData().str_aggressors_p));
                 return results;
             }
 
@@ -177,7 +203,7 @@ public class WorkQueueModel {
 
             String builtTreeResults = solver.setBuiltTreeAsActive();
             if(builtTreeResults.startsWith("ERROR")) {
-                // Todo: Log error. Likely insufficient ram.
+                Logger.log(Logger.Channel.PIO, String.format("Error building tree. Reason: \n  %s", builtTreeResults));
                 return results;
             }
 
@@ -188,6 +214,8 @@ public class WorkQueueModel {
                 float chipCap = handData.getValueAsChips(dollarCap);
 
                 solver.setRake(percent, chipCap);
+            } else {
+                solver.setRake(0f, 0f);
             }
 
             String treeSize = solver.getEstimateSchematicTree();

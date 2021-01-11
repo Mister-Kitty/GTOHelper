@@ -16,7 +16,7 @@ public class OtherSettingsModel extends Saveable {
         HashMap<String, String> values = new HashMap<>();
         values.put("solverLocation", "");
         values.put("viewerLocation", "");
-        values.put("rakeLocation", "");
+        values.put("rakeLocation", "DefaultRakeFile.csv");
         return values;
     }
 
