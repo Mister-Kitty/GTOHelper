@@ -10,39 +10,49 @@
    <children>
       <HBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <VBox>
+            <VBox HBox.hgrow="NEVER">
                <children>
-                  <AnchorPane VBox.vgrow="NEVER">
+                  <AnchorPane style="-fx-background-color: LIGHTGREY;" VBox.vgrow="NEVER">
                      <children>
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Finished Work" textAlignment="CENTER" wrappingWidth="232.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="NEVER">
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Finished Work" textAlignment="CENTER" wrappingWidth="232.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="NEVER">
                            <font>
                               <Font size="13.0" />
                            </font>
                         </Text>
                      </children>
                   </AnchorPane>
-                  <ListView fx:id="finishedWork" editable="true" HBox.hgrow="NEVER" VBox.vgrow="ALWAYS" />
+                  <ListView fx:id="finishedWork" editable="true" style="-fx-box-border: transparent;" HBox.hgrow="NEVER" VBox.vgrow="ALWAYS" />
                </children>
             </VBox>
-            <VBox>
+            <VBox HBox.hgrow="NEVER">
                <children>
-                  <AnchorPane VBox.vgrow="NEVER">
+                  <AnchorPane style="-fx-background-color: LIGHTGREY;" VBox.vgrow="NEVER">
                      <children>
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Current Work Queue" textAlignment="CENTER" wrappingWidth="232.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="NEVER">
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Current Work" textAlignment="CENTER" wrappingWidth="232.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="NEVER">
                            <font>
                               <Font size="13.0" />
                            </font>
                         </Text>
                      </children>
                   </AnchorPane>
-                  <ListView fx:id="currentWorkQueue" editable="true" HBox.hgrow="NEVER" VBox.vgrow="ALWAYS" />
+                  <ListView fx:id="currentWorkItem" editable="true" prefHeight="86.0" VBox.vgrow="NEVER" />
+                  <AnchorPane style="-fx-background-color: LIGHTGREY;" VBox.vgrow="NEVER">
+                     <children>
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Future Work Queue" textAlignment="CENTER" wrappingWidth="232.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="NEVER">
+                           <font>
+                              <Font size="13.0" />
+                           </font>
+                        </Text>
+                     </children>
+                  </AnchorPane>
+                  <ListView fx:id="futureWorkQueue" editable="true" HBox.hgrow="NEVER" VBox.vgrow="ALWAYS" />
                </children>
             </VBox>
-            <VBox>
+            <VBox style="-fx-background-color: white;" HBox.hgrow="ALWAYS">
                <children>
-                  <AnchorPane VBox.vgrow="NEVER">
+                  <AnchorPane style="-fx-background-color: LIGHTGREY;" VBox.vgrow="NEVER">
                      <children>
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Inspect Work Item" textAlignment="CENTER" wrappingWidth="232.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="NEVER">
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Selected Work Item" textAlignment="CENTER" wrappingWidth="232.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="NEVER">
                            <font>
                               <Font size="13.0" />
                            </font>

@@ -2,27 +2,44 @@ package com.gtohelper.datafetcher.controllers;
 
 import com.gtohelper.datafetcher.models.WorkQueueModel;
 import com.gtohelper.domain.Work;
+import com.gtohelper.fxml.WorkItem;
 import com.gtohelper.fxml.WorkListViewCell;
 import com.gtohelper.utility.Popups;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.ListView;
+import javafx.scene.layout.GridPane;
 import javafx.stage.StageStyle;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.io.File;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class WorkQueueController {
-    WorkQueueModel workQueueModel = new WorkQueueModel(this::updateSolverStatusCallback);
+    WorkQueueModel workQueueModel = new WorkQueueModel(this::updateSolverStatusCallback, this::updateGUI);
 
     @FXML
-    ListView<Work> currentWorkQueue;
+    ListView<Work> finishedWork;
+    ObservableList<Work> finishedWorkItems = FXCollections.observableArrayList();
+
+    @FXML
+    ListView<Work> currentWorkItem;
+    ObservableList<Work> currentWorkItems = FXCollections.observableArrayList();
+
+    @FXML
+    ListView<Work> futureWorkQueue;
+    ObservableList<Work> futureWorkItems = FXCollections.observableArrayList();
 
     @FXML
     Button startButton, stopButton;
@@ -33,7 +50,22 @@ public class WorkQueueController {
 
     @FXML
     void initialize() {
-        currentWorkQueue.setCellFactory(listView -> new WorkListViewCell());
+        initializeControls();
+    }
+
+    private void initializeControls() {
+        finishedWork.setItems(finishedWorkItems);
+        futureWorkQueue.setItems(futureWorkItems);
+        currentWorkItem.setItems(currentWorkItems);
+
+        futureWorkQueue.setCellFactory(listView -> new WorkListViewCell());
+
+ //       finishedWork.getSelectionModel().selectedItemProperty().addListener();
+    }
+
+    public void onSelectedItemChange(ObservableValue<Work> observable, Work oldValue, Work newValue) {
+        // Your action here
+        //System.out.println("Selected item: " + );
     }
 
     @FXML
@@ -61,8 +93,22 @@ public class WorkQueueController {
     }
 
     public void receiveNewWork(Work work) {
-        currentWorkQueue.getItems().add(work);
         workQueueModel.receiveNewWork(work);
+    }
+
+    public void updateGUI() {
+        Platform.runLater(() -> {
+            finishedWorkItems.clear();
+            finishedWorkItems.addAll(workQueueModel.getFinishedWork());
+
+            currentWorkItems.clear();
+            Work current = workQueueModel.getCurrentWork();
+            if(current != null)
+                currentWorkItems.add(current);
+
+            futureWorkItems.clear();
+            futureWorkItems.addAll(workQueueModel.getFutureWorkQueue());
+        });
     }
 
     public void updateSolverStatusCallback(Boolean isRunning) {

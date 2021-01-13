@@ -7,24 +7,49 @@ import com.gtohelper.utility.CardResolver;
 import com.gtohelper.utility.Logger;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.function.Consumer;
 
+/*
+    updateGUICallback.run() MUST be called after every change to finishedWork and futureWorkQueue.
+ */
+
 public class WorkQueueModel {
-    QueueWorker worker;
+    private QueueWorker worker;
     final int defaultInitialCapacity = 15;
     Consumer<Boolean> updateSolverStatusCallback;
-    public volatile PriorityBlockingQueue<Work> currentWorkQueue;
-    public volatile PriorityBlockingQueue<Work> finishedWorkQueue;
+    Runnable updateGUICallback;
+    private PriorityBlockingQueue<Work> finishedWork;
+    private PriorityBlockingQueue<Work> futureWorkQueue;
 
-    public WorkQueueModel(Consumer<Boolean> solverStatusCallback) {
-        currentWorkQueue = new PriorityBlockingQueue<>(defaultInitialCapacity, leastWorkToDoFirst);
+    public WorkQueueModel(Consumer<Boolean> solverStatusCallback, Runnable updateGUI) {
+        futureWorkQueue = new PriorityBlockingQueue<Work>(defaultInitialCapacity, leastWorkToDoFirst);
+        finishedWork = new PriorityBlockingQueue<Work>(defaultInitialCapacity, leastWorkToDoFirst);
         updateSolverStatusCallback = solverStatusCallback;
+        updateGUICallback = updateGUI;
+    }
+
+    public ArrayList<Work> getFinishedWork() {
+        return new ArrayList(finishedWork);
+    }
+
+    public ArrayList<Work> getFutureWorkQueue() {
+        return new ArrayList(futureWorkQueue);
+    }
+
+    public Work getCurrentWork() {
+        Work result = null;
+        if(worker != null)
+            result = worker.getCurrent();
+
+        return result;
     }
 
     public void receiveNewWork(Work work) {
-        currentWorkQueue.add(work);
+        futureWorkQueue.add(work);
+        updateGUICallback.run();
     }
 
     public boolean startWorker(String solverLocation) {
@@ -86,7 +111,8 @@ public class WorkQueueModel {
                 while (true) {
                     current = null;
                     try {
-                        current = currentWorkQueue.take();
+                        current = futureWorkQueue.take();
+                        updateGUICallback.run();
                         solver.waitForReady();
                         doWork(current);
                     } catch (IOException e) {
@@ -100,8 +126,9 @@ public class WorkQueueModel {
 
                     if (stopRequested) {
                         // Save our Work progress and reinsert it back into the queue ...
-                        if (current != null) {
-                            currentWorkQueue.add(current);
+                        if (current != null && !current.isCompleted()) {
+                            futureWorkQueue.add(current);
+                            updateGUICallback.run();
                         }
 
                         try {

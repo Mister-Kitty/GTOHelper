@@ -9,8 +9,10 @@ public class WorkListViewCell extends ListCell<Work>
     public void updateItem(Work work, boolean empty)
     {
         super.updateItem(work,empty);
-        if(work != null)
-        {
+
+        if (empty || work == null) {
+            setGraphic(null);
+        } else {
             WorkItem data = new WorkItem(work);
             setGraphic(data.getRootGridPane());
         }
