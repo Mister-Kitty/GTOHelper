@@ -1,13 +1,17 @@
 package com.gtohelper.domain;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 // HandData is a mix of cash_hand_summary & cash_hand_statistics, as we often need a both for GUI and Solve generation
 public class HandData {
     public int id_hand;
-    public Timestamp date_played;
+    public LocalDateTime date_played;
     public short cnt_players;
+    public short cnt_players_f;
+    public short cnt_players_t;
+    public short cnt_players_r;
     public float amt_pot;
     public short card_1;
     public short card_2;
@@ -16,6 +20,8 @@ public class HandData {
     public short card_5;
     public String str_actors_p;
     public String str_aggressors_p;
+    public String str_actors_f;
+    public String str_aggressors_f;
     public float amt_pot_f;
 
     // cash_limit fields
@@ -27,14 +33,21 @@ public class HandData {
     public PlayerHandData oopPlayer;
     public PlayerHandData ipPlayer;
     public int highestPreflopBetLevel; // eg, 1bet, 2bet, 3bet
+    public SolvabilityLevel solveabilityLevel = SolvabilityLevel.NOT_SET;
 
-    // utility functions
-    public int getValueAsChips(float value) {
-        // We want 1BB = 100 chips.
-        // Convert value into number of BB.
-        // max effective stack is 65535 chips in pio. This gives us ~650BB max stack
-        float numberOfBB = (value / amt_bb);
-        return (int) (numberOfBB * 100);
+    public enum SolvabilityLevel {
+        HU_PRE(0),
+        MULTI_PRE_HU_FLOP(1),
+        MULTI_FLOP_HU_FLOP_VPIP(2),
+        MULTI_FLOP_MULTI_VPIP(3),
+        HU_SHOWDOWN(4),
+        MULTI_SHOWDOWN(5),
+        NOT_SET(6);
+
+        int ambiguityLevel;
+        SolvabilityLevel(int level) {
+            ambiguityLevel = level;
+        }
     }
 
     // PlayerHandData and associated functions
@@ -47,6 +60,33 @@ public class HandData {
                 return handData;
         }
         return null;
+    }
+
+    public PlayerHandData getHandDataForPlayer(int playerId) {
+        for(PlayerHandData handData : playerHandData) {
+            if(handData.id_player == playerId)
+                return handData;
+        }
+        return null;
+    }
+
+    // utility functions
+    public int getValueAsChips(float value) {
+        // We want 1BB = 100 chips.
+        // Convert value into number of BB.
+        // max effective stack is 65535 chips in pio. This gives us ~650BB max stack
+        float numberOfBB = (value / amt_bb);
+        return (int) (numberOfBB * 100);
+    }
+
+    public int playersAtShowdown() {
+        // This has to be deduced by looking through PlayerHandData.
+        int count = 0;
+        for(PlayerHandData handData : playerHandData) {
+            if(handData.flg_showdown)
+                count++;
+        }
+        return count;
     }
 
     public static class PlayerHandData {
@@ -62,13 +102,13 @@ public class HandData {
         public String f_action;
         public String t_action;
         public String r_action;
+        public boolean flg_showdown;
 
         // Calculated fields to be set
         // These 3 fields are the info for the last action taken by the player.
         public short p_betLevel;
         public short p_vsPosition;
         public Ranges.LastAction last_p_action;
-
     }
 
     // The following 2 functions are defined to never return the same player, even if they're tied.

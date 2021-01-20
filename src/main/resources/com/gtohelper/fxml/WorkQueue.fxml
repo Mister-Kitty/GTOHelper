@@ -14,64 +14,85 @@
                <children>
                   <AnchorPane style="-fx-background-color: LIGHTGREY;" VBox.vgrow="NEVER">
                      <children>
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Finished Work" textAlignment="CENTER" wrappingWidth="232.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="NEVER">
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Finished Work" textAlignment="CENTER" wrappingWidth="200.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="NEVER">
                            <font>
                               <Font size="13.0" />
                            </font>
                         </Text>
                      </children>
                   </AnchorPane>
-                  <ListView fx:id="finishedWork" editable="true" style="-fx-box-border: transparent;" HBox.hgrow="NEVER" VBox.vgrow="ALWAYS" />
+                  <ListView fx:id="finishedWork" editable="true" prefWidth="170.0" style="-fx-box-border: transparent;" HBox.hgrow="NEVER" VBox.vgrow="ALWAYS" />
                </children>
             </VBox>
             <VBox HBox.hgrow="NEVER">
                <children>
                   <AnchorPane style="-fx-background-color: LIGHTGREY;" VBox.vgrow="NEVER">
                      <children>
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Current Work" textAlignment="CENTER" wrappingWidth="232.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="NEVER">
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Current Work" textAlignment="CENTER" wrappingWidth="200.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="NEVER">
                            <font>
                               <Font size="13.0" />
                            </font>
                         </Text>
                      </children>
                   </AnchorPane>
-                  <ListView fx:id="currentWorkItem" editable="true" prefHeight="86.0" VBox.vgrow="NEVER" />
+                  <ListView fx:id="currentWorkItem" editable="true" maxHeight="108.0" minHeight="108.0" prefHeight="108.0" prefWidth="170.0" VBox.vgrow="NEVER" />
                   <AnchorPane style="-fx-background-color: LIGHTGREY;" VBox.vgrow="NEVER">
                      <children>
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Future Work Queue" textAlignment="CENTER" wrappingWidth="232.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="NEVER">
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Future Work Queue" textAlignment="CENTER" wrappingWidth="200.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="NEVER">
                            <font>
                               <Font size="13.0" />
                            </font>
                         </Text>
                      </children>
                   </AnchorPane>
-                  <ListView fx:id="futureWorkQueue" editable="true" HBox.hgrow="NEVER" VBox.vgrow="ALWAYS" />
+                  <ListView fx:id="futureWorkQueue" editable="true" prefWidth="170.0" HBox.hgrow="NEVER" VBox.vgrow="ALWAYS" />
                </children>
             </VBox>
-            <VBox style="-fx-background-color: white;" HBox.hgrow="ALWAYS">
+            <AnchorPane HBox.hgrow="ALWAYS">
                <children>
-                  <AnchorPane style="-fx-background-color: LIGHTGREY;" VBox.vgrow="NEVER">
+                  <GridPane style="-fx-background-color: white;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" HBox.hgrow="ALWAYS">
                      <children>
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Selected Work Item" textAlignment="CENTER" wrappingWidth="232.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="NEVER">
-                           <font>
-                              <Font size="13.0" />
-                           </font>
-                        </Text>
+                        <AnchorPane style="-fx-background-color: LIGHTGREY;" GridPane.columnSpan="2" GridPane.hgrow="ALWAYS" GridPane.vgrow="NEVER" VBox.vgrow="NEVER">
+                           <children>
+                              <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Selected Work Item" textAlignment="CENTER" wrappingWidth="360.0" AnchorPane.bottomAnchor="3.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="NEVER">
+                                 <font>
+                                    <Font size="13.0" />
+                                 </font>
+                              </Text>
+      
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane GridPane.halignment="LEFT" GridPane.hgrow="NEVER" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                           <children>
+                              <ListView fx:id="handsList" prefWidth="180.0" style="-fx-box-border: transparent;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="ALWAYS">
+
+                     </ListView>
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane GridPane.columnSpan="2" GridPane.rowIndex="2" VBox.vgrow="NEVER">
+                           <children>
+                              <ToolBar AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                                <items>
+                                  <Button fx:id="startButton" mnemonicParsing="false" onAction="#startWorker" text="Start Solver" />
+                                  <Button fx:id="stopButton" disable="true" mnemonicParsing="false" onAction="#stopWorker" text="Stop Solver" />
+                                </items>
+                              </ToolBar>
+                           </children>
+                        </AnchorPane>
+      
                      </children>
-                  </AnchorPane>
-                  <AnchorPane VBox.vgrow="ALWAYS" />
-                  <AnchorPane VBox.vgrow="NEVER">
-                     <children>
-                        <ToolBar prefHeight="40.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-                          <items>
-                            <Button fx:id="startButton" mnemonicParsing="false" onAction="#startWorker" text="Start Solver" />
-                            <Button fx:id="stopButton" disable="true" mnemonicParsing="false" onAction="#stopWorker" text="Stop Solver" />
-                          </items>
-                        </ToolBar>
-                     </children>
-                  </AnchorPane>
+                     <columnConstraints>
+                        <ColumnConstraints hgrow="NEVER" />
+                        <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0" />
+                     </columnConstraints>
+                     <rowConstraints>
+                        <RowConstraints fillHeight="false" vgrow="NEVER" />
+                        <RowConstraints minHeight="10.0" vgrow="ALWAYS" />
+                        <RowConstraints vgrow="NEVER" />
+                     </rowConstraints>
+                  </GridPane>
                </children>
-            </VBox>
+            </AnchorPane>
          </children>
       </HBox>
    </children>

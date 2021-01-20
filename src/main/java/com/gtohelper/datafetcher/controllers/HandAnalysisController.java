@@ -12,9 +12,12 @@ import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 
 import java.sql.SQLException;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
+
+import static javafx.scene.control.TableView.CONSTRAINED_RESIZE_POLICY;
 
 public class HandAnalysisController {
 
@@ -127,7 +130,7 @@ public class HandAnalysisController {
             return row ;
         });
 
-        handsTableDateColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().date_played.toString()));
+        handsTableDateColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().date_played.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
         handsTableCWonColumn.setCellValueFactory(p -> new SimpleStringProperty("" + p.getValue().amt_pot));
         handsTableCardsColumn.setCellValueFactory(p -> new SimpleStringProperty(CardResolver.getHandStringForPlayer(player, p.getValue())));
         handsTableRunoutColumn.setCellValueFactory(p -> new SimpleStringProperty(CardResolver.getBoardString(p.getValue())));

@@ -4,6 +4,7 @@ import com.gtohelper.utility.CardResolver;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class Work {
     Player hero;
@@ -46,6 +47,10 @@ public class Work {
 
     public String getCurrentBoard() {
         return CardResolver.getBoardString(getCurrentTask().handData);
+    }
+
+    public List<HandData> getHandDataList() {
+        return workTasks.stream().map(t -> t.getHandData()).collect(Collectors.toList());
     }
 
     public Work(List<SolveData> w, Ranges r, RakeData rake, Player h) {

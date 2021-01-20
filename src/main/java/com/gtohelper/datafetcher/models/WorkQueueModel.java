@@ -59,6 +59,7 @@ public class WorkQueueModel {
         worker = new QueueWorker(solverLocation);
         if(worker.hasFatalErrorOccured()) {
             updateSolverStatusCallback.accept(false);
+            worker = null;
             return false;
         }
 
@@ -67,11 +68,7 @@ public class WorkQueueModel {
     }
 
     public void stopWorker() {
-        assert worker != null;
-
-        if(worker != null) {
-            worker.stopSolver();
-        }
+        worker.stopSolver();
     }
 
     protected class QueueWorker extends Thread {
@@ -143,6 +140,7 @@ public class WorkQueueModel {
                 }
             } finally {
                 updateSolverStatusCallback.accept(false);
+                worker = null;
             }
         }
 
@@ -153,11 +151,10 @@ public class WorkQueueModel {
             while(!work.isCompleted() && !stopRequested) {
                 SolveData currentSolve = work.getCurrentTask();
                 String saveFolder = currentSolve.getSolverSettings().getSolveSaveLocation() + "\\" + work.name + "\\";
-                String fileName = currentSolve.getHandData().limit_name + "-" + CardResolver.getBoardString(currentSolve.getHandData()) +
-                        "-" + currentSolve.getHandData().id_hand;
+                String fileName = currentSolve.getHandData().id_hand + "-" + work.getCurrentHand() + "-" + work.getCurrentBoard() + ".cfr";
 
                 try {
-                    SolveResults results = dispatchSolve(currentSolve, ranges, rakeData);
+                   SolveResults results = dispatchSolve(currentSolve, ranges, rakeData);
                     work.getCurrentTask().saveSolveResults(results);
 
                     if(results.success)
@@ -165,7 +162,14 @@ public class WorkQueueModel {
 
                 } catch (IOException e) {
                     e.printStackTrace();
+               }
+/*
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
+*/
 
                 if(!stopRequested)
                     work.workFinished();

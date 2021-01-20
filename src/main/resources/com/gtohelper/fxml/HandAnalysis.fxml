@@ -6,111 +6,122 @@
 <?import javafx.scene.layout.*?>
 
 <SplitPane fx:id="rootSplitPane" dividerPositions="0.4" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gtohelper.datafetcher.controllers.HandAnalysisController">
-   <items>
-      <TabPane minWidth="100.0" tabClosingPolicy="UNAVAILABLE">
-        <tabs>
-          <Tab text="Tag">
-            <content>
-              <TableView fx:id="tagTable">
-                <columns>
-                  <TableColumn fx:id="tagTableIdColumn" minWidth="30.0" text="Id#" />
-                  <TableColumn fx:id="tagTableTagColumn" minWidth="70.0" text="Tag" />
-                </columns>
-                     <columnResizePolicy>
-                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                     </columnResizePolicy>
-              </TableView>
-            </content>
-          </Tab>
-            <Tab text="Session">
-               <content>
-                  <TableView>
-                    <columns>
-                      <TableColumn prefWidth="75.0" text="Date" />
-                      <TableColumn prefWidth="75.0" text="Hands" />
-                        <TableColumn prefWidth="75.0" text="Our Hands" />
-                    </columns>
-                     <columnResizePolicy>
-                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                     </columnResizePolicy>
-                  </TableView>
-               </content>
-            </Tab>
-            <Tab text="Position v Position">
-               <content>
-                  <AnchorPane prefHeight="200.0" prefWidth="200.0">
-                     <children>
-                        <VBox disable="true" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                           <children>
-                              <Label text="Hero Seat:" />
-                              <ChoiceBox prefWidth="150.0" />
-                              <Label text="Villain Seat:" />
-                              <ChoiceBox prefWidth="150.0" />
-                              <Label text="2, 3, or 4 bet:" />
-                              <ChoiceBox prefWidth="150.0" />
-                           </children>
-                        </VBox>
-                     </children>
-                  </AnchorPane>
-               </content>
-            </Tab>
-            <Tab text="Board Type">
-              <content>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-              </content>
-            </Tab>
-        </tabs>
-      </TabPane>
-      <AnchorPane>
-         <children>
-            <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-               <children>
-                  <TableView fx:id="handsTable" VBox.vgrow="ALWAYS">
-                    <columns>
-                      <TableColumn fx:id="handsTableDateColumn" text="Date" />
-                      <TableColumn fx:id="handsTableCWonColumn" text="\$ Pot" />
-                      <TableColumn fx:id="handsTableCardsColumn" text="Cards" />
-                      <TableColumn fx:id="handsTableRunoutColumn" text="Runout" />
-                    </columns>
-                     <columnResizePolicy>
-                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                     </columnResizePolicy>
-                  </TableView>
-                   <GridPane>
-                      <children>
-                         <Button fx:id="selectAllButton" mnemonicParsing="false" onAction="#selectAll" prefHeight="25.0" text="Select all from table" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-                         <Button fx:id="solveButton" disable="true" mnemonicParsing="false" onAction="#solveSelected" prefHeight="25.0" text="Solve highlighted hands" GridPane.columnIndex="3" GridPane.rowIndex="2" />
-                        <ChoiceBox fx:id="betSizingsChoiceBox" prefWidth="150.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
-                           <GridPane.margin>
-                              <Insets left="4.0" right="4.0" />
-                           </GridPane.margin>
-                        </ChoiceBox>
-                        <ChoiceBox fx:id="scheduleChoiceBox" disable="true" prefWidth="150.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
-                           <GridPane.margin>
-                              <Insets left="4.0" right="4.0" />
-                           </GridPane.margin>
-                        </ChoiceBox>
-                        <Label text="Bet sizings: " GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                        <Label disable="true" text="Schedule:" textOverrun="CLIP" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                      </children>
-                     <columnConstraints>
-                        <ColumnConstraints />
-                        <ColumnConstraints minWidth="10.0" />
-                        <ColumnConstraints minWidth="10.0" />
-                        <ColumnConstraints minWidth="10.0" />
-                     </columnConstraints>
-                     <rowConstraints>
-                        <RowConstraints />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" />
-                     </rowConstraints>
-                     <VBox.margin>
-                        <Insets left="4.0" right="4.0" />
-                     </VBox.margin>
-                   </GridPane>
-               </children>
-            </VBox>
-         </children>
-      </AnchorPane>
-   </items>
+    <items>
+        <TabPane minWidth="100.0" tabClosingPolicy="UNAVAILABLE">
+            <tabs>
+                <Tab text="Tag">
+                    <content>
+                        <TableView fx:id="tagTable">
+                            <columns>
+                                <TableColumn fx:id="tagTableIdColumn" maxWidth="80.0" minWidth="80.0" text="Id#" />
+                                <TableColumn fx:id="tagTableTagColumn" minWidth="70.0" text="Tag" />
+                            </columns>
+                            <columnResizePolicy>
+                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                            </columnResizePolicy>
+                        </TableView>
+                    </content>
+                </Tab>
+                <Tab text="Session">
+                    <content>
+                        <TableView>
+                            <columns>
+                                <TableColumn prefWidth="75.0" text="Date" />
+                                <TableColumn prefWidth="75.0" text="Hands" />
+                                <TableColumn prefWidth="75.0" text="Our Hands" />
+                            </columns>
+                            <columnResizePolicy>
+                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                            </columnResizePolicy>
+                        </TableView>
+                    </content>
+                </Tab>
+                <Tab text="Position v Position">
+                    <content>
+                        <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                            <children>
+                                <VBox disable="true" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                    <children>
+                                        <Label text="Hero Seat:" />
+                                        <ChoiceBox prefWidth="150.0" />
+                                        <Label text="Villain Seat:" />
+                                        <ChoiceBox prefWidth="150.0" />
+                                        <Label text="2, 3, or 4 bet:" />
+                                        <ChoiceBox prefWidth="150.0" />
+                                    </children>
+                                </VBox>
+                            </children>
+                        </AnchorPane>
+                    </content>
+                </Tab>
+                <Tab text="Board Type">
+                    <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+        <AnchorPane>
+            <children>
+                <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <children>
+                        <AnchorPane VBox.vgrow="ALWAYS">
+                            <children>
+                                <TableView fx:id="handsTable" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="ALWAYS">
+                                    <columns>
+                                        <TableColumn fx:id="handsTableDateColumn" maxWidth="120.0" minWidth="120.0" prefWidth="120.0" resizable="false" text="Date" />
+                                        <TableColumn fx:id="handsTableCardsColumn" maxWidth="50.0" minWidth="50.0" prefWidth="50.0" resizable="false" text="Cards" />
+                                        <TableColumn fx:id="handsTableRunoutColumn" maxWidth="100.0" minWidth="100.0" prefWidth="100.0" resizable="false" text="Runout" />
+                                        <TableColumn fx:id="handsTableCWonColumn" minWidth="80.0" prefWidth="200.0" text="\$ Pot" />
+                                    </columns>
+                                    <columnResizePolicy>
+                                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                    </columnResizePolicy>
+                                </TableView>
+                            </children>
+                        </AnchorPane>
+                        <AnchorPane VBox.vgrow="NEVER">
+                            <children>
+                                <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                                    <children>
+                                        <Button fx:id="selectAllButton" mnemonicParsing="false" onAction="#selectAll" prefHeight="25.0" text="Select all from table" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+                                        <Button fx:id="solveButton" disable="true" mnemonicParsing="false" onAction="#solveSelected" prefHeight="25.0" text="Solve highlighted hands" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+                                        <ChoiceBox fx:id="betSizingsChoiceBox" prefWidth="150.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                                            <GridPane.margin>
+                                                <Insets left="4.0" right="4.0" />
+                                            </GridPane.margin>
+                                        </ChoiceBox>
+                                        <ChoiceBox fx:id="scheduleChoiceBox" disable="true" prefWidth="150.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                                            <GridPane.margin>
+                                                <Insets left="4.0" right="4.0" />
+                                            </GridPane.margin>
+                                        </ChoiceBox>
+                                        <Label text="Bet sizings: " GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                        <Label disable="true" text="Schedule:" textOverrun="CLIP" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    </children>
+                                    <columnConstraints>
+                                        <ColumnConstraints />
+                                        <ColumnConstraints hgrow="NEVER" minWidth="10.0" />
+                                        <ColumnConstraints minWidth="10.0" />
+                                        <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" />
+                                    </columnConstraints>
+                                    <rowConstraints>
+                                        <RowConstraints />
+                                        <RowConstraints minHeight="10.0" prefHeight="30.0" />
+                                        <RowConstraints minHeight="10.0" prefHeight="30.0" />
+                                    </rowConstraints>
+                                    <VBox.margin>
+                                        <Insets left="4.0" right="4.0" />
+                                    </VBox.margin>
+                           <padding>
+                              <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+                           </padding>
+                                </GridPane>
+                            </children>
+                        </AnchorPane>
+                    </children>
+                </VBox>
+            </children>
+        </AnchorPane>
+    </items>
 </SplitPane>
