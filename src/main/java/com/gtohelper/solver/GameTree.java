@@ -7,9 +7,9 @@ import java.util.function.Function;
 import com.gtohelper.domain.BettingOptions;
 import com.gtohelper.domain.BettingOptions.Bets;
 import com.gtohelper.domain.BettingOptions.Raises;
-import com.gtohelper.domain.BettingOptions.Street;
 import com.gtohelper.domain.BettingOptions.StreetAction;
 import com.gtohelper.domain.BettingOptions.OOPStreetAction;
+import com.gtohelper.domain.Street;
 
 enum Actor {
     IP,
@@ -72,7 +72,7 @@ class Node {
         nodeData = new NodeData();
         nodeData.currentPot = pot;
         nodeData.effectiveStack = effectiveStack;
-        nodeData.street = BettingOptions.Street.PRE;
+        nodeData.street = Street.PRE;
         nodeData.curActor = null;
         nodeData.parentAction = Action.CHECK; // Helps the logic. Could maybe be null and add checks...
 

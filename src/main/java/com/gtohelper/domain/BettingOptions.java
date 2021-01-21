@@ -18,24 +18,6 @@ public class BettingOptions {
         this.name = name;
     }
 
-    public enum Street {
-        PRE,
-        FLOP,
-        TURN,
-        RIVER,
-        SHOWDOWN;
-
-        public static Street nextStreet(Street s) {
-            if(s == PRE)
-                return FLOP;
-            else if(s == FLOP)
-                return TURN;
-            else if (s == TURN)
-                return RIVER;
-            return SHOWDOWN;
-        }
-    }
-
     public class Options {
         public int allInThresholdPercent;
         public int allInOnlyIfLessThanNPercent;

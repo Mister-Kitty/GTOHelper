@@ -4,6 +4,8 @@ import com.gtohelper.datamanager.DataManagerBase;
 import com.gtohelper.datamanager.IHandDataDM;
 import com.gtohelper.domain.HandData;
 import com.gtohelper.domain.Ranges;
+import com.gtohelper.domain.Seat;
+import com.gtohelper.domain.Street;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -11,6 +13,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
     public PT4HandDataDM(Connection connection) {
@@ -114,15 +117,15 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
                 } else {
                     // So we either had 0 actors on the flop, or >= 3.
                     // Did we get to showdown?
-                    hand.solveabilityLevel = HandData.SolvabilityLevel.MULTI_FLOP_MULTI_VPIP;
-                /*        int numPlayersAtShowdown = hand.playersAtShowdown();
-                        if(numPlayersAtShowdown == 0) {
-                            // We didn't go to showdown. So we're multi_vpip without showdown.
-                            hand.solveabilityLevel = HandData.SolvabilityLevel.MULTI_FLOP_MULTI_VPIP;
-                        } else {
-                            //
-                        }
-                */
+                    int numPlayersAtShowdown = hand.playersAtShowdown();
+                    if(numPlayersAtShowdown == 0) {
+                        // We didn't go to showdown. So we're multi_vpip without showdown.
+                        hand.solveabilityLevel = HandData.SolvabilityLevel.MULTI_FLOP_MULTI_VPIP;
+                    } else if (numPlayersAtShowdown == 2){
+                        hand.solveabilityLevel = HandData.SolvabilityLevel.HU_SHOWDOWN;
+                    } else {
+                        hand.solveabilityLevel = HandData.SolvabilityLevel.MULTI_SHOWDOWN;
+                    }
                 }
             }
         }
@@ -136,13 +139,29 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
 
         boolean heroSawFlop = !hero.f_action.isEmpty();
         if(heroSawFlop) {
-            // Find the last street that we partook in.
-            // On that street, the villain is either:
-            // - The player we folded to
-            // - The last player we made fold
-            // - Otherwise we're at showdown.
             player1 = hero;
+            Street lastStreet = hand.getLastStreetOfHand();
+            List<HandData.PlayerHandData> villainHands = hand.getVillainHandsThatReachStreet(lastStreet, heroPlayerId);
 
+            if(lastStreet == Street.SHOWDOWN) {
+                // Take the earliest preflop villain. This can be expanded later.
+                HandData.sortHandDataListByPreflopPosition(villainHands);
+                player2 = villainHands.get(0);
+            } else {
+                boolean heroWonTheHand = hero.amt_won > 0;
+          //      int
+                // The villain is either:
+                if(heroWonTheHand) {
+                    // - The last _aggressor_ we made fold
+
+
+                } else {
+                    // - The player who's aggression we folded to...
+
+
+                }
+
+            }
         } else {
             player1 = hand.getBiggestWinner();
             player2 = hand.getBiggestLoser();
@@ -264,7 +283,7 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
         data.amt_before = rs.getFloat("amt_before");
         data.amt_won = rs.getFloat("amt_won");
         data.position = rs.getShort("position");
-        data.seat = Ranges.Seat.valuesByTrackerPosition[data.position];
+        data.seat = Seat.valuesByTrackerPosition[data.position];
         data.p_action = rs.getString("p_action");
         data.f_action = rs.getString("f_action");
         data.t_action = rs.getString("t_action");

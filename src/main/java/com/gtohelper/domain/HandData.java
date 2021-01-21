@@ -3,6 +3,12 @@ package com.gtohelper.domain;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 // HandData is a mix of cash_hand_summary & cash_hand_statistics, as we often need a both for GUI and Solve generation
 public class HandData {
@@ -70,6 +76,44 @@ public class HandData {
         return null;
     }
 
+    public Street getLastStreetOfHand() {
+        if(playersAtShowdown() > 0)
+            return Street.SHOWDOWN;
+        else if(cnt_players_r > 0)
+            return Street.RIVER;
+        else if(cnt_players_t > 0)
+            return Street.TURN;
+        else if(cnt_players_f > 0)
+            return Street.FLOP;
+        else
+            return Street.PRE;
+    }
+
+    public List<PlayerHandData> getVillainHandsThatReachStreet(Street street, int heroPlayerId) {
+        return getHandStreamForStreet(street).filter(t -> t.id_player != heroPlayerId).collect(Collectors.toList());
+    }
+
+    public List<PlayerHandData> getHandsThatReachStreet(Street street) {
+        return getHandStreamForStreet(street).collect(Collectors.toList());
+    }
+
+    private Stream<PlayerHandData> getHandStreamForStreet(Street street) {
+        switch(street) {
+            case PRE:
+                return playerHandData.stream();
+            case FLOP:
+                return playerHandData.stream().filter(t -> !t.f_action.isEmpty());
+            case TURN:
+                return playerHandData.stream().filter(t -> !t.t_action.isEmpty());
+            case RIVER:
+                return playerHandData.stream().filter(t -> !t.r_action.isEmpty());
+            case SHOWDOWN:
+                return playerHandData.stream().filter(t -> t.flg_showdown);
+        }
+
+        return null;
+    }
+
     // utility functions
     public int getValueAsChips(float value) {
         // We want 1BB = 100 chips.
@@ -96,8 +140,8 @@ public class HandData {
         public short holecard_2;
         public float amt_before;
         public float amt_won;
-        public short position;
-        public Ranges.Seat seat; // even though this and 'position' are redundant, it's super convenient to have both.
+        public short position; // deprecated. Should only use seat
+        public Seat seat;
         public String p_action;
         public String f_action;
         public String t_action;
@@ -146,5 +190,11 @@ public class HandData {
 
         return playerHandData.get(largestLosingsIndex);
     }
+
+    public static void sortHandDataListByPreflopPosition(List<PlayerHandData> list) {
+        Collections.sort(list, preflopSorter);
+    }
+
+    private static final Comparator<PlayerHandData> preflopSorter = Comparator.comparingInt(h -> h.seat.preflopPosition);
 
 }
