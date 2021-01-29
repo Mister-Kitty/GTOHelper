@@ -28,6 +28,10 @@ public class HandData {
     public String str_aggressors_p;
     public String str_actors_f;
     public String str_aggressors_f;
+    public String str_actors_t;
+    public String str_aggressors_t;
+    public String str_actors_r;
+    public String str_aggressors_r;
     public float amt_pot_f;
 
     // cash_limit fields
@@ -68,25 +72,16 @@ public class HandData {
         return null;
     }
 
+    public PlayerHandData getHandDataForSeat(Seat seat) {
+        return getHandDataForPosition(seat.trackerPosition);
+    }
+
     public PlayerHandData getHandDataForPlayer(int playerId) {
         for(PlayerHandData handData : playerHandData) {
             if(handData.id_player == playerId)
                 return handData;
         }
         return null;
-    }
-
-    public Street getLastStreetOfHand() {
-        if(playersAtShowdown() > 0)
-            return Street.SHOWDOWN;
-        else if(cnt_players_r > 0)
-            return Street.RIVER;
-        else if(cnt_players_t > 0)
-            return Street.TURN;
-        else if(cnt_players_f > 0)
-            return Street.FLOP;
-        else
-            return Street.PRE;
     }
 
     public List<PlayerHandData> getVillainHandsThatReachStreet(Street street, int heroPlayerId) {
@@ -123,6 +118,67 @@ public class HandData {
         return (int) (numberOfBB * 100);
     }
 
+    public Street getLastStreetOfHand() {
+        if(playersAtShowdown() > 0)
+            return Street.SHOWDOWN;
+        else if(cnt_players_r > 0)
+            return Street.RIVER;
+        else if(cnt_players_t > 0)
+            return Street.TURN;
+        else if(cnt_players_f > 0)
+            return Street.FLOP;
+        else
+            return Street.PRE;
+    }
+
+    public String getActorsForStreet(Street street) {
+        switch(street) {
+            case PRE:
+                return str_actors_p;
+            case FLOP:
+                return str_actors_f;
+            case TURN:
+                return str_actors_t;
+            case RIVER:
+                return str_actors_r;
+            default:
+                return "";
+        }
+    }
+
+    public String getAggressorsForStreet(Street street) {
+        switch(street) {
+            case PRE:
+                return str_aggressors_p;
+            case FLOP:
+                return str_aggressors_f;
+            case TURN:
+                return str_aggressors_t;
+            case RIVER:
+                return str_aggressors_r;
+            default:
+                return "";
+        }
+    }
+
+    public String getAllAggressorsUpToStreet(Street street) {
+        String result = str_aggressors_p;
+
+        if(street == Street.PRE)
+            return result;
+
+        result += str_aggressors_f;
+        if(street == Street.FLOP)
+            return result;
+
+        result += str_aggressors_t;
+        if(street == Street.TURN)
+            return result;
+
+        result += str_aggressors_r;
+        return result;
+    }
+
     public int playersAtShowdown() {
         // This has to be deduced by looking through PlayerHandData.
         int count = 0;
@@ -150,9 +206,43 @@ public class HandData {
 
         // Calculated fields to be set
         // These 3 fields are the info for the last action taken by the player.
-        public short p_betLevel;
-        public short p_vsPosition;
-        public Ranges.LastAction last_p_action;
+        public class LastActionForStreet {
+            public short betLevel;
+            public Seat vsSeat;
+            public Ranges.LastAction last_action;
+        }
+        LastActionForStreet preflop = new LastActionForStreet();
+        LastActionForStreet flop = new LastActionForStreet();
+        LastActionForStreet turn = new LastActionForStreet();
+        LastActionForStreet river = new LastActionForStreet();
+
+        public LastActionForStreet getLastActionForStreet(Street street) {
+            switch(street) {
+                case PRE:
+                    return preflop;
+                case FLOP:
+                    return flop;
+                case TURN:
+                    return turn;
+                case RIVER:
+                    return river;
+                default:
+                    return null;
+            }
+        }
+
+        public Street getLastStreet() {
+            if(flg_showdown)
+                return Street.SHOWDOWN;
+            else if(!r_action.isEmpty())
+                return Street.RIVER;
+            else if(!t_action.isEmpty())
+                return Street.TURN;
+            else if(!f_action.isEmpty())
+                return Street.FLOP;
+            else
+                return Street.PRE;
+        }
     }
 
     // The following 2 functions are defined to never return the same player, even if they're tied.

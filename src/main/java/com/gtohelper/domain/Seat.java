@@ -13,11 +13,12 @@ public enum Seat {
     public static final Seat postflopPositionsASC[] = { SB, BB, UTG, TthSeat, UTG1, UTG2, LJ, HJ, CO, BTN };
     public static final Seat postflopPositionsDESC[] = { BTN, CO, HJ, LJ, UTG2, UTG1, UTG, TthSeat, SB, BB };
     public String name;
-    public int preflopPosition, postflopPosition; // acting order, starting at 0 and increasing.
+    public int preflopPosition, postflopPosition, trackerPosition;
     Seat(String name, int preflopPosition, int postflopPosition) {
         this.name = name;
         this.preflopPosition = preflopPosition;
         this.postflopPosition = postflopPosition;
+        this.trackerPosition = ordinal();
     }
 
     public boolean isFullRingOnlySeat() {
@@ -40,5 +41,9 @@ public enum Seat {
             }
         }
         throw new IllegalArgumentException("No constant with text " + text + " found");
+    }
+
+    public static Seat fromTrackerPosition(int position) {
+        return Seat.values()[position];
     }
 }

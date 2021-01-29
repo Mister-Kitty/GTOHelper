@@ -1,12 +1,14 @@
 package com.gtohelper.domain;
 
 import java.util.HashMap;
+import com.gtohelper.domain.HandData.PlayerHandData;
+import com.gtohelper.domain.HandData.PlayerHandData.LastActionForStreet;
 
 public class Ranges {
 
     RangesMap rangesMap = new RangesMap();
 
-    public RangeData getRangeForHand(HandData.PlayerHandData playerHand) {
+    public RangeData getRangeForHand(PlayerHandData playerHand) {
         ActionAndSeat action = new ActionAndSeat(playerHand);
         return rangesMap.get(action);
     }
@@ -264,36 +266,36 @@ public class Ranges {
             lastHeroAction = action.lastHeroAction;
         }
 
-        public ActionAndSeat(HandData.PlayerHandData playerHand) {
-            // not sure if this should even be here, really... whatever
+        public ActionAndSeat(PlayerHandData playerHand) {
+            LastActionForStreet lastPreflopAction = playerHand.preflop;
             heroSeat = playerHand.seat;
-            villainSeat = Seat.valuesByTrackerPosition[playerHand.p_vsPosition];
-            lastHeroAction = playerHand.last_p_action;
+            villainSeat = lastPreflopAction.vsSeat;
+            lastHeroAction = lastPreflopAction.last_action;
 
-            if(playerHand.p_betLevel == 1) {
+            if(lastPreflopAction.betLevel == 1) {
                 situation = Situation.LIMP;
-            } else if(playerHand.p_betLevel == 2) {
+            } else if(lastPreflopAction.betLevel == 2) {
                 if(lastHeroAction == LastAction.RAISE)
                     situation = Situation.RFI;
                 else
                     situation = Situation.VRFI;
-            } else if(playerHand.p_betLevel == 3) {
+            } else if(lastPreflopAction.betLevel == 3) {
                 if(lastHeroAction == LastAction.RAISE)
                     situation = Situation.VRFI;
                 else
                     situation = Situation.V3BET;
-            } else if(playerHand.p_betLevel == 4) {
+            } else if(lastPreflopAction.betLevel == 4) {
                 if(lastHeroAction == LastAction.RAISE)
                     situation = Situation.V3BET;
                 else
                     situation = Situation.V4BET;
-            } else if(playerHand.p_betLevel == 5) {
+            } else if(lastPreflopAction.betLevel == 5) {
                 if(lastHeroAction == LastAction.RAISE)
                     situation = Situation.V4BET;
                 else
                     situation = Situation.CALL5BET;
             } else {
-                assert(playerHand.p_betLevel == 5);
+                assert(lastPreflopAction.betLevel == 5);
                 situation = Situation.CALL5BET;
             }
         }

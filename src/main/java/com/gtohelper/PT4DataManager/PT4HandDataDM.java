@@ -3,6 +3,8 @@ package com.gtohelper.PT4DataManager;
 import com.gtohelper.datamanager.DataManagerBase;
 import com.gtohelper.datamanager.IHandDataDM;
 import com.gtohelper.domain.HandData;
+import com.gtohelper.domain.HandData.PlayerHandData;
+import com.gtohelper.domain.HandData.PlayerHandData.LastActionForStreet;
 import com.gtohelper.domain.Ranges;
 import com.gtohelper.domain.Seat;
 import com.gtohelper.domain.Street;
@@ -24,14 +26,14 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
         String handIdSelectSQL = String.format("select id_x from tags where tags.id_tag = %d", tagId);
 
         ArrayList<HandData> hands = getHandSummaryData(handIdSelectSQL);
-        ArrayList<HandData.PlayerHandData> playerHands = getPlayerHandData(handIdSelectSQL);
+        ArrayList<PlayerHandData> playerHands = getPlayerHandData(handIdSelectSQL);
 
         // Both are ordered by id_hand descending. Let's bundle them up
         int handsIndex = 0;
         int playerIndex = 0;
         while(playerIndex < playerHands.size()) {
             HandData currentHand = hands.get(handsIndex);
-            HandData.PlayerHandData currentPlayerHand = playerHands.get(playerIndex);
+            PlayerHandData currentPlayerHand = playerHands.get(playerIndex);
 
             // Peek at the playerHandData. If it belongs to this hand, we match it up and increase the index.
             if(currentHand.id_hand == currentPlayerHand.id_hand) {
@@ -55,6 +57,11 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
 
             // ordering of calls is important
             resolvePreflopActionForPlayersInHand(hand);
+            resolvePostflopActionForPlayersInHand(hand, Street.FLOP, hand.str_aggressors_f, hand.str_actors_f);
+            if(hand.cnt_players_t > 0)
+                resolvePostflopActionForPlayersInHand(hand, Street.TURN, hand.str_aggressors_t, hand.str_actors_t);
+            if(hand.cnt_players_r > 0)
+                resolvePostflopActionForPlayersInHand(hand, Street.RIVER, hand.str_aggressors_r, hand.str_actors_r);
             resolveHandResolvability(hand);
             resolveIPandOOPplayer(hand, heroPlayerId);
         }
@@ -63,43 +70,91 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
     private void resolvePreflopActionForPlayersInHand(HandData hand) {
         // Manually handle the all-limp case, to make edge cases in the following code chunk easier.
         if(hand.highestPreflopBetLevel == 1) {
-            for(HandData.PlayerHandData handData : hand.playerHandData) {
-                handData.p_betLevel = 1;
-                handData.p_vsPosition = 8; // 8 is BB
-                handData.last_p_action = Ranges.LastAction.CALL;
+            for(PlayerHandData handData : hand.playerHandData) {
+                LastActionForStreet lastPreflopAction = handData.getLastActionForStreet(Street.PRE);
+                lastPreflopAction.betLevel = 1;
+                lastPreflopAction.vsSeat = Seat.BB;
+                lastPreflopAction.last_action = Ranges.LastAction.CALL;
             }
             return;
         }
 
         // We can't directly resolve what action was taken against which seat via the stats table.
         // Instead, we have to actually 'replay' the action in order to figure out what 'vs range' we use.
-        int lastAggressorsIndex = 0; // index within str_aggressors_p
         short currentBetLevel = 1; // eg. 1bet, 2bet, 3bet, etc.
-        int lastAggressorSeat = 8; // == Character.getNumericValue(hand.str_actors_p.charAt(aggressorsIndex)
-        int nextAggressorSeat = Character.getNumericValue(hand.str_aggressors_p.charAt(lastAggressorsIndex + 1));
-        for(int currentActorIndex = 0; currentActorIndex < hand.str_actors_p.length(); currentActorIndex++) {
-            int currentPlayerPosition = Character.getNumericValue(hand.str_actors_p.charAt(currentActorIndex));
-            HandData.PlayerHandData handDataForSeat = hand.getHandDataForPosition(currentPlayerPosition);
+        int lastAggressorsIndex = 0; // index within str_aggressors_p
+        Seat lastAggressorSeat = Seat.BB;
+        Seat nextAggressorSeat = getSeatFromChar(hand.str_aggressors_p.charAt(lastAggressorsIndex + 1)); // +1 to skip BB
+        for(int currentPlayerIndex = 0; currentPlayerIndex < hand.str_actors_p.length(); currentPlayerIndex++) {
+            Seat currentPlayerSeat = getSeatFromChar(hand.str_actors_p.charAt(currentPlayerIndex));
+            PlayerHandData handDataForSeat = hand.getHandDataForSeat(currentPlayerSeat);
+            LastActionForStreet lastPreflopAction = handDataForSeat.getLastActionForStreet(Street.PRE);
 
-            if(currentPlayerPosition == nextAggressorSeat) {
+            if(currentPlayerSeat == nextAggressorSeat) {
                 // If we're the next aggressor, update as such.
-                currentBetLevel++; // Technically = to lastAggressorIndex - 1, but separated out for clarity.
-                handDataForSeat.last_p_action = Ranges.LastAction.RAISE;
-                handDataForSeat.p_betLevel = currentBetLevel;
-                handDataForSeat.p_vsPosition = (short)lastAggressorSeat;
+                currentBetLevel++;
+                lastPreflopAction.last_action = Ranges.LastAction.RAISE;
+                lastPreflopAction.betLevel = currentBetLevel;
+                lastPreflopAction.vsSeat = lastAggressorSeat;
 
-                //_if_ another aggressor exists, update the field, else set it to -1 if we're the last aggressor.
+                // _If_ another aggressor exists, update the field.
                 lastAggressorsIndex++;
-                nextAggressorSeat = (lastAggressorsIndex >= hand.str_aggressors_p.length() - 1) ? -1 :
-                        Character.getNumericValue(hand.str_aggressors_p.charAt(lastAggressorsIndex + 1));
-                lastAggressorSeat = currentPlayerPosition;
+                nextAggressorSeat = (lastAggressorsIndex >= hand.str_aggressors_p.length() - 1) ? null :
+                        getSeatFromChar(hand.str_aggressors_p.charAt(lastAggressorsIndex + 1));
+                lastAggressorSeat = currentPlayerSeat;
             } else {
                 // Otherwise we're just calling
-                handDataForSeat.last_p_action = Ranges.LastAction.CALL;
-                handDataForSeat.p_betLevel = currentBetLevel;
-                handDataForSeat.p_vsPosition = (short)lastAggressorSeat;
+                lastPreflopAction.last_action = Ranges.LastAction.CALL;
+                lastPreflopAction.betLevel = currentBetLevel;
+                lastPreflopAction.vsSeat = lastAggressorSeat;
             }
         }
+    }
+
+    private void resolvePostflopActionForPlayersInHand(HandData hand, Street street, String aggressorsForStreet, String actorsForStreet) {
+        // Manually handle the all-limp case, to make edge cases in the following code chunk easier.
+        if(aggressorsForStreet.isEmpty()) {
+            for(PlayerHandData handData : hand.playerHandData) {
+                LastActionForStreet lastAction = handData.getLastActionForStreet(street);
+                lastAction.betLevel = 0;
+                lastAction.vsSeat = null;
+                lastAction.last_action = Ranges.LastAction.CALL;
+            }
+            return;
+        }
+
+        short currentBetLevel = 0; // eg. 1bet, 2bet, 3bet, etc.
+        int lastAggressorsIndex = 0; // index within aggressorsForStreet
+        Seat lastAggressorSeat = null;
+        Seat nextAggressorSeat = getSeatFromChar(aggressorsForStreet.charAt(lastAggressorsIndex));
+        for(int currentPlayerIndex = 0; currentPlayerIndex < actorsForStreet.length(); currentPlayerIndex++) {
+            Seat currentPlayerSeat = getSeatFromChar(actorsForStreet.charAt(currentPlayerIndex));
+            PlayerHandData handDataForSeat = hand.getHandDataForSeat(currentPlayerSeat);
+            LastActionForStreet lastAction = handDataForSeat.getLastActionForStreet(street);
+
+            if(currentPlayerSeat == nextAggressorSeat) {
+                // If we're the next aggressor, update as such.
+                currentBetLevel++;
+                lastAction.last_action = Ranges.LastAction.RAISE;
+                lastAction.betLevel = currentBetLevel;
+                lastAction.vsSeat = lastAggressorSeat;
+
+                // _If_ another aggressor exists, update the field.
+                lastAggressorsIndex++;
+                nextAggressorSeat = (lastAggressorsIndex >= aggressorsForStreet.length()) ? null :
+                        getSeatFromChar(aggressorsForStreet.charAt(lastAggressorsIndex));
+                lastAggressorSeat = currentPlayerSeat;
+            } else {
+                // Otherwise we're just calling
+                lastAction.last_action = Ranges.LastAction.CALL;
+                lastAction.betLevel = currentBetLevel;
+                lastAction.vsSeat = lastAggressorSeat;
+            }
+        }
+    }
+
+    private Seat getSeatFromChar(char seatChar) {
+        return Seat.fromTrackerPosition(Character.getNumericValue(seatChar));
     }
 
     private void resolveHandResolvability(HandData hand) {
@@ -121,7 +176,7 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
                     if(numPlayersAtShowdown == 0) {
                         // We didn't go to showdown. So we're multi_vpip without showdown.
                         hand.solveabilityLevel = HandData.SolvabilityLevel.MULTI_FLOP_MULTI_VPIP;
-                    } else if (numPlayersAtShowdown == 2){
+                    } else if (numPlayersAtShowdown == 2) {
                         hand.solveabilityLevel = HandData.SolvabilityLevel.HU_SHOWDOWN;
                     } else {
                         hand.solveabilityLevel = HandData.SolvabilityLevel.MULTI_SHOWDOWN;
@@ -131,47 +186,93 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
         }
     }
 
+    private int getLastVillainFromActionString(String actionString, int heroPlayerId) {
+        String nonHeroString = actionString.replace(Integer.toString(heroPlayerId), "");
+        if(nonHeroString.isEmpty())
+            return -1;
+
+        return Character.getNumericValue(nonHeroString.charAt(nonHeroString.length() - 1));
+    }
+
+
     private void resolveIPandOOPplayer(HandData hand, int heroPlayerId) {
         // Then resolve the principal players
-        HandData.PlayerHandData player1;
-        HandData.PlayerHandData player2;
-        HandData.PlayerHandData hero = hand.getHandDataForPlayer(heroPlayerId);
+        PlayerHandData player1;
+        PlayerHandData player2;
+        PlayerHandData hero = hand.getHandDataForPlayer(heroPlayerId);
 
         boolean heroSawFlop = !hero.f_action.isEmpty();
         if(heroSawFlop) {
             player1 = hero;
-            Street lastStreet = hand.getLastStreetOfHand();
-            List<HandData.PlayerHandData> villainHands = hand.getVillainHandsThatReachStreet(lastStreet, heroPlayerId);
-
-            if(lastStreet == Street.SHOWDOWN) {
-                // Take the earliest preflop villain. This can be expanded later.
-                HandData.sortHandDataListByPreflopPosition(villainHands);
-                player2 = villainHands.get(0);
-            } else {
-                boolean heroWonTheHand = hero.amt_won > 0;
-          //      int
-                // The villain is either:
-                if(heroWonTheHand) {
-                    // - The last _aggressor_ we made fold
-
-
-                } else {
-                    // - The player who's aggression we folded to...
-
-
-                }
-
-            }
+            player2 = getVillainForHand(hand, hero);
         } else {
             player1 = hand.getBiggestWinner();
             player2 = hand.getBiggestLoser();
         }
 
-   //     boolean winnerIsOOP = player1.position > player2.position;
-   //     hand.oopPlayer = winnerIsOOP ? player1 : player2;
-   //     hand.ipPlayer = winnerIsOOP ? player2 : player1;
+        boolean winnerIsOOP = player1.position > player2.position;
+        hand.oopPlayer = winnerIsOOP ? player1 : player2;
+        hand.ipPlayer = winnerIsOOP ? player2 : player1;
         if(hand.oopPlayer.seat == hand.ipPlayer.seat)
             assert false;
+    }
+
+    private PlayerHandData getVillainForHand(HandData hand, PlayerHandData hero) {
+        Street lastStreetForHero = hero.getLastStreet();
+        List<PlayerHandData> villainHands = hand.getVillainHandsThatReachStreet(lastStreetForHero, hero.id_player);
+        String aggressorsUpToStreet = hand.getAllAggressorsUpToStreet(lastStreetForHero);
+
+        // Remove leading non-VPIP Big Blind aggression.
+        if(aggressorsUpToStreet.length() == 1) {
+            // If hand is limp + checked to showdown, return earliest preflop seat.
+            HandData.sortHandDataListByPreflopPosition(villainHands);
+            return villainHands.get(0);
+        } else {
+            aggressorsUpToStreet = aggressorsUpToStreet.substring(1);
+        }
+
+        if(lastStreetForHero == Street.SHOWDOWN) {
+            // If hero goes to showdown, we look at all villains who make it to showdown and pick whoever aggressed last.
+            int villainId = getLastVillainFromActionString(aggressorsUpToStreet, hero.id_player);
+            if(villainId == -1) {
+                // If no opponents bet/raised, then we pick the earliest Preflop position
+                HandData.sortHandDataListByPreflopPosition(villainHands);
+                return villainHands.get(0);
+            }
+
+        } else {
+            // Since we're not at showdown, we must have either...
+            boolean heroWonTheHand = hero.amt_won > 0;
+            if(heroWonTheHand) {
+                // - The last _aggressor_ we made fold
+
+                // - Else if no aggressor exists (limps, only check/calls) then the earliest preflop position.
+
+            } else {
+                // - The player who's aggression _we_ folded to. In case 2 villains get into a raise war...
+                //  ... Find the orbit we folded on
+                //            int orbitLevel = hero.
+
+            }
+        }
+
+
+/*
+        String lastStreetAggressors = hand.getAggressorsForStreet(hero.getLastStreet());
+        String lastStreetActors = hand.getActorsForStreet(hero.getLastStreet());
+
+        // get last preflop aggressor
+        PlayerHandData lastPreflopAggressor;
+        if(hand.highestPreflopBetLevel > 1) {
+            lastPreflopAggressor = hand.playerHandData.stream().filter(t -> t.last_p_action == Ranges.LastAction.RAISE).findFirst().get();
+        } else {
+
+
+        }
+*/
+        return null;
+
+
     }
 
     private ArrayList<HandData> getHandSummaryData(String innerQuery) throws SQLException {
@@ -180,8 +281,8 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
                 "       summary.card_2, summary.card_3, summary.card_4, summary.card_5,\n" +
                 "       summary.str_actors_p, summary.str_aggressors_p,\n" +
                 "       summary.cnt_players_f, summary.str_actors_f, summary.str_aggressors_f, summary.amt_pot_f,\n" +
-                "       summary.cnt_players_t,\n" +
-                "       summary.cnt_players_r,\n" +
+                "       summary.cnt_players_t, summary.str_actors_t, summary.str_aggressors_t,\n" +
+                "       summary.cnt_players_r, summary.str_actors_r, summary.str_aggressors_r,\n" +
                 "       table_limit.limit_name, table_limit.amt_sb, table_limit.amt_bb\n" +
                 "FROM cash_hand_summary as summary\n" +
                 "INNER JOIN cash_limit as table_limit\n" +
@@ -207,7 +308,7 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
         return hands;
     }
 
-    private ArrayList<HandData.PlayerHandData> getPlayerHandData(String innerQuery) throws SQLException {
+    private ArrayList<PlayerHandData> getPlayerHandData(String innerQuery) throws SQLException {
         final String handPlayerStatsOuterQuerySql =
                 "SELECT stats.id_hand, p_actions.action as p_action, f_actions.action as f_action, t_actions.action as t_action, r_actions.action as r_action,\n" +
                         "  stats.id_player, stats.holecard_1, stats.holecard_2, stats.amt_before, stats.amt_won, stats.position, stats.flg_showdown \n" +
@@ -230,13 +331,13 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
                         "ORDER BY stats.id_hand DESC, stats.position DESC";
         String fullSql = String.format(handPlayerStatsOuterQuerySql, innerQuery);
 
-        ArrayList<HandData.PlayerHandData> handData = new ArrayList<>();
+        ArrayList<PlayerHandData> handData = new ArrayList<>();
 
         try (Statement st = con.createStatement();
              ResultSet rs = st.executeQuery(fullSql)) {
 
             while (rs.next()) {
-                HandData.PlayerHandData hand = mapPlayerHandData(rs);
+                PlayerHandData hand = mapPlayerHandData(rs);
                 handData.add(hand);
             }
         }
@@ -265,6 +366,10 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
         hand.str_actors_f = rs.getString("str_actors_f");
         hand.str_aggressors_f = rs.getString("str_aggressors_f");
         hand.amt_pot_f = rs.getFloat("amt_pot_f");
+        hand.str_actors_t = rs.getString("str_actors_t");
+        hand.str_aggressors_t = rs.getString("str_aggressors_t");
+        hand.str_actors_r = rs.getString("str_actors_r");
+        hand.str_aggressors_r = rs.getString("str_aggressors_r");
 
         hand.limit_name = rs.getString("limit_name");
         hand.amt_sb = rs.getFloat("amt_sb");
@@ -273,8 +378,8 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
         return hand;
     }
 
-    private HandData.PlayerHandData mapPlayerHandData(ResultSet rs) throws SQLException {
-        HandData.PlayerHandData data = new HandData.PlayerHandData();
+    private PlayerHandData mapPlayerHandData(ResultSet rs) throws SQLException {
+        PlayerHandData data = new PlayerHandData();
 
         data.id_hand = rs.getInt("id_hand");
         data.id_player = rs.getInt("id_player");
