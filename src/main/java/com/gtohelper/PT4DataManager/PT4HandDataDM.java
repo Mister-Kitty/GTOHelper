@@ -231,48 +231,23 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
             aggressorsUpToStreet = aggressorsUpToStreet.substring(1);
         }
 
-        if(lastStreetForHero == Street.SHOWDOWN) {
-            // If hero goes to showdown, we look at all villains who make it to showdown and pick whoever aggressed last.
+        boolean heroWonTheHand = hero.amt_won > 0;
+        if(heroWonTheHand || lastStreetForHero == Street.SHOWDOWN) {
+            // If hero goes to showdown or we win the hand, we look at all villains who make it to showdown and pick whoever aggressed last.
             int villainId = getLastVillainFromActionString(aggressorsUpToStreet, hero.id_player);
             if(villainId == -1) {
                 // If no opponents bet/raised, then we pick the earliest Preflop position
                 HandData.sortHandDataListByPreflopPosition(villainHands);
                 return villainHands.get(0);
             }
-
+            return hand.getHandDataForPlayer(villainId);
         } else {
-            // Since we're not at showdown, we must have either...
-            boolean heroWonTheHand = hero.amt_won > 0;
-            if(heroWonTheHand) {
-                // - The last _aggressor_ we made fold
+            // We lost the hand before showdown. Our villain is the aggressor we folded to. Be sure to account for call/folds multiway.
+            LastActionForStreet lastAction = hero.getLastActionForStreet(lastStreetForHero);
 
-                // - Else if no aggressor exists (limps, only check/calls) then the earliest preflop position.
-
-            } else {
-                // - The player who's aggression _we_ folded to. In case 2 villains get into a raise war...
-                //  ... Find the orbit we folded on
-                //            int orbitLevel = hero.
-
-            }
         }
 
-
-/*
-        String lastStreetAggressors = hand.getAggressorsForStreet(hero.getLastStreet());
-        String lastStreetActors = hand.getActorsForStreet(hero.getLastStreet());
-
-        // get last preflop aggressor
-        PlayerHandData lastPreflopAggressor;
-        if(hand.highestPreflopBetLevel > 1) {
-            lastPreflopAggressor = hand.playerHandData.stream().filter(t -> t.last_p_action == Ranges.LastAction.RAISE).findFirst().get();
-        } else {
-
-
-        }
-*/
         return null;
-
-
     }
 
     private ArrayList<HandData> getHandSummaryData(String innerQuery) throws SQLException {
