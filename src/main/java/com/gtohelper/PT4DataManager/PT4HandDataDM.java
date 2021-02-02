@@ -146,6 +146,9 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
             if(lastAction.action == Action.FOLD)
                 continue;
 
+            if(currentPlayerHand.seat == lastAggressorSeat)
+                break;
+
             // When we're here, action is on a non-folded player.
             if (currentPlayerHand.seat == nextAggressorSeat) {
                 // If we're the next aggressor, update as such. Note that we're also the next actor by definition.
@@ -184,7 +187,7 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
                 lastAction.betLevel = currentBetLevel;
                 lastAction.vsSeat = lastAggressorSeat;
             }
-        } while (currentActorIndex < actorsForStreet.length());
+        } while (true);
     }
 
     private Seat getSeatFromChar(char seatChar) {
@@ -220,12 +223,12 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
         }
     }
 
-    private int getLastVillainFromActionString(String actionString, int heroPlayerId) {
-        String nonHeroString = actionString.replace(Integer.toString(heroPlayerId), "");
+    private Seat getLastVillainSeatFromActionString(String actionString, Seat heroSeat) {
+        String nonHeroString = actionString.replace(Integer.toString(heroSeat.trackerPosition), "");
         if(nonHeroString.isEmpty())
-            return -1;
+            return null;
 
-        return Character.getNumericValue(nonHeroString.charAt(nonHeroString.length() - 1));
+        return getSeatFromChar(nonHeroString.charAt(nonHeroString.length() - 1));
     }
 
 
@@ -235,7 +238,7 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
         PlayerHandData player2;
         PlayerHandData hero = hand.getHandDataForPlayer(heroPlayerId);
 
-        boolean heroSawFlop = !hero.f_action.isEmpty();
+        boolean heroSawFlop = (hero != null) && !hero.f_action.isEmpty();
         if(heroSawFlop) {
             player1 = hero;
             player2 = getVillainForHand(hand, hero);
@@ -268,20 +271,18 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
         boolean heroWonTheHand = hero.amt_won > 0;
         if(heroWonTheHand || lastStreetForHero == Street.SHOWDOWN) {
             // If hero goes to showdown or we win the hand, we look at all villains who make it to showdown and pick whoever aggressed last.
-            int villainId = getLastVillainFromActionString(aggressorsUpToStreet, hero.id_player);
-            if(villainId == -1) {
+            Seat villainSeat = getLastVillainSeatFromActionString(aggressorsUpToStreet, hero.seat);
+            if(villainSeat == null) {
                 // If no opponents bet/raised, then we pick the earliest Preflop position
                 HandData.sortHandDataListByPreflopPosition(villainHands);
                 return villainHands.get(0);
             }
-            return hand.getHandDataForPlayer(villainId);
+            return hand.getHandDataForSeat(villainSeat);
         } else {
             // We lost the hand before showdown. Our villain is the aggressor we folded to. Be sure to account for call/folds multiway.
             LastActionForStreet lastAction = hero.getLastActionForStreet(lastStreetForHero);
-
+            return hand.getHandDataForSeat(lastAction.vsSeat);
         }
-
-        return null;
     }
 
     private ArrayList<HandData> getHandSummaryData(String innerQuery) throws SQLException {
