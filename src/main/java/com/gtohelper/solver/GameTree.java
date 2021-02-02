@@ -4,6 +4,7 @@ package com.gtohelper.solver;
 import java.util.ArrayList;
 import java.util.function.Function;
 
+import com.gtohelper.domain.Action;
 import com.gtohelper.domain.BettingOptions;
 import com.gtohelper.domain.BettingOptions.Bets;
 import com.gtohelper.domain.BettingOptions.Raises;
@@ -23,14 +24,6 @@ enum Actor {
         else
             return IP;
     }
-}
-
-enum Action {
-    FOLD,
-    CHECK,
-    CALL,
-    BET,
-    RAISE
 }
 
 public class GameTree {

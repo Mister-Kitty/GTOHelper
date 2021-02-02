@@ -209,7 +209,7 @@ public class HandData {
         public class LastActionForStreet {
             public short betLevel;
             public Seat vsSeat;
-            public Ranges.LastAction last_action;
+            public Action action;
         }
         LastActionForStreet preflop = new LastActionForStreet();
         LastActionForStreet flop = new LastActionForStreet();
@@ -285,6 +285,11 @@ public class HandData {
         Collections.sort(list, preflopSorter);
     }
 
+    public static void sortHandDataListByPostflopPosition(List<PlayerHandData> list) {
+        Collections.sort(list, postflopSorter);
+    }
+
     private static final Comparator<PlayerHandData> preflopSorter = Comparator.comparingInt(h -> h.seat.preflopPosition);
+    private static final Comparator<PlayerHandData> postflopSorter = Comparator.comparingInt(h -> h.seat.postflopPosition);
 
 }

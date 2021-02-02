@@ -270,7 +270,18 @@ public class Ranges {
             LastActionForStreet lastPreflopAction = playerHand.preflop;
             heroSeat = playerHand.seat;
             villainSeat = lastPreflopAction.vsSeat;
-            lastHeroAction = lastPreflopAction.last_action;
+            switch(lastPreflopAction.action) {
+                case BET:
+                case RAISE:
+                    lastHeroAction = LastAction.RAISE;
+                    break;
+                case CALL:
+                case CHECK:
+                    lastHeroAction = LastAction.CALL;
+                    break;
+                default:
+                    assert false;
+            }
 
             if(lastPreflopAction.betLevel == 1) {
                 situation = Situation.LIMP;

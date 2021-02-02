@@ -2,10 +2,10 @@ package com.gtohelper.PT4DataManager;
 
 import com.gtohelper.datamanager.DataManagerBase;
 import com.gtohelper.datamanager.IHandDataDM;
+import com.gtohelper.domain.Action;
 import com.gtohelper.domain.HandData;
 import com.gtohelper.domain.HandData.PlayerHandData;
 import com.gtohelper.domain.HandData.PlayerHandData.LastActionForStreet;
-import com.gtohelper.domain.Ranges;
 import com.gtohelper.domain.Seat;
 import com.gtohelper.domain.Street;
 
@@ -67,6 +67,7 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
         }
     }
 
+    // resolvePostflop below this function was refactored/expanded later. This could mimic that refactor if desired.
     private void resolvePreflopActionForPlayersInHand(HandData hand) {
         // Manually handle the all-limp case, to make edge cases in the following code chunk easier.
         if(hand.highestPreflopBetLevel == 1) {
@@ -74,7 +75,7 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
                 LastActionForStreet lastPreflopAction = handData.getLastActionForStreet(Street.PRE);
                 lastPreflopAction.betLevel = 1;
                 lastPreflopAction.vsSeat = Seat.BB;
-                lastPreflopAction.last_action = Ranges.LastAction.CALL;
+                lastPreflopAction.action = Action.CALL;
             }
             return;
         }
@@ -93,7 +94,7 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
             if(currentPlayerSeat == nextAggressorSeat) {
                 // If we're the next aggressor, update as such.
                 currentBetLevel++;
-                lastPreflopAction.last_action = Ranges.LastAction.RAISE;
+                lastPreflopAction.action = Action.RAISE;
                 lastPreflopAction.betLevel = currentBetLevel;
                 lastPreflopAction.vsSeat = lastAggressorSeat;
 
@@ -104,7 +105,7 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
                 lastAggressorSeat = currentPlayerSeat;
             } else {
                 // Otherwise we're just calling
-                lastPreflopAction.last_action = Ranges.LastAction.CALL;
+                lastPreflopAction.action = Action.CALL;
                 lastPreflopAction.betLevel = currentBetLevel;
                 lastPreflopAction.vsSeat = lastAggressorSeat;
             }
@@ -112,45 +113,78 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
     }
 
     private void resolvePostflopActionForPlayersInHand(HandData hand, Street street, String aggressorsForStreet, String actorsForStreet) {
+        List<PlayerHandData> hands = hand.getHandsThatReachStreet(street);
+        HandData.sortHandDataListByPostflopPosition(hands);
+
         // Manually handle the all-limp case, to make edge cases in the following code chunk easier.
         if(aggressorsForStreet.isEmpty()) {
-            for(PlayerHandData handData : hand.playerHandData) {
+            for(PlayerHandData handData : hands) {
                 LastActionForStreet lastAction = handData.getLastActionForStreet(street);
                 lastAction.betLevel = 0;
                 lastAction.vsSeat = null;
-                lastAction.last_action = Ranges.LastAction.CALL;
+                lastAction.action = Action.CALL;
             }
             return;
         }
 
         short currentBetLevel = 0; // eg. 1bet, 2bet, 3bet, etc.
-        int lastAggressorsIndex = 0; // index within aggressorsForStreet
-        Seat lastAggressorSeat = null;
-        Seat nextAggressorSeat = getSeatFromChar(aggressorsForStreet.charAt(lastAggressorsIndex));
-        for(int currentPlayerIndex = 0; currentPlayerIndex < actorsForStreet.length(); currentPlayerIndex++) {
-            Seat currentPlayerSeat = getSeatFromChar(actorsForStreet.charAt(currentPlayerIndex));
-            PlayerHandData handDataForSeat = hand.getHandDataForSeat(currentPlayerSeat);
-            LastActionForStreet lastAction = handDataForSeat.getLastActionForStreet(street);
+        Seat lastAggressorSeat = null; // used to track who we fold to.
 
-            if(currentPlayerSeat == nextAggressorSeat) {
-                // If we're the next aggressor, update as such.
+        int currentAggressorsIndex = 0; // index within aggressorsForStreet
+        int currentActorIndex = 0; // index within actorsForStreet
+        Seat nextAggressorSeat = getSeatFromChar(aggressorsForStreet.charAt(currentAggressorsIndex));
+        Seat nextActorSeat = getSeatFromChar(actorsForStreet.charAt(currentActorIndex));
+
+        // This maybe could be simplified, but I feel that having two loops leaves it explicit to the reader
+        int handsIndex = 0;
+        do {
+            // We cycle around and around the players in the hand, as if to replay it.
+            PlayerHandData currentPlayerHand = hands.get(handsIndex);
+            handsIndex = (handsIndex + 1) % hands.size();
+
+            LastActionForStreet lastAction = currentPlayerHand.getLastActionForStreet(street);
+            if(lastAction.action == Action.FOLD)
+                continue;
+
+            // When we're here, action is on a non-folded player.
+            if (currentPlayerHand.seat == nextAggressorSeat) {
+                // If we're the next aggressor, update as such. Note that we're also the next actor by definition.
                 currentBetLevel++;
-                lastAction.last_action = Ranges.LastAction.RAISE;
+                if(currentBetLevel == 1)
+                    lastAction.action = Action.BET;
+                else
+                    lastAction.action = Action.RAISE;
                 lastAction.betLevel = currentBetLevel;
                 lastAction.vsSeat = lastAggressorSeat;
 
-                // _If_ another aggressor exists, update the field.
-                lastAggressorsIndex++;
-                nextAggressorSeat = (lastAggressorsIndex >= aggressorsForStreet.length()) ? null :
-                        getSeatFromChar(aggressorsForStreet.charAt(lastAggressorsIndex));
-                lastAggressorSeat = currentPlayerSeat;
+                currentAggressorsIndex++;
+                nextAggressorSeat = (currentAggressorsIndex >= aggressorsForStreet.length()) ? null :
+                        getSeatFromChar(aggressorsForStreet.charAt(currentAggressorsIndex));
+                lastAggressorSeat = nextActorSeat;
+
+                currentActorIndex++;
+                nextActorSeat = (currentActorIndex >= actorsForStreet.length()) ? null :
+                        getSeatFromChar(actorsForStreet.charAt(currentActorIndex));
+            } else if (currentPlayerHand.seat == nextActorSeat) {
+                // If we're the next actor but not next aggressor, then there is a prior bet we've called.
+                lastAction.action = Action.CALL;
+                lastAction.betLevel = currentBetLevel;
+                lastAction.vsSeat = lastAggressorSeat;
+
+                currentActorIndex++;
+                nextActorSeat = (currentActorIndex >= actorsForStreet.length()) ? null :
+                        getSeatFromChar(actorsForStreet.charAt(currentActorIndex));
+            } else if (lastAggressorSeat == null) {
+                // If no prior bet and we arn't an actor, it's because we check with no bets before us
+                lastAction.action = Action.CHECK;
+                lastAction.betLevel = currentBetLevel;
+                lastAction.vsSeat = null;
             } else {
-                // Otherwise we're just calling
-                lastAction.last_action = Ranges.LastAction.CALL;
+                lastAction.action = Action.FOLD;
                 lastAction.betLevel = currentBetLevel;
                 lastAction.vsSeat = lastAggressorSeat;
             }
-        }
+        } while (currentActorIndex < actorsForStreet.length());
     }
 
     private Seat getSeatFromChar(char seatChar) {
