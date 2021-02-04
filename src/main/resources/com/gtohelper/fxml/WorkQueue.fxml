@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.paint.*?>
+<?import javafx.scene.shape.*?>
 <?import javafx.geometry.*?>
 <?import java.lang.*?>
 <?import javafx.scene.text.*?>
@@ -66,7 +68,7 @@
                            <children>
                               <ListView fx:id="handsList" prefWidth="180.0" style="-fx-box-border: transparent;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="ALWAYS">
 
-                     </ListView>
+                              </ListView>
                            </children>
                         </AnchorPane>
                         <AnchorPane GridPane.columnSpan="2" GridPane.rowIndex="2" VBox.vgrow="NEVER">
@@ -77,6 +79,221 @@
                                   <Button fx:id="stopButton" disable="true" mnemonicParsing="false" onAction="#stopWorker" text="Stop Solver" />
                                 </items>
                               </ToolBar>
+                           </children>
+                        </AnchorPane>
+                        <AnchorPane GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
+                           <children>
+                              <VBox layoutX="40.0" layoutY="116.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                 <children>
+                                    <HBox VBox.vgrow="NEVER">
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="HandID: " />
+                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                             <font>
+                                                <Font size="9.0" />
+                                             </font>
+                                          </TextField>
+                                       </children>
+                                    </HBox>
+                                    <HBox>
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Date Played: " />
+                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                             <font>
+                                                <Font size="9.0" />
+                                             </font>
+                                          </TextField>
+                                       </children>
+                                    </HBox>
+                                    <HBox>
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Limit: " />
+                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                             <font>
+                                                <Font size="9.0" />
+                                             </font>
+                                          </TextField>
+                                       </children>
+                                    </HBox>
+                                    <HBox>
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Pot in BB: " />
+                                          <TextField editable="false" prefHeight="13.0" prefWidth="134.0">
+                                             <font>
+                                                <Font size="9.0" />
+                                             </font>
+                                          </TextField>
+                                       </children>
+                                    </HBox>
+                                    <HBox>
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="PF Bet level: " />
+                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                             <font>
+                                                <Font size="9.0" />
+                                             </font>
+                                          </TextField>
+                                       </children>
+                                    </HBox>
+                                    <HBox>
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="BB Effective:" />
+                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                             <font>
+                                                <Font size="9.0" />
+                                             </font>
+                                          </TextField>
+                                       </children>
+                                    </HBox>
+                                    <HBox>
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Solve Suitability:" />
+                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                             <font>
+                                                <Font size="9.0" />
+                                             </font>
+                                          </TextField>
+                                       </children>
+                                    </HBox>
+                                    <AnchorPane>
+                                       <children>
+                                          <Line endX="160.0" fill="#000000c4" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="5.0" VBox.vgrow="ALWAYS">
+                                             <VBox.margin>
+                                                <Insets bottom="4.0" left="5.0" right="5.0" top="4.0" />
+                                             </VBox.margin>
+                                             <stroke>
+                                                <LinearGradient endX="1.0" endY="1.0">
+                                                   <stops>
+                                                      <Stop color="#8a8a8a" />
+                                                      <Stop color="#ddddddc2" offset="1.0" />
+                                                   </stops>
+                                                </LinearGradient>
+                                             </stroke>
+                                          </Line>
+                                       </children>
+                                    </AnchorPane>
+                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" text="OOP Player: ">
+                                       <VBox.margin>
+                                          <Insets bottom="3.0" />
+                                       </VBox.margin>
+                                    </Text>
+                                    <HBox>
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Name: " />
+                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                             <font>
+                                                <Font size="9.0" />
+                                             </font>
+                                          </TextField>
+                                       </children>
+                                    </HBox>
+                                    <HBox>
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Seat: " />
+                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                             <font>
+                                                <Font size="9.0" />
+                                             </font>
+                                          </TextField>
+                                       </children>
+                                    </HBox>
+                                    <HBox>
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Hand: " />
+                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                             <font>
+                                                <Font size="9.0" />
+                                             </font>
+                                          </TextField>
+                                       </children>
+                                    </HBox>
+                                    <HBox>
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="PF Action: " />
+                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                             <font>
+                                                <Font size="9.0" />
+                                             </font>
+                                          </TextField>
+                                       </children>
+                                    </HBox>
+                                    <AnchorPane>
+                                       <children>
+                                          <Line endX="160.0" fill="#000000c4" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="5.0" VBox.vgrow="ALWAYS">
+                                             <stroke>
+                                                <LinearGradient endX="1.0" endY="1.0">
+                                                   <stops>
+                                                      <Stop color="#8a8a8a" />
+                                                      <Stop color="#ddddddc2" offset="1.0" />
+                                                   </stops>
+                                                </LinearGradient>
+                                             </stroke>
+                                             <VBox.margin>
+                                                <Insets bottom="4.0" left="5.0" right="5.0" top="4.0" />
+                                             </VBox.margin>
+                                          </Line>
+                                       </children>
+                                    </AnchorPane>
+                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" text="OOP Player: " />
+                                    <HBox>
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Name: " />
+                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                             <font>
+                                                <Font size="9.0" />
+                                             </font>
+                                          </TextField>
+                                       </children>
+                                    </HBox>
+                                    <HBox>
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Seat: " />
+                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                             <font>
+                                                <Font size="9.0" />
+                                             </font>
+                                          </TextField>
+                                       </children>
+                                    </HBox>
+                                    <HBox>
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Hand: " />
+                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                             <font>
+                                                <Font size="9.0" />
+                                             </font>
+                                          </TextField>
+                                       </children>
+                                    </HBox>
+                                    <HBox>
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="PF Action: " />
+                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                             <font>
+                                                <Font size="9.0" />
+                                             </font>
+                                          </TextField>
+                                       </children>
+                                    </HBox>
+                                    <AnchorPane>
+                                       <children>
+                                          <Line endX="160.0" fill="#000000c4" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="5.0" VBox.vgrow="ALWAYS">
+                                             <stroke>
+                                                <LinearGradient endX="1.0" endY="1.0">
+                                                   <stops>
+                                                      <Stop color="#8a8a8a" />
+                                                      <Stop color="#ddddddc2" offset="1.0" />
+                                                   </stops>
+                                                </LinearGradient>
+                                             </stroke>
+                                             <VBox.margin>
+                                                <Insets bottom="4.0" left="5.0" right="5.0" top="4.0" />
+                                             </VBox.margin>
+                                          </Line>
+                                       </children>
+                                    </AnchorPane>
+                                 </children>
+                              </VBox>
                            </children>
                         </AnchorPane>
       

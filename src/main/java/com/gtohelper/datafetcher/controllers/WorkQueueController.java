@@ -5,6 +5,7 @@ import com.gtohelper.domain.HandData;
 import com.gtohelper.domain.Work;
 import com.gtohelper.fxml.WorkItem;
 import com.gtohelper.fxml.WorkListViewCell;
+import com.gtohelper.utility.CardResolver;
 import com.gtohelper.utility.Popups;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -17,6 +18,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.stage.StageStyle;
+import javafx.util.Callback;
 
 import javax.swing.event.ChangeEvent;
 import java.io.File;
@@ -66,6 +68,22 @@ public class WorkQueueController {
         finishedWork.setCellFactory(listView -> new WorkListViewCell());
         futureWorkQueue.setCellFactory(listView -> new WorkListViewCell());
         currentWorkItem.setCellFactory(listView -> new WorkListViewCell());
+        handsList.setCellFactory(new Callback<ListView<HandData>, ListCell<HandData>>() {
+            @Override
+            public ListCell<HandData> call(ListView<HandData> param) {
+                return new ListCell<HandData>() {
+                    @Override
+                    public void updateItem(HandData handData, boolean empty)
+                    {
+                        super.updateItem(handData,empty);
+                        if (empty || handData == null)
+                            setText(null);
+                        else
+                            setText(CardResolver.getBoardString(handData));
+                    }
+                };
+            }
+        });
 
         finishedWork.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> changed("finished", oldValue, newValue));
