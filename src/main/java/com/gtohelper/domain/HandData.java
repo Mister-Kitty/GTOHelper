@@ -58,6 +58,25 @@ public class HandData {
         SolvabilityLevel(int level) {
             ambiguityLevel = level;
         }
+        @Override
+        public String toString() {
+            switch(this) {
+                case HU_PRE:
+                    return "HU Preflop";
+                case MULTI_PRE_HU_FLOP:
+                    return "HU on Flop";
+                case MULTI_FLOP_HU_FLOP_VPIP:
+                    return "Multi to Flop, HU VPIP on Flop";
+                case MULTI_FLOP_MULTI_VPIP:
+                    return "Multi to Flop, Multi VPIP on Flop";
+                case HU_SHOWDOWN:
+                    return "HU at Showdown";
+                case MULTI_SHOWDOWN:
+                    return "Multiway Showdown";
+                default:
+                    return "Unknown";
+            }
+        }
     }
 
     // PlayerHandData and associated functions
@@ -116,6 +135,17 @@ public class HandData {
         // max effective stack is 65535 chips in pio. This gives us ~650BB max stack
         float numberOfBB = (value / amt_bb);
         return (int) (numberOfBB * 100);
+    }
+
+    public float getAsNumberOfBB(float value, int significantDigits) {
+        float numBB = value / amt_bb;
+        return (float) (Math.round(numBB * Math.pow(10, significantDigits)) / Math.pow(10, significantDigits));
+    }
+
+    public float getIPandOOPEffective() {
+        float ipBefore = ipPlayer.amt_before;
+        float oopBefore = oopPlayer.amt_before;
+        return Math.max(ipBefore, oopBefore);
     }
 
     public Street getLastStreetOfHand() {
@@ -192,6 +222,7 @@ public class HandData {
     public static class PlayerHandData {
         public int id_hand;
         public int id_player;
+        public String player_name;
         public short holecard_1;
         public short holecard_2;
         public float amt_before;

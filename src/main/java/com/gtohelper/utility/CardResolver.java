@@ -88,9 +88,13 @@ public class CardResolver {
         // if IP is hero, get IP hand. Else get OOP hand ('cause it's hero or there is no hero).
         Optional<HandData.PlayerHandData> playerHand = data.playerHandData.stream().filter(t -> t.id_player == p.id_player).findFirst();
         if(playerHand.isPresent())
-            return resolveToString(playerHand.get().holecard_1) + " " + resolveToString(playerHand.get().holecard_2);
+            return getHandString(playerHand.get());
         else
             return "";
+    }
+
+    public static String getHandString(HandData.PlayerHandData playerHand) {
+        return resolveToString(playerHand.holecard_1) + " " + resolveToString(playerHand.holecard_2);
     }
 
     public static String getFlopString(HandData data) {

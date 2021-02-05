@@ -88,7 +88,7 @@
                                     <HBox VBox.vgrow="NEVER">
                                        <children>
                                           <Text strokeType="OUTSIDE" strokeWidth="0.0" text="HandID: " />
-                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                          <TextField fx:id="handID" editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
                                              <font>
                                                 <Font size="9.0" />
                                              </font>
@@ -98,7 +98,7 @@
                                     <HBox>
                                        <children>
                                           <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Date Played: " />
-                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                          <TextField fx:id="datePlayed" editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
                                              <font>
                                                 <Font size="9.0" />
                                              </font>
@@ -108,7 +108,7 @@
                                     <HBox>
                                        <children>
                                           <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Limit: " />
-                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                          <TextField fx:id="limit" editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
                                              <font>
                                                 <Font size="9.0" />
                                              </font>
@@ -118,7 +118,7 @@
                                     <HBox>
                                        <children>
                                           <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Pot in BB: " />
-                                          <TextField editable="false" prefHeight="13.0" prefWidth="134.0">
+                                          <TextField fx:id="potInBB" editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
                                              <font>
                                                 <Font size="9.0" />
                                              </font>
@@ -128,7 +128,7 @@
                                     <HBox>
                                        <children>
                                           <Text strokeType="OUTSIDE" strokeWidth="0.0" text="PF Bet level: " />
-                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                          <TextField fx:id="PFBetLevel" editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
                                              <font>
                                                 <Font size="9.0" />
                                              </font>
@@ -137,8 +137,8 @@
                                     </HBox>
                                     <HBox>
                                        <children>
-                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="BB Effective:" />
-                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="BB Effective: " />
+                                          <TextField fx:id="BBEffective" editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
                                              <font>
                                                 <Font size="9.0" />
                                              </font>
@@ -147,8 +147,8 @@
                                     </HBox>
                                     <HBox>
                                        <children>
-                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Solve Suitability:" />
-                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Solve Suitability: " />
+                                          <TextField fx:id="solveSuitability" editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
                                              <font>
                                                 <Font size="9.0" />
                                              </font>
@@ -180,7 +180,7 @@
                                     <HBox>
                                        <children>
                                           <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Name: " />
-                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                          <TextField fx:id="OOPName" editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
                                              <font>
                                                 <Font size="9.0" />
                                              </font>
@@ -190,7 +190,7 @@
                                     <HBox>
                                        <children>
                                           <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Seat: " />
-                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                          <TextField fx:id="OOPSeat" editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
                                              <font>
                                                 <Font size="9.0" />
                                              </font>
@@ -200,7 +200,7 @@
                                     <HBox>
                                        <children>
                                           <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Hand: " />
-                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                          <TextField fx:id="OOPHand" editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
                                              <font>
                                                 <Font size="9.0" />
                                              </font>
@@ -210,7 +210,7 @@
                                     <HBox>
                                        <children>
                                           <Text strokeType="OUTSIDE" strokeWidth="0.0" text="PF Action: " />
-                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                          <TextField fx:id="OOPPFAction" editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
                                              <font>
                                                 <Font size="9.0" />
                                              </font>
@@ -234,11 +234,11 @@
                                           </Line>
                                        </children>
                                     </AnchorPane>
-                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" text="OOP Player: " />
+                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" text="IP Player: " />
                                     <HBox>
                                        <children>
                                           <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Name: " />
-                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                          <TextField fx:id="IPName" editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
                                              <font>
                                                 <Font size="9.0" />
                                              </font>
@@ -248,7 +248,7 @@
                                     <HBox>
                                        <children>
                                           <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Seat: " />
-                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                          <TextField fx:id="IPSeat" editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
                                              <font>
                                                 <Font size="9.0" />
                                              </font>
@@ -258,7 +258,7 @@
                                     <HBox>
                                        <children>
                                           <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Hand: " />
-                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                          <TextField fx:id="IPHand" editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
                                              <font>
                                                 <Font size="9.0" />
                                              </font>
@@ -268,7 +268,7 @@
                                     <HBox>
                                        <children>
                                           <Text strokeType="OUTSIDE" strokeWidth="0.0" text="PF Action: " />
-                                          <TextField editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                          <TextField fx:id="IPPFAction" editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
                                              <font>
                                                 <Font size="9.0" />
                                              </font>

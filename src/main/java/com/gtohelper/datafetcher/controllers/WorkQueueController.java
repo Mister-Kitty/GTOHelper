@@ -17,11 +17,13 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.text.Text;
 import javafx.stage.StageStyle;
 import javafx.util.Callback;
 
 import javax.swing.event.ChangeEvent;
 import java.io.File;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -45,7 +47,15 @@ public class WorkQueueController {
     ListView<HandData> handsList;
     ObservableList<HandData> handsListItems = FXCollections.observableArrayList();
 
+    @FXML
     Work selectedItem;
+
+    @FXML
+    TextField handID, datePlayed, limit, potInBB, PFBetLevel, BBEffective, solveSuitability;
+    @FXML
+    TextField OOPName, OOPSeat, OOPHand, OOPPFAction;
+    @FXML
+    TextField IPName, IPSeat, IPHand, IPPFAction;
 
     @FXML
     Button startButton, stopButton;
@@ -91,6 +101,8 @@ public class WorkQueueController {
                 (observable, oldValue, newValue) -> changed("current", oldValue, newValue));
         futureWorkQueue.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> changed("future", oldValue, newValue));
+        handsList.getSelectionModel().selectedItemProperty().addListener(
+                (observable, oldValue, newValue) -> updateHandDataFields(newValue));
     }
 
     public void changed(String source, Work oldValue, Work newValue) {
@@ -109,6 +121,31 @@ public class WorkQueueController {
 
             handsListItems.clear();
             handsListItems.addAll(selectedItem.getHandDataList());
+        }
+    }
+
+    private void updateHandDataFields(HandData handData) {
+        if(handData == null) {
+            handID.setText(""); datePlayed.setText(""); limit.setText(""); potInBB.setText(""); PFBetLevel.setText("");
+            BBEffective.setText(""); solveSuitability.setText("");
+            OOPName.setText(""); OOPSeat.setText(""); OOPHand.setText(""); OOPPFAction.setText("");
+            IPName.setText(""); IPSeat.setText(""); IPHand.setText(""); IPPFAction.setText("");
+        } else {
+            handID.setText(""+handData.id_hand);
+            datePlayed.setText(handData.date_played.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            limit.setText(handData.limit_name);
+            potInBB.setText(""+handData.getAsNumberOfBB(handData.amt_pot, 2));
+            PFBetLevel.setText(""+handData.highestPreflopBetLevel);
+            BBEffective.setText(""+handData.getAsNumberOfBB(handData.getIPandOOPEffective(), 2));
+            solveSuitability.setText(handData.solveabilityLevel.toString());
+            OOPName.setText(handData.oopPlayer.player_name);
+            OOPSeat.setText(handData.oopPlayer.seat.toString());
+            OOPHand.setText(CardResolver.getHandString(handData.oopPlayer));
+            OOPPFAction.setText(handData.oopPlayer.p_action);
+            IPName.setText(handData.ipPlayer.player_name);
+            IPSeat.setText(handData.ipPlayer.seat.toString());
+            IPHand.setText(CardResolver.getHandString(handData.oopPlayer));
+            IPPFAction.setText(handData.ipPlayer.p_action);
         }
     }
 

@@ -321,7 +321,7 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
     private ArrayList<PlayerHandData> getPlayerHandData(String innerQuery) throws SQLException {
         final String handPlayerStatsOuterQuerySql =
                 "SELECT stats.id_hand, p_actions.action as p_action, f_actions.action as f_action, t_actions.action as t_action, r_actions.action as r_action,\n" +
-                        "  stats.id_player, stats.holecard_1, stats.holecard_2, stats.amt_before, stats.amt_won, stats.position, stats.flg_showdown \n" +
+                        "  stats.id_player, player.player_name, stats.holecard_1, stats.holecard_2, stats.amt_before, stats.amt_won, stats.position, stats.flg_showdown \n" +
                         "FROM cash_hand_player_statistics as stats\n" +
                         "\n" +
                         "INNER JOIN lookup_actions as p_actions\n" +
@@ -332,6 +332,8 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
                         "  on stats.id_action_t = t_actions.id_action\n" +
                         "INNER JOIN lookup_actions as r_actions\n" +
                         "  on stats.id_action_r = r_actions.id_action\n" +
+                        "INNER JOIN player\n" +
+                        "  on stats.id_player = player.id_player\n" +
                         "\n" +
                         "WHERE p_actions.action != 'F' AND \n" +
                         "stats.id_hand in\n" +
@@ -393,6 +395,7 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
 
         data.id_hand = rs.getInt("id_hand");
         data.id_player = rs.getInt("id_player");
+        data.player_name = rs.getString("player_name");
         data.holecard_1 = rs.getShort("holecard_1");
         data.holecard_2 = rs.getShort("holecard_2");
         data.amt_before = rs.getFloat("amt_before");

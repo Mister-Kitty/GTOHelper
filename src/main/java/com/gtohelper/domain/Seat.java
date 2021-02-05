@@ -46,4 +46,9 @@ public enum Seat {
     public static Seat fromTrackerPosition(int position) {
         return Seat.values()[position];
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }
