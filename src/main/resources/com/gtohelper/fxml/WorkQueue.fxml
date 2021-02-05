@@ -66,7 +66,7 @@
                         </AnchorPane>
                         <AnchorPane GridPane.halignment="LEFT" GridPane.hgrow="NEVER" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS" VBox.vgrow="ALWAYS">
                            <children>
-                              <ListView fx:id="handsList" prefWidth="180.0" style="-fx-box-border: transparent;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="ALWAYS">
+                              <ListView fx:id="handsList" prefWidth="160.0" style="-fx-box-border: transparent;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="ALWAYS">
 
                               </ListView>
                            </children>
@@ -234,7 +234,10 @@
                                           </Line>
                                        </children>
                                     </AnchorPane>
-                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" text="IP Player: " />
+                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" text="IP Player: ">
+                                       <VBox.margin>
+                                          <Insets bottom="3.0" />
+                                       </VBox.margin></Text>
                                     <HBox>
                                        <children>
                                           <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Name: " />

@@ -1,13 +1,14 @@
 package com.gtohelper.domain;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class RakeData {
-    private ArrayList<Float> bbLimits = new ArrayList<Float>();
-    private ArrayList<Float> rakePercents = new ArrayList<Float>();
-    private ArrayList<Float> twoPlayerCaps = new ArrayList<Float>();
-    private ArrayList<Float> fourPlayerCaps = new ArrayList<Float>();
-    private ArrayList<Float> fullPlayerCaps = new ArrayList<Float>();
+public class RakeData implements Serializable {
+    private ArrayList<Float> bbLimits = new ArrayList<>();
+    private ArrayList<Float> rakePercents = new ArrayList<>();
+    private ArrayList<Float> twoPlayerCaps = new ArrayList<>();
+    private ArrayList<Float> fourPlayerCaps = new ArrayList<>();
+    private ArrayList<Float> fullPlayerCaps = new ArrayList<>();
 
     public void addRakeRow(Float bbLimit, Float rakePercent, Float twoPlayerCap, Float fourPlayerCap, Float fullPlayerCap) {
         bbLimits.add(bbLimit);

@@ -67,6 +67,7 @@ public class WorkQueueController {
     @FXML
     void initialize() {
         initializeControls();
+        loadStateFromFile();
     }
 
     private void initializeControls() {
@@ -204,5 +205,13 @@ public class WorkQueueController {
 
     public void saveGetSolverLocationCallback(Supplier<String> callback) {
         getSolverLocationCallback = callback;
+    }
+
+    /*
+
+     */
+
+    private void loadStateFromFile() {
+        workQueueModel.loadStateFromFile();
     }
 }

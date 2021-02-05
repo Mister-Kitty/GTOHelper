@@ -267,13 +267,34 @@ public class WorkQueueModel {
     }
 
     // Priority queue strategies that can be set by user.
-    Comparator<Work> leastWorkToDoFirst = new Comparator<Work>() {
-        @Override
-        public int compare(Work work1, Work work2) {
-            int work1Size = Math.min(work1.overridePriority, work1.getTotalWorkItems());
-            int work2Size = Math.min(work2.overridePriority, work2.getTotalWorkItems());
+    Comparator<Work> leastWorkToDoFirst = (work1, work2) -> {
+        int work1Size = Math.min(work1.overridePriority, work1.getTotalWorkItems());
+        int work2Size = Math.min(work2.overridePriority, work2.getTotalWorkItems());
 
-            return Integer.compare(work1Size, work2Size);
-        }
+        return Integer.compare(work1Size, work2Size);
     };
+
+
+    /*
+
+     */
+
+    public void loadStateFromFile() {
+
+
+
+
+
+
+    }
+
+    public void saveStateToFile() {
+        /*
+            So, what do we need to save?
+            Well, each Work should have it's own
+
+         */
+
+
+    }
 }

@@ -1,10 +1,12 @@
 package com.gtohelper.domain;
 
-public class Player {
+import java.io.Serializable;
+
+public class Player implements Serializable {
     public int id_player;
     public String player_name;
-    public boolean flg_note;
-    public boolean flg_tag;
+    public transient boolean flg_note;
+    public transient boolean flg_tag;
 
     @Override
     public String toString() {

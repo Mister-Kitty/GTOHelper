@@ -1,11 +1,11 @@
 package com.gtohelper.domain;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import com.gtohelper.domain.HandData.PlayerHandData;
 import com.gtohelper.domain.HandData.PlayerHandData.LastActionForStreet;
 
-public class Ranges {
-
+public class Ranges implements Serializable {
     RangesMap rangesMap = new RangesMap();
 
     public RangeData getRangeForHand(PlayerHandData playerHand) {
@@ -21,7 +21,7 @@ public class Ranges {
         rangesMap.fillEmptyRanges();
     }
 
-    class RangesMap extends HashMap<ActionAndSeat, RangeData> {
+    class RangesMap extends HashMap<ActionAndSeat, RangeData> implements Serializable {
         // We could just use one HashMap<ActionAndSeat, RangeData>. Instead, we'll break down
         // this hashmap by position, as it'll make our use case way easier.
         HashMap<ActionAndSeat, RangeData> LimpMap = new HashMap<>();
@@ -245,7 +245,7 @@ public class Ranges {
         }
     }
 
-    public static class ActionAndSeat {
+    public static class ActionAndSeat implements Serializable {
         public Situation situation;
         public Seat heroSeat;
         public Seat villainSeat;
