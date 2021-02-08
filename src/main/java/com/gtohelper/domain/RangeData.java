@@ -2,9 +2,10 @@ package com.gtohelper.domain;
 
 import com.gtohelper.utility.CardResolver;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
-public class RangeData {
+public class RangeData implements Serializable {
     float[] floats;
     boolean isTheEmptyRange = true;
 

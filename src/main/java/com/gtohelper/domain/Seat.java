@@ -1,6 +1,8 @@
 package com.gtohelper.domain;
 
-public enum Seat {
+import java.io.Serializable;
+
+public enum Seat implements Serializable {
     // The 'position' of the seat is it's Enum.ordinal() value.
     BTN("BTN", 7, 9), CO("CO", 6, 8), HJ("HJ", 5, 7),
     LJ("LJ", 4, 6), UTG2("UTG+2", 3, 5), UTG1("UTG+1", 2, 4),

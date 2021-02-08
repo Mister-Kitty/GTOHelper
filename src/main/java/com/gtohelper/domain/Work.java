@@ -2,11 +2,12 @@ package com.gtohelper.domain;
 
 import com.gtohelper.utility.CardResolver;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-public class Work {
+public class Work implements Serializable {
     Player hero;
     ArrayList<SolveData> workTasks;
     Ranges ranges;
@@ -15,7 +16,7 @@ public class Work {
     public String name = "Review Hands for Dec 16";
     private int currentWorkIndex = 0;
     public int overridePriority = 9999;
-    Consumer<Work> progressCallback;
+    transient Consumer<Work> progressCallback;
 
     public int getCurrentWorkIndex() {
         return currentWorkIndex;

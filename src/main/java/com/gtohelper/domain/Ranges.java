@@ -209,7 +209,7 @@ public class Ranges implements Serializable {
         }
     }
 
-    public enum Situation {
+    public enum Situation implements Serializable {
         LIMP("Limp"), RFI("RFI"), VRFI("vRFI"), V3BET("v3Bet"), V4BET("v4Bet"), CALL5BET("call5Bet");
 
         public static final Situation values[] = values();
@@ -228,7 +228,7 @@ public class Ranges implements Serializable {
         }
     }
 
-    public enum LastAction {
+    public enum LastAction implements Serializable {
         CALL("Call"), RAISE("Raise");
 
         public static final LastAction values[] = values();
