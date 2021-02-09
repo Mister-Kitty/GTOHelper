@@ -69,6 +69,42 @@
                  <Insets bottom="2.0" />
              </padding>
          </HBox>
+            <HBox fillHeight="false">
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Solve results folder:" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" HBox.hgrow="NEVER">
+                     <HBox.margin>
+                        <Insets left="1.0" right="1.0" top="3.0" />
+                     </HBox.margin>
+                  </Text>
+                  <TextField fx:id="solveResultsFolder" maxHeight="25.0" minHeight="25.0" minWidth="160.0" HBox.hgrow="ALWAYS" />
+                  <Button mnemonicParsing="false" onAction="#onResultsChooseFolderPress" text="Browse">
+                     <HBox.margin>
+                        <Insets left="1.0" />
+                     </HBox.margin>
+                  </Button>
+               </children>
+               <padding>
+                  <Insets bottom="2.0" />
+               </padding>
+            </HBox>
+            <HBox fillHeight="false">
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Solve results backup folder:" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" HBox.hgrow="NEVER">
+                     <HBox.margin>
+                        <Insets left="1.0" right="1.0" top="3.0" />
+                     </HBox.margin>
+                  </Text>
+                  <TextField fx:id="solveResultsBackupFolder" maxHeight="25.0" minHeight="25.0" minWidth="160.0" HBox.hgrow="ALWAYS" />
+                  <Button mnemonicParsing="false" onAction="#onResultsBackupChooseFolderPress" text="Browse">
+                     <HBox.margin>
+                        <Insets left="1.0" />
+                     </HBox.margin>
+                  </Button>
+               </children>
+               <padding>
+                  <Insets bottom="2.0" />
+               </padding>
+            </HBox>
          </children>
       </VBox>
    </children>

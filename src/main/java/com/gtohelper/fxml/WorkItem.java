@@ -59,7 +59,7 @@ public class WorkItem {
     // we could hook our fields up to these properties directly ~ but doing so would require we declare and
     // bind fxml into the Work domain object. Instead we'll just do a callback.
     public void updateFieldsFromWork(Work w) {
-        titleLabel.setText(w.name);
+        titleLabel.setText(w.getWorkSettings().getName());
         if(w.isCompleted()) {
             currentHandText.setText("Completed");
             handXofYText.setText("");

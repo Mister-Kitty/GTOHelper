@@ -2,6 +2,7 @@ package com.gtohelper.datafetcher.controllers.solversettings;
 
 import com.gtohelper.datafetcher.models.solversettings.SolverSettingsModel;
 import com.gtohelper.domain.BettingOptions;
+import com.gtohelper.domain.GlobalSolverSettings;
 import com.gtohelper.domain.RakeData;
 import com.gtohelper.domain.Ranges;
 import com.gtohelper.utility.SaveFileHelper;
@@ -41,18 +42,20 @@ public class SolverSettingsController {
 
     public void saveDisplayFolderChooserCallback(Function<DirectoryChooser, File> callback) {
         rangeFilesController.saveDisplayFolderChooserCallback(callback);
+        otherSettingsController.saveDisplayFolderChooserCallback(callback);
     }
 
     public void saveDisplayFileChooserCallback(Function<FileChooser, File> callback) {
         otherSettingsController.saveDisplayFileChooserCallback(callback);
     }
 
+
     public void saveBetSettingsChangedCallback(Consumer<List<String>> callback) {
         betSettingsController.saveBetSettingsChangedCallback(callback);
     }
 
-    public String getSolverLocation() {
-        return otherSettingsController.getSolverLocation();
+    public GlobalSolverSettings getGlobalSolverSettings() {
+        return otherSettingsController.getGlobalSolverSettings();
     }
 
     public BettingOptions getBetSettingByName(String name) {

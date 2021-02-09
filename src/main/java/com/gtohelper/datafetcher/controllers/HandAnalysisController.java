@@ -82,27 +82,34 @@ public class HandAnalysisController {
     @FXML
     private void solveSelected() {
        List<HandData> handsToSolve = handsTable.getSelectionModel().getSelectedItems();
-       String betSettingName = betSizingsChoiceBox.getSelectionModel().getSelectedItem();
-       solveHandsCallback.accept(handsToSolve, betSettingName);
+       solveHandsCallback.accept(handsToSolve, buildWorkSettings());
     }
 
-    private BiConsumer<List<HandData>, String> solveHandsCallback;
-    public void saveSolveHandsCallback(BiConsumer<List<HandData>, String> callback) {
+    private Work.WorkSettings buildWorkSettings() {
+        String workItemName = "Hands for Dec 16";
+        String betSettingName = betSizingsChoiceBox.getSelectionModel().getSelectedItem();
+        boolean useRake = true;
+        float percentPot = 0.5f;
+
+        return new Work.WorkSettings(workItemName, player, percentPot, useRake, betSettingName);
+    }
+
+    private BiConsumer<List<HandData>, Work.WorkSettings> solveHandsCallback;
+    public void saveSolveHandsCallback(BiConsumer<List<HandData>, Work.WorkSettings> callback) {
         solveHandsCallback = callback;
     }
 
     private void initializeControls() {
-        scheduleChoiceBox.getItems().add("Right Now");
-        scheduleChoiceBox.getSelectionModel().select("Right Now");
+        scheduleChoiceBox.getItems().add("Now");
+        scheduleChoiceBox.getSelectionModel().select("Now");
 
         handsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         handsTable.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
-                if(newValue == null)
-                    solveButton.disableProperty().setValue(true);
-                else
-                    solveButton.disableProperty().setValue(false);
-            }
-        );
+            if(newValue == null)
+                solveButton.disableProperty().setValue(true);
+            else
+                solveButton.disableProperty().setValue(false);
+        });
 
         // I could annotate the domain objects to make this more elegant... I may do it latter.
         tagTableIdColumn.setCellValueFactory(p -> new SimpleStringProperty("" + p.getValue().id_tag));

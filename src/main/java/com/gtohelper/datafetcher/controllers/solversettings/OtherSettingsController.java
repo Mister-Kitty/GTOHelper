@@ -1,10 +1,12 @@
 package com.gtohelper.datafetcher.controllers.solversettings;
 
 import com.gtohelper.datafetcher.models.solversettings.OtherSettingsModel;
+import com.gtohelper.domain.GlobalSolverSettings;
 import com.gtohelper.domain.RakeData;
 import com.gtohelper.utility.SaveFileHelper;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 
 import java.io.File;
@@ -23,6 +25,13 @@ public class OtherSettingsController {
     @FXML
     TextField rakeLocation;
 
+    @FXML
+    TextField solveResultsFolder;
+
+    @FXML
+    TextField solveResultsBackupFolder;
+
+    DirectoryChooser folderChooser = new DirectoryChooser();
     FileChooser fileChooser = new FileChooser();
 
     OtherSettingsModel otherSettingsModel;
@@ -32,7 +41,13 @@ public class OtherSettingsController {
         displayFileChooserCallback = callback;
     }
 
+    private Function<DirectoryChooser, File> displayFolderChooserCallback;
+    public void saveDisplayFolderChooserCallback(Function<DirectoryChooser, File> callback) {
+        displayFolderChooserCallback = callback;
+    }
+
     public void loadModel(SaveFileHelper saveHelper) {
+        folderChooser.setTitle("Select Save Folder");
         otherSettingsModel = new OtherSettingsModel(saveHelper);
         loadFieldsFromModel();
     }
@@ -46,6 +61,12 @@ public class OtherSettingsController {
 
         String rake = otherSettingsModel.loadTextField("rakeLocation");
         rakeLocation.setText(rake);
+
+        String resultsFolder = otherSettingsModel.loadTextField("solveResultsFolder");
+        solveResultsFolder.setText(resultsFolder);
+
+        String resultsBackupFolder = otherSettingsModel.loadTextField("solveResultsBackupFolder");
+        solveResultsBackupFolder.setText(resultsBackupFolder);
     }
 
     private void selectSolverFile(File file) throws IOException {
@@ -63,6 +84,18 @@ public class OtherSettingsController {
     private void selectRakeFile(File file) throws IOException {
         rakeLocation.setText(file.getAbsolutePath());
         otherSettingsModel.saveTextField("rakeLocation", file.getAbsolutePath());
+        otherSettingsModel.saveAll();
+    }
+
+    private void selectResultsFolder(File folder) throws IOException {
+        solveResultsFolder.setText(folder.getAbsolutePath());
+        otherSettingsModel.saveTextField("solveResultsFolder", folder.getAbsolutePath());
+        otherSettingsModel.saveAll();
+    }
+
+    private void selectResultsBackupFolder(File folder) throws IOException {
+        solveResultsBackupFolder.setText(folder.getAbsolutePath());
+        otherSettingsModel.saveTextField("solveResultsBackupFolder", folder.getAbsolutePath());
         otherSettingsModel.saveAll();
     }
 
@@ -105,11 +138,40 @@ public class OtherSettingsController {
             selectRakeFile(result);
     }
 
-    public String getSolverLocation() {
-        return solverLocation.getText();
+    @FXML
+    private void onResultsChooseFolderPress() throws IOException {
+        File defaultFolder = new File(solveResultsFolder.getText());
+
+        if(defaultFolder.exists())
+            folderChooser.setInitialDirectory(defaultFolder);
+
+        File result = displayFolderChooserCallback.apply(folderChooser);
+        if(result != null)
+            selectResultsFolder(result);
     }
-    public String getViewerLocation() {
-        return viewerLocation.getText();
+
+    @FXML
+    private void onResultsBackupChooseFolderPress() throws IOException {
+        File defaultFolder = new File(solveResultsBackupFolder.getText());
+
+        if(defaultFolder.exists())
+            folderChooser.setInitialDirectory(defaultFolder);
+
+        File result = displayFolderChooserCallback.apply(folderChooser);
+        if(result != null)
+            selectResultsBackupFolder(result);
+    }
+
+    public GlobalSolverSettings getGlobalSolverSettings() {
+        GlobalSolverSettings settings = new GlobalSolverSettings();
+
+        settings.setSolverLocation(solverLocation.getText());
+        settings.setViewerLocation(viewerLocation.getText());
+        settings.setRakeLocation(rakeLocation.getText());
+        settings.setSolveResultsFolder(solveResultsFolder.getText());
+        settings.setSolveResultsBackupFolder(solveResultsBackupFolder.getText());
+
+        return settings;
     }
 
     public RakeData loadRakeData() {

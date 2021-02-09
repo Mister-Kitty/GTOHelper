@@ -5,6 +5,7 @@ import com.gtohelper.domain.*;
 import com.gtohelper.utility.Logger;
 import com.gtohelper.utility.Popups;
 import com.gtohelper.utility.SaveFileHelper;
+import com.gtohelper.utility.StateManager;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
@@ -69,7 +70,7 @@ public class GTOHelperController  {
         solverSettingsController.saveDisplayFileChooserCallback(this::displayFileChooser);
         solverSettingsController.saveBetSettingsChangedCallback(this::betSettingsUpdatedDataPropogation);
         handAnalysisController.saveSolveHandsCallback(this::analyzeHands);
-        workQueueController.saveGetSolverLocationCallback(this::getSolverLocation);
+        workQueueController.saveGetGlobalSolverSettingsCallback(this::getGlobalSolverSettings);
 
         dbConnectionController.loadModel(saveHelper);
         handAnalysisController.loadModel(saveHelper);
@@ -97,27 +98,36 @@ public class GTOHelperController  {
         handAnalysisController.refreshBetSettings(betSettings);
     }
 
-    public void analyzeHands(List<HandData> hands, String betSettingName) {
-        Work work = buildWork(hands, betSettingName);
+    public void analyzeHands(List<HandData> hands, Work.WorkSettings settings) {
+        Work work = buildWork(hands, settings);
         if(work == null)
             return;
+
+        // One last fail-prone condition before we proceed. Create the folder and save the Work State.
+        File workFolder = StateManager.createWorkFolder(work);
+        if(workFolder == null)
+            return;
+
+        boolean success = StateManager.saveWorkObject(work, workFolder);
+        if(!success) {
+            StateManager.deleteEmptyWorkFolder(workFolder);
+            return;
+        }
 
         workQueueController.receiveNewWork(work);
         mainTabPain.getSelectionModel().select(workQueueTab);
     }
 
-    public String getSolverLocation() {
-        return solverSettingsController.getSolverLocation();
+    public GlobalSolverSettings getGlobalSolverSettings() {
+        return solverSettingsController.getGlobalSolverSettings();
     }
 
-    private Work buildWork(List<HandData> hands, String betSettingName) {
+    private Work buildWork(List<HandData> hands, Work.WorkSettings settings) {
         ArrayList<SolveData> solveList = new ArrayList<>();
-        Player hero = dbConnectionController.getPlayer();
-        SolverSettings solverSettings = new SolverSettings(.5f);
 
-        BettingOptions treeData = solverSettingsController.getBetSettingByName(betSettingName);
+        BettingOptions treeData = solverSettingsController.getBetSettingByName(settings.getBetSettingName());
         if(treeData == null) {
-            Popups.showError("Failed to load bet settings for " + betSettingName);
+            Popups.showError("Failed to load bet settings for " + settings.getBetSettingName());
             return null;
         }
 
@@ -134,10 +144,10 @@ public class GTOHelperController  {
         }
 
         for(HandData hand : hands) {
-            solveList.add(new SolveData(hand, treeData, solverSettings));
+            solveList.add(new SolveData(hand));
         }
 
-        return new Work(solveList, workRanges, rakeData, hero);
+        return new Work(solveList, settings, workRanges, treeData, rakeData);
     }
 
     private void initializeControls() {

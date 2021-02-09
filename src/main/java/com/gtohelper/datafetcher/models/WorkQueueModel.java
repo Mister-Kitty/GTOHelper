@@ -52,11 +52,11 @@ public class WorkQueueModel {
         updateGUICallback.run();
     }
 
-    public boolean startWorker(String solverLocation) {
+    public boolean startWorker(GlobalSolverSettings solverSettings) {
         assert worker == null;
 
         updateSolverStatusCallback.accept(true);
-        worker = new QueueWorker(solverLocation);
+        worker = new QueueWorker(solverSettings);
         if(worker.hasFatalErrorOccured()) {
             updateSolverStatusCallback.accept(false);
             worker = null;
@@ -73,15 +73,17 @@ public class WorkQueueModel {
 
     protected class QueueWorker extends Thread {
         private ISolver solver;
+        GlobalSolverSettings solverSettings;
         private volatile boolean stopRequested = false;
         private Work current;
         public Work getCurrent() { return current; }
         private boolean fatalErrorOccured = false;
 
-        public QueueWorker(String solverLocation) {
+        public QueueWorker(GlobalSolverSettings solveSettings) {
+            solverSettings = solveSettings;
             try {
                 solver = new PioSolver();
-                solver.connectAndInit(solverLocation);
+                solver.connectAndInit(solverSettings.getSolverLocation());
             } catch (IOException e) {
                 Logger.log(Logger.Channel.PIO, "Error occured launching Pio. Perhaps the executable address changed or we do not have read permission?\n" +
                         e.toString());
@@ -145,16 +147,18 @@ public class WorkQueueModel {
         }
 
         private void doWork(Work work) {
+            Work.WorkSettings settings = work.getWorkSettings();
             Ranges ranges = work.getRanges();
+            BettingOptions bettingOptions = work.getBettingOptions();
             RakeData rakeData = work.getRakeData();
 
             while(!work.isCompleted() && !stopRequested) {
                 SolveData currentSolve = work.getCurrentTask();
-                String saveFolder = currentSolve.getSolverSettings().getSolveSaveLocation() + "\\" + work.name + "\\";
+                String saveFolder = solverSettings.getSolveResultsFolder() + "\\" + settings.getName() + "\\";
                 String fileName = currentSolve.getHandData().id_hand + "-" + work.getCurrentHand() + "-" + work.getCurrentBoard() + ".cfr";
 
                 try {
-                   SolveResults results = dispatchSolve(currentSolve, ranges, rakeData);
+                    SolveResults results = dispatchSolve(currentSolve, settings, ranges, bettingOptions, rakeData);
                     work.getCurrentTask().saveSolveResults(results);
 
                     if(results.success)
@@ -176,7 +180,7 @@ public class WorkQueueModel {
             }
         }
 
-        private SolveResults dispatchSolve(SolveData solve, Ranges ranges, RakeData rakeData) throws IOException {
+        private SolveResults dispatchSolve(SolveData solve, Work.WorkSettings settings, Ranges ranges, BettingOptions bettingOptions, RakeData rakeData) throws IOException {
             SolveResults results = new SolveResults();
 
             RangeData oopRange = ranges.getRangeForHand(solve.getHandData().oopPlayer);
@@ -191,7 +195,7 @@ public class WorkQueueModel {
 
             HandData handData = solve.getHandData();
             int pot = handData.getValueAsChips(handData.amt_pot_f);
-            float solveAccuracy = solve.getSolverSettings().getAccuracyInChips(pot);
+            float solveAccuracy = (settings.getPercentOfPotAccuracy() / 100) * pot;
             boolean oopIsBiggestStack = (handData.oopPlayer.amt_before >= handData.ipPlayer.amt_before);
             float effectiveStack = oopIsBiggestStack ? handData.oopPlayer.amt_before : handData.ipPlayer.amt_before;
 
@@ -201,8 +205,6 @@ public class WorkQueueModel {
             solver.setBoard(CardResolver.getFlopString(handData));
             solver.setPotAndAccuracy(0, 0, pot, solveAccuracy);
             solver.setEffectiveStack(handData.getValueAsChips(effectiveStack));
-
-            BettingOptions bettingOptions = solve.getBettingOptions();
 
             int allInThresholdPercent = 100;
             int allInOnlyIfLessThanNPercent = 500;
@@ -239,7 +241,7 @@ public class WorkQueueModel {
             }
 
             // Rake is after tree building for some reason.
-            if(solve.getSolverSettings().getUseRake()) {
+            if(settings.getUseRake() && rakeData != null) {
                 float percent = rakeData.getRakeForBB(handData.cnt_players);
                 float dollarCap = rakeData.getCapForBB(handData.amt_bb, handData.cnt_players);
                 float chipCap = handData.getValueAsChips(dollarCap);
@@ -273,28 +275,4 @@ public class WorkQueueModel {
 
         return Integer.compare(work1Size, work2Size);
     };
-
-
-    /*
-
-     */
-
-    public void loadStateFromFile() {
-
-
-
-
-
-
-    }
-
-    public void saveStateToFile() {
-        /*
-            So, what do we need to save?
-            Well, each Work should have it's own
-         */
-
-
-
-    }
 }

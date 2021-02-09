@@ -17,6 +17,8 @@ public class OtherSettingsModel extends Saveable {
         values.put("solverLocation", "");
         values.put("viewerLocation", "");
         values.put("rakeLocation", "DefaultRakeFile.csv");
+        values.put("solveResultsFolder", "solver results");
+        values.put("solveResultsBackupFolder", "");
         return values;
     }
 

@@ -1,6 +1,7 @@
 package com.gtohelper.datafetcher.controllers;
 
 import com.gtohelper.datafetcher.models.WorkQueueModel;
+import com.gtohelper.domain.GlobalSolverSettings;
 import com.gtohelper.domain.HandData;
 import com.gtohelper.domain.Work;
 import com.gtohelper.fxml.WorkItem;
@@ -56,18 +57,17 @@ public class WorkQueueController {
     TextField OOPName, OOPSeat, OOPHand, OOPPFAction;
     @FXML
     TextField IPName, IPSeat, IPHand, IPPFAction;
-
     @FXML
     Button startButton, stopButton;
 
-    Supplier<String> getSolverLocationCallback;
+    Supplier<GlobalSolverSettings> getGlobalSolverSettingsCallback;
 
     public WorkQueueController() {}
 
     @FXML
     void initialize() {
         initializeControls();
-        loadStateFromFile();
+        loadAllWorkState();
     }
 
     private void initializeControls() {
@@ -152,9 +152,16 @@ public class WorkQueueController {
 
     @FXML
     public void startWorker() {
-        String solverLocation = getSolverLocationCallback.get();
-        if(solverLocation.isEmpty()) {
+        GlobalSolverSettings globalSolverSettings = getGlobalSolverSettingsCallback.get();
+        String solverLocation = globalSolverSettings.getSolverLocation();
+
+        if(globalSolverSettings.getSolverLocation().isEmpty()) {
             Popups.showError("Piosolver location not set.");
+            return;
+        }
+
+        if(globalSolverSettings.getSolveResultsFolder().isEmpty()) {
+            Popups.showError("Solve results output folder not set.");
             return;
         }
 
@@ -163,7 +170,7 @@ public class WorkQueueController {
             return;
         }
 
-        boolean success = workQueueModel.startWorker(solverLocation);
+        boolean success = workQueueModel.startWorker(globalSolverSettings);
 
         if(!success)
             Popups.showError("Error occured when launching Pio. See debug tab for details.");
@@ -203,15 +210,22 @@ public class WorkQueueController {
         }
     }
 
-    public void saveGetSolverLocationCallback(Supplier<String> callback) {
-        getSolverLocationCallback = callback;
+
+    public void saveGetGlobalSolverSettingsCallback(Supplier<GlobalSolverSettings> callback) {
+        getGlobalSolverSettingsCallback = callback;
     }
 
     /*
 
      */
 
-    private void loadStateFromFile() {
-        workQueueModel.loadStateFromFile();
+    private void saveAllWorkState() {
+
+
+    }
+
+    private void loadAllWorkState() {
+
+
     }
 }
