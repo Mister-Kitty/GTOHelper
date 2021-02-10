@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.text.*?>
 <?import javafx.geometry.*?>
 <?import java.lang.*?>
 <?import javafx.scene.control.*?>
@@ -84,31 +85,85 @@
                             <children>
                                 <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                                     <children>
-                                        <Button fx:id="selectAllButton" mnemonicParsing="false" onAction="#selectAll" prefHeight="25.0" text="Select all from table" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-                                        <Button fx:id="solveButton" disable="true" mnemonicParsing="false" onAction="#solveSelected" prefHeight="25.0" text="Solve highlighted hands" GridPane.columnIndex="3" GridPane.rowIndex="2" />
-                                        <ChoiceBox fx:id="betSizingsChoiceBox" prefWidth="150.0" GridPane.columnIndex="2" GridPane.rowIndex="1">
-                                            <GridPane.margin>
-                                                <Insets left="4.0" right="4.0" />
-                                            </GridPane.margin>
-                                        </ChoiceBox>
-                                        <ChoiceBox fx:id="scheduleChoiceBox" disable="true" prefWidth="150.0" GridPane.columnIndex="2" GridPane.rowIndex="2">
-                                            <GridPane.margin>
-                                                <Insets left="4.0" right="4.0" />
-                                            </GridPane.margin>
-                                        </ChoiceBox>
-                                        <Label text="Bet sizings: " GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                        <Label disable="true" text="Schedule:" textOverrun="CLIP" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                        <Button fx:id="selectAllButton" mnemonicParsing="false" onAction="#selectAll" prefHeight="25.0" text="Select all from table" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+                                        <Button fx:id="solveButton" disable="true" mnemonicParsing="false" onAction="#solveSelected" prefHeight="25.0" text="Solve highlighted hands" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+                              <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="3">
+                                 <children>
+                                              <ChoiceBox fx:id="betSizingsChoiceBox" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="2" GridPane.rowIndex="3">
+                                                  <GridPane.margin>
+                                                      <Insets left="4.0" right="4.0" />
+                                                  </GridPane.margin>
+                                              </ChoiceBox>
+                                 </children>
+                                 <GridPane.margin>
+                                    <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                                 </GridPane.margin>
+                              </AnchorPane>
+                                        <Label text="Bet Sizings: " GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                              <Label text="Work Name:" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              <TextField fx:id="workName" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                                 <GridPane.margin>
+                                    <Insets left="4.0" right="4.0" />
+                                 </GridPane.margin>
+                              </TextField>
+                              <CheckBox fx:id="rakeHands" maxHeight="8.0" mnemonicParsing="false" prefHeight="4.0" prefWidth="90.0" selected="true" text="Rake hands" textOverrun="CLIP" GridPane.columnIndex="3" GridPane.rowIndex="1">
+                                 <padding>
+                                    <Insets left="4.0" right="4.0" />
+                                 </padding>
+                                 <opaqueInsets>
+                                    <Insets />
+                                 </opaqueInsets>
+                                 <GridPane.margin>
+                                    <Insets bottom="6.0" />
+                                 </GridPane.margin>
+                              </CheckBox>
+                              <Label text="Solve Accuracy:" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                              <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="2">
+                                 <children>
+                                    <HBox layoutX="14.0" layoutY="-37.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                       <children>
+                                          <RadioButton fx:id="percentPotRadio" mnemonicParsing="false" HBox.hgrow="NEVER">
+                                             <HBox.margin>
+                                                <Insets top="4.0" />
+                                             </HBox.margin>
+                                          </RadioButton>
+                                          <TextField fx:id="percentPotField" prefWidth="50.0" promptText="\% of pot" HBox.hgrow="ALWAYS">
+                                             <HBox.margin>
+                                                <Insets />
+                                             </HBox.margin>
+                                          </TextField>
+                                          <RadioButton fx:id="bbOneHundredRadio" mnemonicParsing="false" HBox.hgrow="NEVER">
+                                             <padding>
+                                                <Insets left="4.0" top="4.0" />
+                                             </padding>
+                                          </RadioButton>
+                                          <TextField fx:id="bbOneHundredField" prefWidth="77.0" promptText="bb / 100 hands" HBox.hgrow="ALWAYS">
+                                             <HBox.margin>
+                                                <Insets />
+                                             </HBox.margin>
+                                          </TextField>
+                                       </children>
+                                       <opaqueInsets>
+                                          <Insets />
+                                       </opaqueInsets>
+                                       <padding>
+                                          <Insets left="4.0" right="4.0" top="4.0" />
+                                       </padding>
+                                    </HBox>
+                                 </children>
+                              </AnchorPane>
                                     </children>
                                     <columnConstraints>
                                         <ColumnConstraints />
                                         <ColumnConstraints hgrow="NEVER" minWidth="10.0" />
-                                        <ColumnConstraints minWidth="10.0" />
                                         <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" />
+                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
                                     </columnConstraints>
                                     <rowConstraints>
                                         <RowConstraints />
-                                        <RowConstraints minHeight="10.0" prefHeight="30.0" />
-                                        <RowConstraints minHeight="10.0" prefHeight="30.0" />
+                              <RowConstraints fillHeight="false" minHeight="10.0" vgrow="NEVER" />
+                                        <RowConstraints minHeight="10.0" vgrow="NEVER" />
+                                        <RowConstraints minHeight="10.0" vgrow="NEVER" />
                                     </rowConstraints>
                                     <VBox.margin>
                                         <Insets left="4.0" right="4.0" />

@@ -295,6 +295,16 @@
                                           </Line>
                                        </children>
                                     </AnchorPane>
+                                    <HBox>
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Chips per BB: " />
+                                          <TextField fx:id="chipsPerBB" editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
+                                             <font>
+                                                <Font size="9.0" />
+                                             </font>
+                                          </TextField>
+                                       </children>
+                                    </HBox>
                                  </children>
                               </VBox>
                            </children>

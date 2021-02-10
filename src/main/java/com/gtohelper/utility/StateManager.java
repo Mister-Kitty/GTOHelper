@@ -16,12 +16,13 @@ public class StateManager {
 
     }
 
-    public static boolean saveWorkObject(Work work, File file) {
+    public static boolean saveWorkObject(Work work, File saveFolder) {
+        String outputLocation = saveFolder.getAbsolutePath() + "\\" + work.getWorkSettings().getName() + ".gto";
         FileOutputStream fileOutputStream;
         ObjectOutputStream out;
 
         try {
-            fileOutputStream = new FileOutputStream(file);
+            fileOutputStream = new FileOutputStream(outputLocation);
         } catch (FileNotFoundException e) {
             Popups.showError("File Not Found exception while trying to write work \"" + work + "\" data to disk.");
             Logger.log(e.getMessage());

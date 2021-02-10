@@ -1,7 +1,6 @@
 package com.gtohelper.domain;
 
 import com.gtohelper.utility.CardResolver;
-import javafx.concurrent.WorkerStateEvent;
 
 import java.io.Serializable;
 import java.util.*;
@@ -15,31 +14,46 @@ public class Work implements Serializable {
     private RakeData rakeData;
     private WorkSettings workSettings;
 
-    private int currentWorkIndex = 0;
-    public int overridePriority = 9999;
+    private transient int currentWorkIndex = 0;
     transient Consumer<Work> progressCallback;
 
     public static class WorkSettings implements Serializable {
         private String name;
         private final Player hero;
+        private boolean usePercentPotOverBBPerHundred;
         private float percentOfPotAccuracy;
+        private float bbPerHundredAccuracy;
         private boolean useRake;
         private String betSettingName;
+        private final int chipsPerBB = 100;
         //String rakeFileName;
         //String rangeFileGroupName;
 
-        public WorkSettings(String name, Player hero, float percentOfPotAccuracy, boolean rake, String betSettingsName) {
+        public WorkSettings(String name, Player hero, float percentOfPotAccuracy, float bbPerHundredAccuracy, boolean useRake, String betSettingsName) {
             this.name = name;
             this.hero = hero;
-            this.percentOfPotAccuracy = percentOfPotAccuracy;
-            this.useRake = rake;
+
+            assert percentOfPotAccuracy != bbPerHundredAccuracy;
+            if(percentOfPotAccuracy != 0) {
+                this.percentOfPotAccuracy = percentOfPotAccuracy;
+                usePercentPotOverBBPerHundred = true;
+            } else {
+                this.bbPerHundredAccuracy = bbPerHundredAccuracy;
+                usePercentPotOverBBPerHundred = false;
+            }
+
+            this.useRake = useRake;
             this.betSettingName = betSettingsName;
         }
 
         public String getName() { return name; }
+        public boolean getUsePercentPotOverBBPerHundred() { return usePercentPotOverBBPerHundred; }
         public float getPercentOfPotAccuracy() { return percentOfPotAccuracy; }
+        public float getbbPerHundredAccuracy() { return bbPerHundredAccuracy; }
         public boolean getUseRake() { return useRake; }
         public String getBetSettingName() { return betSettingName; }
+        public int getChipsPerBB() { return chipsPerBB; }
+
     }
 
     public WorkSettings getWorkSettings() { return workSettings; }

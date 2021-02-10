@@ -1,5 +1,5 @@
 # BBs MUST be in increasing order
-# Big Blind $USD, Rake Percent, 2 Player Cap, 3-4 Player Cap, 5+ Player Cap
+# Big Blind ($USD), Rake (more is better), 2 Player Cap, 3-4 Player Cap, 5+ Player Cap
 0.02, 3.50, 0.30, 0.30, 0.30
 0.05, 4.15, 0.50, 0.50, 1.00
 0.10, 4.50, 0.50, 1.00, 1.50

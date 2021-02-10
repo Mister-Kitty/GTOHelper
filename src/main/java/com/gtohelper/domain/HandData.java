@@ -129,7 +129,7 @@ public class HandData {
     }
 
     // utility functions
-    public int getValueAsChips(float value) {
+    public int getValueAsChips(float value, int chipsPerBB) {
         // We want 1BB = 100 chips.
         // Convert value into number of BB.
         // max effective stack is 65535 chips in pio. This gives us ~650BB max stack

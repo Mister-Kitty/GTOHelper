@@ -33,13 +33,14 @@ public class HandAnalysisController {
     @FXML TableColumn<HandData, String> handsTableCardsColumn;
     @FXML TableColumn<HandData, String> handsTableRunoutColumn;
 
-    @FXML
-    ChoiceBox<String> scheduleChoiceBox;
-
-    @FXML
-    ChoiceBox<String> betSizingsChoiceBox;
+    @FXML TextField workName;
+    @FXML ChoiceBox<String> betSizingsChoiceBox;
+    @FXML CheckBox rakeHands;
+    @FXML RadioButton percentPotRadio, bbOneHundredRadio;
+    @FXML TextField percentPotField, bbOneHundredField;
 
     @FXML Button solveButton;
+    ToggleGroup toggleGroup = new ToggleGroup();
 
     HandAnalysisModel handAnalysisModel;
     Player player;
@@ -86,12 +87,18 @@ public class HandAnalysisController {
     }
 
     private Work.WorkSettings buildWorkSettings() {
-        String workItemName = "Hands for Dec 16";
+        String workItemName = workName.getText();
         String betSettingName = betSizingsChoiceBox.getSelectionModel().getSelectedItem();
-        boolean useRake = true;
-        float percentPot = 0.5f;
+        boolean useRake = rakeHands.isSelected();
+        float percentField;
+        if(percentPotRadio.isSelected()) {
+            percentField = Float.parseFloat(percentPotField.getText());
+            return new Work.WorkSettings(workItemName, player, percentField, 0f, useRake, betSettingName);
 
-        return new Work.WorkSettings(workItemName, player, percentPot, useRake, betSettingName);
+        } else {
+            percentField = Float.parseFloat(bbOneHundredField.getText());
+            return new Work.WorkSettings(workItemName, player, 0f, percentField, useRake, betSettingName);
+        }
     }
 
     private BiConsumer<List<HandData>, Work.WorkSettings> solveHandsCallback;
@@ -100,21 +107,22 @@ public class HandAnalysisController {
     }
 
     private void initializeControls() {
-        scheduleChoiceBox.getItems().add("Now");
-        scheduleChoiceBox.getSelectionModel().select("Now");
+        /*
+            Work settings controls here.
+         */
+        workName.textProperty().addListener((observableValue, oldValue, newValue) -> updateSolveButtonDisabledState());
+        percentPotRadio.setToggleGroup(toggleGroup);
+        percentPotField.textProperty().addListener((observableValue, oldValue, newValue) -> updateSolveButtonDisabledState());
+        bbOneHundredRadio.setToggleGroup(toggleGroup);
+        bbOneHundredField.textProperty().addListener((observableValue, oldValue, newValue) -> updateSolveButtonDisabledState());
+        toggleGroup.selectedToggleProperty().addListener((observableValue, oldValue, newValue) -> updateSolveButtonDisabledState());
 
-        handsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        handsTable.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
-            if(newValue == null)
-                solveButton.disableProperty().setValue(true);
-            else
-                solveButton.disableProperty().setValue(false);
-        });
-
+        /*
+            Table controls here.
+         */
         // I could annotate the domain objects to make this more elegant... I may do it latter.
         tagTableIdColumn.setCellValueFactory(p -> new SimpleStringProperty("" + p.getValue().id_tag));
         tagTableTagColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().tag));
-
         tagTable.setRowFactory(tv -> {
             TableRow<Tag> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
@@ -134,13 +142,43 @@ public class HandAnalysisController {
                     }
                 }
             });
-            return row ;
+            return row;
         });
 
+        handsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        handsTable.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> updateSolveButtonDisabledState());
         handsTableDateColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().date_played.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
         handsTableCWonColumn.setCellValueFactory(p -> new SimpleStringProperty("" + p.getValue().amt_pot));
         handsTableCardsColumn.setCellValueFactory(p -> new SimpleStringProperty(CardResolver.getHandStringForPlayer(player, p.getValue())));
         handsTableRunoutColumn.setCellValueFactory(p -> new SimpleStringProperty(CardResolver.getBoardString(p.getValue())));
+    }
+
+    private void updateSolveButtonDisabledState() {
+        if(areAllSolveFieldsValid())
+            solveButton.disableProperty().setValue(false);
+        else
+            solveButton.disableProperty().setValue(true);
+    }
+
+    private boolean areAllSolveFieldsValid() {
+        if(!workName.getText().isEmpty() && !handsTable.getSelectionModel().getSelectedItems().isEmpty() &&
+                !betSizingsChoiceBox.getSelectionModel().getSelectedItem().isEmpty()) {
+            if(toggleGroup.getSelectedToggle() != null) {
+                RadioButton button = (RadioButton) toggleGroup.getSelectedToggle();
+                if(button == percentPotRadio) { // note: object reference address comparison is intentional
+                    if(!percentPotField.getText().isEmpty()) {
+                        try { Float.parseFloat(percentPotField.getText());  } catch (NumberFormatException e) { return false; }
+                        return true;
+                    }
+                } else {
+                    if(!bbOneHundredField.getText().isEmpty()) {
+                        try { Float.parseFloat(bbOneHundredField.getText());  } catch (NumberFormatException e) { return false; }
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     void loadFieldsFromModel() {

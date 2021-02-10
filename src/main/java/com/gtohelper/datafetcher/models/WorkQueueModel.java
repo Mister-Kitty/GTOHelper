@@ -194,17 +194,22 @@ public class WorkQueueModel {
             }
 
             HandData handData = solve.getHandData();
-            int pot = handData.getValueAsChips(handData.amt_pot_f);
-            float solveAccuracy = (settings.getPercentOfPotAccuracy() / 100) * pot;
-            boolean oopIsBiggestStack = (handData.oopPlayer.amt_before >= handData.ipPlayer.amt_before);
-            float effectiveStack = oopIsBiggestStack ? handData.oopPlayer.amt_before : handData.ipPlayer.amt_before;
+            int pot = handData.getValueAsChips(handData.amt_pot_f, settings.getChipsPerBB());
+            float effectiveStack = handData.getIPandOOPEffective();
+
+            float solveAccuracy;
+            if(settings.getUsePercentPotOverBBPerHundred()) {
+                solveAccuracy = (settings.getPercentOfPotAccuracy() / 100) * pot;
+            } else {
+                solveAccuracy = (settings.getbbPerHundredAccuracy() / 100 ) * settings.getChipsPerBB();
+            }
 
             solver.setRange("IP", ipRange.toString());
             solver.setRange("OOP", oopRange.toString());
 
             solver.setBoard(CardResolver.getFlopString(handData));
             solver.setPotAndAccuracy(0, 0, pot, solveAccuracy);
-            solver.setEffectiveStack(handData.getValueAsChips(effectiveStack));
+            solver.setEffectiveStack(handData.getValueAsChips(effectiveStack, settings.getChipsPerBB()));
 
             int allInThresholdPercent = 100;
             int allInOnlyIfLessThanNPercent = 500;
@@ -244,7 +249,7 @@ public class WorkQueueModel {
             if(settings.getUseRake() && rakeData != null) {
                 float percent = rakeData.getRakeForBB(handData.cnt_players);
                 float dollarCap = rakeData.getCapForBB(handData.amt_bb, handData.cnt_players);
-                float chipCap = handData.getValueAsChips(dollarCap);
+                float chipCap = handData.getValueAsChips(dollarCap, settings.getChipsPerBB());
 
                 solver.setRake(percent, chipCap);
             } else {
@@ -269,10 +274,5 @@ public class WorkQueueModel {
     }
 
     // Priority queue strategies that can be set by user.
-    Comparator<Work> leastWorkToDoFirst = (work1, work2) -> {
-        int work1Size = Math.min(work1.overridePriority, work1.getTotalWorkItems());
-        int work2Size = Math.min(work2.overridePriority, work2.getTotalWorkItems());
-
-        return Integer.compare(work1Size, work2Size);
-    };
+    Comparator<Work> leastWorkToDoFirst = Comparator.comparingInt(Work::getTotalWorkItems);
 }
