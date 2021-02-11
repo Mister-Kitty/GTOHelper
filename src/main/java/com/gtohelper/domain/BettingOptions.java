@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class BettingOptions implements Serializable {
+    private static final long serialVersionUID = 1L;
     public final String name;
 
     public Options options = new Options();
@@ -20,6 +21,7 @@ public class BettingOptions implements Serializable {
     }
 
     public class Options implements Serializable{
+        private static final long serialVersionUID = 1L;
         public int allInThresholdPercent;
         public int allInOnlyIfLessThanNPercent;
         public boolean forceOOPBet;
@@ -27,6 +29,7 @@ public class BettingOptions implements Serializable {
     }
 
     public static abstract class StreetAction implements Serializable{
+        private static final long serialVersionUID = 1L;
         Street street;
         boolean canAllIn;
         Bets bets = new Bets();
@@ -74,6 +77,7 @@ public class BettingOptions implements Serializable {
     }
 
     public static class Bets implements Serializable{
+        private static final long serialVersionUID = 1L;
         boolean allIn = false;
         String initialString;
         ArrayList<Integer> percentOptions = new ArrayList<Integer>();

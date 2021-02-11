@@ -75,6 +75,8 @@ public class GTOHelperController  {
         dbConnectionController.loadModel(saveHelper);
         handAnalysisController.loadModel(saveHelper);
         solverSettingsController.loadModels(saveHelper);
+
+        workQueueController.loadWork(getGlobalSolverSettings());
     }
 
     /*

@@ -9,6 +9,7 @@ public enum Seat implements Serializable {
     UTG("UTG", 1, 3), TthSeat("Tenth Seat", 0, 2),
     BB("BB", 9, 1), SB("SB", 8, 0);
 
+    private static final long serialVersionUID = 1L;
     public static final Seat valuesByTrackerPosition[] = values();
     public static final Seat preflopPositionsASC[] = { TthSeat, UTG, UTG1, UTG2, LJ, HJ, CO, BTN, SB, BB };
     public static final Seat preflopPositionsDESC[] = { BB, SB, BTN, CO, HJ, LJ, UTG2, UTG1, UTG, TthSeat };

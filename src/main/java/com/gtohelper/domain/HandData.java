@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 
 // HandData is a mix of cash_hand_summary & cash_hand_statistics, as we often need a both for GUI and Solve generation
 public class HandData implements Serializable {
+    private static final long serialVersionUID = 1L;
     public int id_hand;
     public LocalDateTime date_played;
     public short cnt_players;
@@ -54,6 +55,8 @@ public class HandData implements Serializable {
         HU_SHOWDOWN(4),
         MULTI_SHOWDOWN(5),
         NOT_SET(6);
+
+        private static final long serialVersionUID = 1L;
 
         int ambiguityLevel;
         SolvabilityLevel(int level) {
@@ -221,6 +224,7 @@ public class HandData implements Serializable {
     }
 
     public static class PlayerHandData implements Serializable {
+        private static final long serialVersionUID = 1L;
         public int id_hand;
         public int id_player;
         public String player_name;
@@ -239,6 +243,7 @@ public class HandData implements Serializable {
         // Calculated fields to be set
         // These 3 fields are the info for the last action taken by the player.
         public class LastActionForStreet implements Serializable{
+            private static final long serialVersionUID = 1L;
             public short betLevel;
             public Seat vsSeat;
             public Action action;

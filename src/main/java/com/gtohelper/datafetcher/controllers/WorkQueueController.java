@@ -8,6 +8,7 @@ import com.gtohelper.fxml.WorkItem;
 import com.gtohelper.fxml.WorkListViewCell;
 import com.gtohelper.utility.CardResolver;
 import com.gtohelper.utility.Popups;
+import com.gtohelper.utility.StateManager;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -24,7 +25,9 @@ import javafx.util.Callback;
 
 import javax.swing.event.ChangeEvent;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -67,7 +70,6 @@ public class WorkQueueController {
     @FXML
     void initialize() {
         initializeControls();
-        loadAllWorkState();
     }
 
     private void initializeControls() {
@@ -145,7 +147,7 @@ public class WorkQueueController {
             OOPPFAction.setText(handData.oopPlayer.p_action);
             IPName.setText(handData.ipPlayer.player_name);
             IPSeat.setText(handData.ipPlayer.seat.toString());
-            IPHand.setText(CardResolver.getHandString(handData.oopPlayer));
+            IPHand.setText(CardResolver.getHandString(handData.ipPlayer));
             IPPFAction.setText(handData.ipPlayer.p_action);
         }
     }
@@ -224,7 +226,33 @@ public class WorkQueueController {
 
     }
 
-    private void loadAllWorkState() {
+    public void loadWork(GlobalSolverSettings solverSettings) {
+        ArrayList<Work> loadedWork = StateManager.readAllWorkObjectFiles(solverSettings);
+        for(Work work : loadedWork) {
+            if(work.isCompleted()) {
+                finishedWorkItems.add(work);
+            } else {
+                receiveNewWork(work);
+            }
+        }
+    }
+
+    // Figure out how much is done.
+    private void processCompletedWork(Work work, GlobalSolverSettings solverSettings) {
+        // Find all HandIDs present in our directory.
+        String directory = solverSettings.getSolveResultsFolder() + "\\" + work.getWorkSettings().getName();
+
+        for(String fileName : (new File(directory)).list((dir, name) -> name.endsWith(".cfr"))) {
+            int firstDashIndex = fileName.indexOf("-");
+            if(firstDashIndex == -1)
+                continue;
+
+            String handIdString = fileName.substring(0, firstDashIndex);
+            int handId = Integer.parseInt(handIdString);
+
+
+        }
+
 
 
     }

@@ -9,6 +9,7 @@ public enum Street implements Serializable {
     RIVER,
     SHOWDOWN;
 
+    private static final long serialVersionUID = 1L;
     public static Street nextStreet(Street s) {
         if(s == PRE)
             return FLOP;

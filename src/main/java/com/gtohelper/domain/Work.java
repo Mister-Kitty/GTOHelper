@@ -2,22 +2,26 @@ package com.gtohelper.domain;
 
 import com.gtohelper.utility.CardResolver;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class Work implements Serializable {
+    private static final long serialVersionUID = 1L;
     private ArrayList<SolveData> workTasks;
     private Ranges ranges;
     private BettingOptions bettingOptions;
     private RakeData rakeData;
     private WorkSettings workSettings;
 
+    private boolean isCompleted = false;
     private transient int currentWorkIndex = 0;
     transient Consumer<Work> progressCallback;
 
     public static class WorkSettings implements Serializable {
+        private static final long serialVersionUID = 1L;
         private String name;
         private final Player hero;
         private boolean usePercentPotOverBBPerHundred;
@@ -67,7 +71,7 @@ public class Work implements Serializable {
     }
 
     public boolean isCompleted() {
-        return getCurrentWorkIndex() >= getTotalWorkItems();
+        return isCompleted;
     }
 
     public void setProgressCallback(Consumer<Work> callback) {
@@ -105,11 +109,24 @@ public class Work implements Serializable {
         rakeData = rake;
     }
 
-    public void workFinished() {
+    public void workSucceeded(SolveData currentSolve) {
         assert getCurrentTask().getSolveResults() != null;
         currentWorkIndex++;
+        if(getCurrentWorkIndex() >= getTotalWorkItems())
+            isCompleted = true;
         if(progressCallback != null)
             progressCallback.accept(this);
+    }
+
+    public void workFailed(SolveData currentSolve) {
+ /*       assert getCurrentTask().getSolveResults() != null;
+        currentWorkIndex++;
+        if(getCurrentWorkIndex() >= getTotalWorkItems())
+            isCompleted = true;
+        if(progressCallback != null)
+            progressCallback.accept(this);
+            */
+
     }
 
     @Override

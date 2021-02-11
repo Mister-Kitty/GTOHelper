@@ -5,6 +5,7 @@ import com.gtohelper.domain.Work;
 
 import java.io.*;
 import java.nio.file.*;
+import java.util.ArrayList;
 
 public class StateManager {
 
@@ -62,14 +63,35 @@ public class StateManager {
         return true;
     }
 
-    public Work readWorkObject(File file) {
+    public static ArrayList<Work> readAllWorkObjectFiles(GlobalSolverSettings solverSettings) {
+        ArrayList<Work> results = new ArrayList<>();
+        File rootDirectory = new File(solverSettings.getSolveResultsFolder());
+
+        if(!rootDirectory.exists() || !rootDirectory.isDirectory()) {
+            Popups.showError(String.format("Specified solver results directory %s either does not exist " +
+                    "or is not a folder.", solverSettings.getSolveResultsFolder()));
+            return null;
+        }
+
+        for(File solveFolder : rootDirectory.listFiles(pathname -> pathname.isDirectory() == true)) {
+            String matchingGtoFileName = solveFolder.getAbsolutePath() + "\\" + solveFolder.getName() + ".gto";
+            File matchingGtoFile = new File(matchingGtoFileName);
+
+            if(matchingGtoFile.exists())
+                results.add(readWorkObjectFile(matchingGtoFile));
+        }
+
+        return results;
+    }
+
+    public static Work readWorkObjectFile(File file) {
         FileInputStream fileInputStream;
         ObjectInputStream in;
 
         try {
             fileInputStream = new FileInputStream(file);
         } catch (FileNotFoundException e) {
-            Popups.showError("File Not Found exception while trying to read work data from\"" + file.getPath() + "\" .");
+            Logger.log("File Not Found exception while trying to read work data from\"" + file.getPath() + "\" .");
             Logger.log(e.getMessage());
             return null;
         }
@@ -81,7 +103,7 @@ public class StateManager {
             fileInputStream.close();
             return work;
         } catch (IOException e) {
-            Popups.showError("File read error trying to get Work data from \"" + file.getPath() + "\" .");
+            Logger.log("File read error trying to get Work data from \"" + file.getPath() + "\" .");
             Logger.log(e.getMessage());
             return null;
         } catch (ClassNotFoundException e) {
@@ -89,9 +111,4 @@ public class StateManager {
             return null;
         }
     }
-
-
-
-
-
 }

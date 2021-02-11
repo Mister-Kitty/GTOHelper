@@ -7,5 +7,7 @@ public enum Action implements Serializable {
     CHECK,
     CALL,
     BET,
-    RAISE
+    RAISE;
+
+    private static final long serialVersionUID = 1L;
 }

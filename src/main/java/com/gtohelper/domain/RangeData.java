@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 public class RangeData implements Serializable {
+    private static final long serialVersionUID = 1L;
     float[] floats;
     boolean isTheEmptyRange = true;
 

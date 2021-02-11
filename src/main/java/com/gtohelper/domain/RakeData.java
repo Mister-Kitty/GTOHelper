@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class RakeData implements Serializable {
+    private static final long serialVersionUID = 1L;
     private ArrayList<Float> bbLimits = new ArrayList<>();
     private ArrayList<Float> rakePercents = new ArrayList<>();
     private ArrayList<Float> twoPlayerCaps = new ArrayList<>();

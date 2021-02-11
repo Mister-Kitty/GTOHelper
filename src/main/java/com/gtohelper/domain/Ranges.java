@@ -6,6 +6,7 @@ import com.gtohelper.domain.HandData.PlayerHandData;
 import com.gtohelper.domain.HandData.PlayerHandData.LastActionForStreet;
 
 public class Ranges implements Serializable {
+    private static final long serialVersionUID = 1L;
     RangesMap rangesMap = new RangesMap();
 
     public RangeData getRangeForHand(PlayerHandData playerHand) {
@@ -22,6 +23,7 @@ public class Ranges implements Serializable {
     }
 
     class RangesMap extends HashMap<ActionAndSeat, RangeData> implements Serializable {
+        private static final long serialVersionUID = 1L;
         // We could just use one HashMap<ActionAndSeat, RangeData>. Instead, we'll break down
         // this hashmap by position, as it'll make our use case way easier.
         HashMap<ActionAndSeat, RangeData> LimpMap = new HashMap<>();
@@ -212,6 +214,7 @@ public class Ranges implements Serializable {
     public enum Situation implements Serializable {
         LIMP("Limp"), RFI("RFI"), VRFI("vRFI"), V3BET("v3Bet"), V4BET("v4Bet"), CALL5BET("call5Bet");
 
+        private static final long serialVersionUID = 1L;
         public static final Situation values[] = values();
         public String name;
         Situation(String name) {
@@ -231,6 +234,7 @@ public class Ranges implements Serializable {
     public enum LastAction implements Serializable {
         CALL("Call"), RAISE("Raise");
 
+        private static final long serialVersionUID = 1L;
         public static final LastAction values[] = values();
         public String name;
         LastAction(String n) { this.name = n; }
@@ -246,6 +250,7 @@ public class Ranges implements Serializable {
     }
 
     public static class ActionAndSeat implements Serializable {
+        private static final long serialVersionUID = 1L;
         public Situation situation;
         public Seat heroSeat;
         public Seat villainSeat;

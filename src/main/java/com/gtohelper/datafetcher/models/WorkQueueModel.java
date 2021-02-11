@@ -102,6 +102,9 @@ public class WorkQueueModel {
                 worker.interrupt(); // Breaks from Queue wait.
             } catch (IOException ex) {
                 ex.printStackTrace();
+            } catch (NullPointerException ex) {
+                // Possible if solver.stop() completes and worker gets scheduled, finishes (and sets worker=null),
+                // and then we run. If that happens, catch and ignore this exception as we've shut down.
             }
         }
 
@@ -159,10 +162,17 @@ public class WorkQueueModel {
 
                 try {
                     SolveResults results = dispatchSolve(currentSolve, settings, ranges, bettingOptions, rakeData);
-                    work.getCurrentTask().saveSolveResults(results);
 
-                    if(results.success)
-                        solver.dumpTree("\"" + saveFolder + fileName + "\"", "no_rivers");
+                    if(!stopRequested) {
+                        if(results.success) {
+                            solver.dumpTree("\"" + saveFolder + fileName + "\"", "no_rivers");
+                            currentSolve.saveSolveResults(results);
+                            work.workSucceeded(currentSolve);
+                        } else {
+                            work.workFailed(currentSolve);
+                        }
+                    }
+
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -175,8 +185,7 @@ public class WorkQueueModel {
                 }
 */
 
-                if(!stopRequested)
-                    work.workFinished();
+
             }
         }
 
