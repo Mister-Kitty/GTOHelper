@@ -25,8 +25,8 @@ public class WorkQueueModel {
     private PriorityBlockingQueue<Work> futureWorkQueue;
 
     public WorkQueueModel(Consumer<Boolean> solverStatusCallback, Runnable updateGUI) {
-        futureWorkQueue = new PriorityBlockingQueue<Work>(defaultInitialCapacity, leastWorkToDoFirst);
-        finishedWork = new PriorityBlockingQueue<Work>(defaultInitialCapacity, leastWorkToDoFirst);
+        futureWorkQueue = new PriorityBlockingQueue<>(defaultInitialCapacity, leastWorkToDoFirst);
+        finishedWork = new PriorityBlockingQueue<>(defaultInitialCapacity, leastWorkToDoFirst);
         updateSolverStatusCallback = solverStatusCallback;
         updateGUICallback = updateGUI;
     }

@@ -1,6 +1,8 @@
 package com.gtohelper.domain;
 
-public class SolveData {
+import java.io.Serializable;
+
+public class SolveData implements Serializable {
     HandData handData;
     SolveResults solveResults;
 

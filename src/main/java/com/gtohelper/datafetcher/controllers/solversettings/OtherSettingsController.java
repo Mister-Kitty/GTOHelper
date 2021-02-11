@@ -70,31 +70,31 @@ public class OtherSettingsController {
     }
 
     private void selectSolverFile(File file) throws IOException {
-        solverLocation.setText(file.getAbsolutePath());
+        solverLocation.setText(file.getPath());
         otherSettingsModel.saveTextField("solverLocation", file.getAbsolutePath());
         otherSettingsModel.saveAll();
     }
 
     private void selectViewerFile(File file) throws IOException {
-        viewerLocation.setText(file.getAbsolutePath());
+        viewerLocation.setText(file.getPath());
         otherSettingsModel.saveTextField("viewerLocation", file.getAbsolutePath());
         otherSettingsModel.saveAll();
     }
 
     private void selectRakeFile(File file) throws IOException {
-        rakeLocation.setText(file.getAbsolutePath());
+        rakeLocation.setText(file.getPath());
         otherSettingsModel.saveTextField("rakeLocation", file.getAbsolutePath());
         otherSettingsModel.saveAll();
     }
 
     private void selectResultsFolder(File folder) throws IOException {
-        solveResultsFolder.setText(folder.getAbsolutePath());
+        solveResultsFolder.setText(folder.getPath());
         otherSettingsModel.saveTextField("solveResultsFolder", folder.getAbsolutePath());
         otherSettingsModel.saveAll();
     }
 
     private void selectResultsBackupFolder(File folder) throws IOException {
-        solveResultsBackupFolder.setText(folder.getAbsolutePath());
+        solveResultsBackupFolder.setText(folder.getPath());
         otherSettingsModel.saveTextField("solveResultsBackupFolder", folder.getAbsolutePath());
         otherSettingsModel.saveAll();
     }

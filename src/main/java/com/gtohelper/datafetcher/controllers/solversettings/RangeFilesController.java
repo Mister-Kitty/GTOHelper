@@ -84,7 +84,7 @@ public class RangeFilesController {
     private void selectFolder(File folder) {
         rangeFolderLocation.setText(folder.getAbsolutePath());
         rangeFileTable.setRoot(new FileTreeItem(folder));
-        rangeFilesModel.saveTextField("rangeFolderLocation", folder.getAbsolutePath());
+        rangeFilesModel.saveTextField("rangeFolderLocation", folder.getPath());
     }
 
     private void initializeControls() {
@@ -119,7 +119,7 @@ public class RangeFilesController {
     private void onSaveBindingsButtonPress() {
         try {
             actionToRangeFileMap.forEach((k, v) -> {
-                String relativePath = getFilePathRelativeToFolder(rangeFolderLocation.getText(), v.getAbsolutePath());
+                String relativePath = getFilePathRelativeToFolder(rangeFolderLocation.getText(), v.getPath());
                 rangeFilesModel.saveTextField(k, relativePath);
             });
             rangeFilesModel.saveAll();

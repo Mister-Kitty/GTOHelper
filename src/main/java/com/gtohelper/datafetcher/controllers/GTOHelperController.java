@@ -103,8 +103,8 @@ public class GTOHelperController  {
         if(work == null)
             return;
 
-        // One last fail-prone condition before we proceed. Create the folder and save the Work State.
-        File workFolder = StateManager.createWorkFolder(work);
+        // One last fail-prone condition before we proceed. Create the folder and save the Work State in it.
+        File workFolder = StateManager.createWorkFolder(work, getGlobalSolverSettings());
         if(workFolder == null)
             return;
 

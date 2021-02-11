@@ -1,5 +1,6 @@
 package com.gtohelper.domain;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 // HandData is a mix of cash_hand_summary & cash_hand_statistics, as we often need a both for GUI and Solve generation
-public class HandData {
+public class HandData implements Serializable {
     public int id_hand;
     public LocalDateTime date_played;
     public short cnt_players;
@@ -45,7 +46,7 @@ public class HandData {
     public int highestPreflopBetLevel; // eg, 1bet, 2bet, 3bet
     public SolvabilityLevel solveabilityLevel = SolvabilityLevel.NOT_SET;
 
-    public enum SolvabilityLevel {
+    public enum SolvabilityLevel implements Serializable{
         HU_PRE(0),
         MULTI_PRE_HU_FLOP(1),
         MULTI_FLOP_HU_FLOP_VPIP(2),
@@ -219,7 +220,7 @@ public class HandData {
         return count;
     }
 
-    public static class PlayerHandData {
+    public static class PlayerHandData implements Serializable {
         public int id_hand;
         public int id_player;
         public String player_name;
@@ -237,7 +238,7 @@ public class HandData {
 
         // Calculated fields to be set
         // These 3 fields are the info for the last action taken by the player.
-        public class LastActionForStreet {
+        public class LastActionForStreet implements Serializable{
             public short betLevel;
             public Seat vsSeat;
             public Action action;

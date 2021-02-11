@@ -112,9 +112,15 @@ public class HandAnalysisController {
          */
         workName.textProperty().addListener((observableValue, oldValue, newValue) -> updateSolveButtonDisabledState());
         percentPotRadio.setToggleGroup(toggleGroup);
-        percentPotField.textProperty().addListener((observableValue, oldValue, newValue) -> updateSolveButtonDisabledState());
+        percentPotField.textProperty().addListener((observableValue, oldValue, newValue) -> {
+            percentPotRadio.setSelected(true);
+            updateSolveButtonDisabledState();
+        });
         bbOneHundredRadio.setToggleGroup(toggleGroup);
-        bbOneHundredField.textProperty().addListener((observableValue, oldValue, newValue) -> updateSolveButtonDisabledState());
+        bbOneHundredField.textProperty().addListener((observableValue, oldValue, newValue) -> {
+            bbOneHundredRadio.setSelected(true);
+            updateSolveButtonDisabledState();
+        });
         toggleGroup.selectedToggleProperty().addListener((observableValue, oldValue, newValue) -> updateSolveButtonDisabledState());
 
         /*

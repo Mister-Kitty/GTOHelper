@@ -20,6 +20,10 @@ public class Logger {
         return instance;
     }
 
+    public static void log(Exception e) {
+        log(e.getMessage());
+    }
+
     public static void log(String message){
         log(Channel.HELPER, message);
     }

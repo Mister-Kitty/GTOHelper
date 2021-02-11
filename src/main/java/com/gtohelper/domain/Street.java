@@ -1,6 +1,8 @@
 package com.gtohelper.domain;
 
-public enum Street {
+import java.io.Serializable;
+
+public enum Street implements Serializable {
     PRE,
     FLOP,
     TURN,

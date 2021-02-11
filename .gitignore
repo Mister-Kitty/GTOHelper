@@ -3,7 +3,10 @@
 # Learn more about .gitignore:
 #     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
 
-solver results
+solver results/**
+solver results backup/**
+*.gto
+*.cfr
 
 # Node artifact files
 node_modules/

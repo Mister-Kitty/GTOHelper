@@ -1,6 +1,8 @@
 package com.gtohelper.domain;
 
-public enum Action {
+import java.io.Serializable;
+
+public enum Action implements Serializable {
     FOLD,
     CHECK,
     CALL,

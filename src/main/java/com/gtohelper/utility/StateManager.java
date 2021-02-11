@@ -1,13 +1,30 @@
 package com.gtohelper.utility;
 
+import com.gtohelper.domain.GlobalSolverSettings;
 import com.gtohelper.domain.Work;
 
 import java.io.*;
+import java.nio.file.*;
 
 public class StateManager {
 
-    public static File createWorkFolder(Work work) {
+    public static File createWorkFolder(Work work, GlobalSolverSettings solverSettings) {
+        File rootResultsDirectory = new File(solverSettings.getSolveResultsFolder());
+        String finalFolderAddress = rootResultsDirectory.getAbsolutePath() + "\\" + work.getWorkSettings().getName();
 
+        try {
+            Path result = Files.createDirectory(Paths.get(finalFolderAddress));
+            return result.toFile();
+        } catch (FileAlreadyExistsException e) {
+            Popups.showError(String.format("Work folder %s already exists", finalFolderAddress));
+            Logger.log(e);
+        } catch (NoSuchFileException e) {
+            Popups.showError(String.format("Solver results directory %s does not exist.", rootResultsDirectory.getAbsolutePath()));
+            Logger.log(e);
+        } catch (IOException e) {
+            Popups.showError(String.format("IOException while trying to create %s.", rootResultsDirectory.getAbsolutePath()));
+            Logger.log(e);
+        }
 
         return null;
     }

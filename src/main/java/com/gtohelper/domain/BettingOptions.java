@@ -1,8 +1,9 @@
 package com.gtohelper.domain;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class BettingOptions {
+public class BettingOptions implements Serializable {
     public final String name;
 
     public Options options = new Options();
@@ -18,14 +19,14 @@ public class BettingOptions {
         this.name = name;
     }
 
-    public class Options {
+    public class Options implements Serializable{
         public int allInThresholdPercent;
         public int allInOnlyIfLessThanNPercent;
         public boolean forceOOPBet;
         public boolean forceOOPCheckIPBet;
     }
 
-    public static abstract class StreetAction {
+    public static abstract class StreetAction implements Serializable{
         Street street;
         boolean canAllIn;
         Bets bets = new Bets();
@@ -72,7 +73,7 @@ public class BettingOptions {
         }
     }
 
-    public static class Bets {
+    public static class Bets implements Serializable{
         boolean allIn = false;
         String initialString;
         ArrayList<Integer> percentOptions = new ArrayList<Integer>();
