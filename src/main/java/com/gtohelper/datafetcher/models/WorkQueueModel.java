@@ -5,7 +5,10 @@ import com.gtohelper.solver.ISolver;
 import com.gtohelper.solver.PioSolver;
 import com.gtohelper.utility.CardResolver;
 import com.gtohelper.utility.Logger;
+import com.gtohelper.utility.Popups;
+import com.gtohelper.utility.StateManager;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -118,10 +121,12 @@ public class WorkQueueModel {
                         solver.waitForReady();
                         doWork(current);
                     } catch (IOException e) {
-                        Logger.log("Error occured communicating with Pio. Perhaps the process crashed? Stopping...\n" +
-                                e.toString());
+                        String ioError = "IOError occurred communicating with Pio. Perhaps the process crashed? Stopping...";
+                        Logger.log(ioError);
+                        Popups.showError(ioError);
                         fatalErrorOccured = true;
                         stopSolver();
+                        return;
                     } catch (InterruptedException e) {
                         // stopRequest has already been set.
                     }
@@ -141,6 +146,9 @@ public class WorkQueueModel {
                         }
 
                         return;
+                    } else {
+                        finishedWork.add(current);
+                        updateGUICallback.run();
                     }
                 }
             } finally {
@@ -149,56 +157,81 @@ public class WorkQueueModel {
             }
         }
 
-        private void doWork(Work work) {
+        // IOExceptions should only come from Pio, not file.
+        private void doWork(Work work) throws IOException {
             Work.WorkSettings settings = work.getWorkSettings();
             Ranges ranges = work.getRanges();
             BettingOptions bettingOptions = work.getBettingOptions();
             RakeData rakeData = work.getRakeData();
 
+            String saveFolderName = solverSettings.getWorkResultsFolder(work);
+            File saveFolder = new File(saveFolderName);
+
             while(!work.isCompleted() && !stopRequested) {
-                SolveData currentSolve = work.getCurrentTask();
-                String saveFolder = solverSettings.getSolveResultsFolder() + "\\" + settings.getName() + "\\";
-                String fileName = currentSolve.getHandData().id_hand + "-" + work.getCurrentHand() + "-" + work.getCurrentBoard() + ".cfr";
+                // workSuccess() & workfailed() increment the internal Work.CurrentTask. As such, ONLY use currentSolve. Do not call getCurrentTask again!
+                SolveTask currentTask = work.getCurrentTask();
+                String fileName = work.getFileNameForSolve(currentTask);
 
-                try {
-                    SolveResults results = dispatchSolve(currentSolve, settings, ranges, bettingOptions, rakeData);
-
-                    if(!stopRequested) {
-                        if(results.success) {
-                            solver.dumpTree("\"" + saveFolder + fileName + "\"", "no_rivers");
-                            currentSolve.saveSolveResults(results);
-                            work.workSucceeded(currentSolve);
-                        } else {
-                            work.workFailed(currentSolve);
-                        }
-                    }
-
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-               }
-/*
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                /*
+                    Preliminary valid state checks.
+                 */
+                if(new File(saveFolder, fileName).exists()) {
+                    // Because we check for new save files upon startup, this should only happen if someone pastes something in at runtime.
+                    Logger.log(String.format("For work %s the solve results file %s already exists. Skipping.", work.toString(), fileName));
+                    // More to do here -> getSolveResults().foundNewSolveFile();
+                    work.workSkipped();
+                    continue;
                 }
-*/
 
+                /*
+                    Do the actual solving
+                 */
+                SolverOutput results = dispatchSolve(currentTask, settings, ranges, bettingOptions, rakeData);
 
+                /*
+                    Back out of saving state early if we are told to stop
+                 */
+                if(stopRequested)
+                    return;
+
+                /*
+                    Save state and dump results. workSuccess() and workFailed() will increment internal work.CurrentTask.
+                 */
+                currentTask.saveSolveResults(results);
+                if(results.success) {
+                    solver.dumpTree("\"" + saveFolderName + fileName + "\"", "no_rivers");
+                    work.workSucceeded();
+                } else {
+                    work.workFailed();
+                }
+
+                /*
+                    Save the WorkObject and continue to next task. Fail if we cannot write.
+                 */
+                boolean saveSuccess = StateManager.saveExistingWorkObject(work, saveFolder);
+                if(!saveSuccess) {
+                    String errorString = String.format("File read/write error while trying to update work %s's data file.\n " +
+                            "Since progress can not be saved, computation on this work is being halted.", work.toString());
+                    Logger.log(errorString);
+                    work.setError(errorString);
+                    return;
+                }
             }
+
         }
 
-        private SolveResults dispatchSolve(SolveData solve, Work.WorkSettings settings, Ranges ranges, BettingOptions bettingOptions, RakeData rakeData) throws IOException {
-            SolveResults results = new SolveResults();
+        private SolverOutput dispatchSolve(SolveTask solve, Work.WorkSettings settings, Ranges ranges, BettingOptions bettingOptions, RakeData rakeData) throws IOException {
+            SolverOutput results = new SolverOutput();
 
             RangeData oopRange = ranges.getRangeForHand(solve.getHandData().oopPlayer);
             RangeData ipRange = ranges.getRangeForHand(solve.getHandData().ipPlayer);
 
             if(ipRange == null || oopRange == null) {
-                Logger.log(String.format("Could not resolve range files for handId = %d (aka board %s, %d bet pot, with aggressor seats %s)",
+                String error = String.format("Could not resolve range files for handId = %d (aka board %s, %d bet pot, with aggressor seats %s)",
                         solve.getHandData().id_hand, CardResolver.getBoardString(solve.getHandData()),
-                        solve.getHandData().highestPreflopBetLevel, solve.getHandData().str_aggressors_p));
+                        solve.getHandData().highestPreflopBetLevel, solve.getHandData().str_aggressors_p);
+                Logger.log(error);
+                results.setError(error);
                 return results;
             }
 
@@ -248,9 +281,11 @@ public class WorkQueueModel {
             solver.clearLines();
             solver.buildTree();
 
-            String builtTreeResults = solver.setBuiltTreeAsActive();
-            if(builtTreeResults.startsWith("ERROR")) {
-                Logger.log(Logger.Channel.PIO, String.format("Error building tree. Reason: \n  %s", builtTreeResults));
+            results.setSetBuildTreeAsActive(solver.setBuiltTreeAsActive());
+            if(results.getSetBuildTreeAsActive().startsWith("ERROR")) {
+                String error = String.format("Error building tree. Reason: \n  %s", results.getSetBuildTreeAsActive());
+                Logger.log(Logger.Channel.PIO, error);
+                results.setError(error);
                 return results;
             }
 
@@ -265,11 +300,11 @@ public class WorkQueueModel {
                 solver.setRake(0f, 0f);
             }
 
-            String treeSize = solver.getEstimateSchematicTree();
+            results.setEstimateSchematicTree(solver.getEstimateSchematicTree());
 
-            String showMemory = solver.getShowMemory();
+            results.setShowMemory(solver.getShowMemory());
 
-            String calc = solver.getCalcResults();
+            results.setCalcResults(solver.getCalcResults());
 
             solver.go();
 
@@ -283,5 +318,5 @@ public class WorkQueueModel {
     }
 
     // Priority queue strategies that can be set by user.
-    Comparator<Work> leastWorkToDoFirst = Comparator.comparingInt(Work::getTotalWorkItems);
+    Comparator<Work> leastWorkToDoFirst = Comparator.comparingInt(Work::getTotalTaskCount);
 }

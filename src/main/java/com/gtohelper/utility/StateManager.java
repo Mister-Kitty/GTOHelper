@@ -1,11 +1,14 @@
 package com.gtohelper.utility;
 
 import com.gtohelper.domain.GlobalSolverSettings;
+import com.gtohelper.domain.SolveTask;
+import com.gtohelper.domain.SolverOutput;
 import com.gtohelper.domain.Work;
 
 import java.io.*;
 import java.nio.file.*;
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class StateManager {
 
@@ -17,7 +20,12 @@ public class StateManager {
             Path result = Files.createDirectory(Paths.get(finalFolderAddress));
             return result.toFile();
         } catch (FileAlreadyExistsException e) {
-            Popups.showError(String.format("Work folder %s already exists", finalFolderAddress));
+            // If the folder exists but it's empty, then we're okay.
+            File folder = new File(finalFolderAddress);
+            if(folder.listFiles().length == 0)
+                return folder;
+
+            Popups.showError(String.format("Work folder %s already exists, and is non-empty.", finalFolderAddress));
             Logger.log(e);
         } catch (NoSuchFileException e) {
             Popups.showError(String.format("Solver results directory %s does not exist.", rootResultsDirectory.getAbsolutePath()));
@@ -30,20 +38,49 @@ public class StateManager {
         return null;
     }
 
-    public static void deleteEmptyWorkFolder(File folder) {
-
+    public static boolean saveNewWorkObject(Work work, File saveFolder) {
+        return saveWorkObject(work, saveFolder, work.getWorkSettings().getName() + ".gto");
     }
 
-    public static boolean saveWorkObject(Work work, File saveFolder) {
-        String outputLocation = saveFolder.getAbsolutePath() + "\\" + work.getWorkSettings().getName() + ".gto";
+    public static boolean saveExistingWorkObject(Work work, File saveFolder) {
+        String oldFileName = work.getWorkSettings().getName() + ".gto";
+        String newFileName = work.getWorkSettings().getName() + ".gto.new";
+
+        boolean newFileSuccess = saveWorkObject(work, saveFolder, newFileName);
+        if(newFileSuccess) {
+            Path newWorkItem = Paths.get(saveFolder.getAbsolutePath() + "\\" + newFileName);
+            Path oldWorkItem = Paths.get(saveFolder.getAbsolutePath() + "\\" + oldFileName);
+
+            try {
+                Files.move(newWorkItem, oldWorkItem, StandardCopyOption.ATOMIC_MOVE);
+                Logger.log("Successfully wrote work " + work.toString() + "'s data file to disk");
+                return true;
+            } catch (AtomicMoveNotSupportedException e) {
+                try {
+                    Files.delete(oldWorkItem);
+                    Files.move(newWorkItem, oldWorkItem);
+                    Logger.log("Successfully wrote work " + work.toString() + "'s data file to disk");
+                    return true;
+                } catch (IOException a) {
+                    Logger.log(a);
+                }
+            } catch (IOException e) {
+                Logger.log(e);
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean saveWorkObject(Work work, File saveFolder, String fileName) {
+        String outputLocation = saveFolder.getAbsolutePath() + "\\" + fileName;
         FileOutputStream fileOutputStream;
         ObjectOutputStream out;
 
         try {
             fileOutputStream = new FileOutputStream(outputLocation);
         } catch (FileNotFoundException e) {
-            Popups.showError("File Not Found exception while trying to write work \"" + work + "\" data to disk.");
-            Logger.log(e.getMessage());
+            Logger.log(e);
             return false;
         }
 
@@ -53,9 +90,7 @@ public class StateManager {
             out.flush();
             out.close();
         } catch (IOException e) {
-            Popups.showError("Write error writing work \"" + work + "\" data to disk. \n" +
-                    "Maybe out process doesn't have write permission? Check error log.");
-            Logger.log(e.getMessage());
+            Logger.log(e);
             return false;
         }
 
@@ -101,6 +136,9 @@ public class StateManager {
             Work work = (Work) in.readObject();
             in.close();
             fileInputStream.close();
+
+            fillFoundSolveFilesForWork(work, file.getParentFile());
+
             return work;
         } catch (IOException e) {
             Logger.log("File read error trying to get Work data from \"" + file.getPath() + "\" .");
@@ -109,6 +147,37 @@ public class StateManager {
         } catch (ClassNotFoundException e) {
             Logger.log(e.getMessage());
             return null;
+        }
+    }
+
+    private static void fillFoundSolveFilesForWork(Work work, File workFolder) {
+        for(SolveTask solve : work.getTasks()) {
+            int handId = solve.getHandData().id_hand;
+
+            // note that we only look for leading handId. We allow the rest of the file name open for future change.
+            try {
+                Optional<Path> result = Files.find(workFolder.toPath(), 1, (path, basicFileAttributes) ->
+                        path.toFile().getName().matches(String.format("%d -.*.cfr", handId))).findFirst();
+
+                if(result.isPresent() && solve.getSolveResults() != null) {
+                    solve.getSolveResults().solveFileName = result.get().toAbsolutePath().toString();
+                } else if (result.isPresent()) {
+                    // Solve Results is null.
+                    // Maybe we've copied in existing results for the work?
+                    // Or maybe an error writing back the .gto file for this work after the dump was successful?
+                    solve.saveSolveResults(new SolverOutput());
+                    solve.getSolveResults().solveFileName = result.get().toAbsolutePath().toString();
+                    Logger.log(String.format("Found solve file %s which matches a hand to be solved by work %s.\n" +
+                            "However, solve metadata/statistics were not found in work. Assuming file is valid and solving stats for hand.",
+                            solve.getSolveResults().solveFileName, work.toString()));
+                    solve.getSolveResults().foundNewSolveFile();
+                }
+
+            } catch (IOException e) {
+                Logger.log(String.format("IO error while trying to look for finished CFR files for work %s in folder %s",
+                        work.toString(), workFolder.getAbsolutePath()));
+                Logger.log(e);
+            }
         }
     }
 }

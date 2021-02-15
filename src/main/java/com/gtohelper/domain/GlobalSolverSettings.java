@@ -42,4 +42,8 @@ public class GlobalSolverSettings {
     public void setSolveResultsBackupFolder(String solveResultsBackupFolder) {
         this.solveResultsBackupFolder = solveResultsBackupFolder;
     }
+
+    public String getWorkResultsFolder(Work work) {
+        return solveResultsFolder + "\\" + work.getWorkSettings().getName()+ "\\";
+    }
 }

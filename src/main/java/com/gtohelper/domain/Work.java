@@ -1,8 +1,8 @@
 package com.gtohelper.domain;
 
 import com.gtohelper.utility.CardResolver;
+import sun.plugin.dom.exception.InvalidStateException;
 
-import java.io.File;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Consumer;
@@ -10,15 +10,17 @@ import java.util.stream.Collectors;
 
 public class Work implements Serializable {
     private static final long serialVersionUID = 1L;
-    private ArrayList<SolveData> workTasks;
+    private ArrayList<SolveTask> tasks;
     private Ranges ranges;
     private BettingOptions bettingOptions;
     private RakeData rakeData;
     private WorkSettings workSettings;
 
+    private String error;
     private boolean isCompleted = false;
-    private transient int currentWorkIndex = 0;
-    transient Consumer<Work> progressCallback;
+    private int currentWorkIndex = 0;
+
+    private transient Consumer<Work> progressCallback;
 
     public static class WorkSettings implements Serializable {
         private static final long serialVersionUID = 1L;
@@ -57,30 +59,71 @@ public class Work implements Serializable {
         public boolean getUseRake() { return useRake; }
         public String getBetSettingName() { return betSettingName; }
         public int getChipsPerBB() { return chipsPerBB; }
-
     }
+
+    /*
+        SolveTask navigating functions
+    */
+
+    public boolean hasNextTask() {
+        return getCompletedTaskCount() <= getTotalTaskCount();
+    }
+
+    public SolveTask nextTask() {
+        // We have a nextTask if there exist any non-completed tasks. But we want to return tasks in a ring/loop.
+        for(int nextWorkIndex = nextTasksIndex(currentWorkIndex); nextWorkIndex != currentWorkIndex; nextWorkIndex = nextTasksIndex(currentWorkIndex)) {
+
+            // This is a lazy, shitty way of doing this. I could refactor this later.
+            if(!tasks.get(nextWorkIndex).isSolveCompleted()) {
+                currentWorkIndex = nextWorkIndex;
+                return tasks.get(nextWorkIndex);
+            }
+        }
+
+        throw new InvalidStateException("No incomplete tasks found. This is likely a corrupt Work file, but could be a programming error.");
+    }
+
+    private int nextTasksIndex(int index) {
+        return (index + 1) % tasks.size();
+    }
+
+    public SolveTask getCurrentTask() {
+        return tasks.get(currentWorkIndex);
+    }
+
+    /*
+        Properties/functions for GUI progress/status display.
+     */
+
+    public String getCurrentHand() {
+        return CardResolver.getHandStringForPlayer(workSettings.hero, getCurrentTask().getHandData());
+    }
+
+    public String getCurrentBoard() {
+        return CardResolver.getBoardString(getCurrentTask().getHandData());
+    }
+
+    public List<HandData> getHandDataList() {
+        return tasks.stream().map(t -> t.getHandData()).collect(Collectors.toList());
+    }
+
+    public int getTotalTaskCount() {
+        return tasks.size();
+    }
+
+    public int getCompletedTaskCount() {
+        return (int) tasks.stream().filter(t -> t.isSolveCompleted()).count();
+    }
+
+    public int getTasksWithErrorCount() {
+        return (int) tasks.stream().filter(t -> t.hasError()).count();
+    }
+
+    /*
+        Data/Object field accessors
+     */
 
     public WorkSettings getWorkSettings() { return workSettings; }
-
-    public int getCurrentWorkIndex() {
-        return currentWorkIndex;
-    }
-
-    public int getTotalWorkItems() {
-        return workTasks.size();
-    }
-
-    public boolean isCompleted() {
-        return isCompleted;
-    }
-
-    public void setProgressCallback(Consumer<Work> callback) {
-        progressCallback = callback;
-    }
-
-    public SolveData getCurrentTask() {
-        return workTasks.get(currentWorkIndex);
-    }
 
     public Ranges getRanges() { return ranges; }
 
@@ -88,45 +131,69 @@ public class Work implements Serializable {
 
     public RakeData getRakeData() { return rakeData; }
 
-    public String getCurrentHand() {
-        return CardResolver.getHandStringForPlayer(workSettings.hero, getCurrentTask().handData);
+    /*
+        Other Accessor functions
+     */
+
+
+    public ArrayList<SolveTask> getTasks() {
+        return tasks;
     }
 
-    public String getCurrentBoard() {
-        return CardResolver.getBoardString(getCurrentTask().handData);
+    public int getTotalTasks() {
+        return tasks.size();
     }
 
-    public List<HandData> getHandDataList() {
-        return workTasks.stream().map(t -> t.getHandData()).collect(Collectors.toList());
+    public boolean isCompleted() {
+        return isCompleted;
     }
 
-    public Work(List<SolveData> w, WorkSettings settings, Ranges r, BettingOptions b, RakeData rake) {
+    public boolean getHasError() { return error != null && !error.isEmpty(); }
+
+    public void setError(String error) { this.error = error; }
+
+    public void setProgressCallback(Consumer<Work> callback) {
+        progressCallback = callback;
+    }
+
+    public Work(List<SolveTask> w, WorkSettings settings, Ranges r, BettingOptions b, RakeData rake) {
         assert w.size() != 0;
+
         workSettings = settings;
-        workTasks = new ArrayList<>(w);
+        tasks = new ArrayList<>(w);
         ranges = r;
         bettingOptions = b;
         rakeData = rake;
     }
 
-    public void workSucceeded(SolveData currentSolve) {
-        assert getCurrentTask().getSolveResults() != null;
-        currentWorkIndex++;
-        if(getCurrentWorkIndex() >= getTotalWorkItems())
+    public void workSucceeded() {
+        afterWorkAttemptedReported();
+    }
+
+    public void workFailed() {
+        afterWorkAttemptedReported();
+    }
+
+    public void workSkipped() {
+        afterWorkAttemptedReported();
+    }
+
+    // Awkward name... just call this after workSuccess() etc.
+    private void afterWorkAttemptedReported() {
+        if(!hasNextTask()) {
             isCompleted = true;
+        } else {
+            nextTask();
+        }
+
         if(progressCallback != null)
             progressCallback.accept(this);
     }
 
-    public void workFailed(SolveData currentSolve) {
- /*       assert getCurrentTask().getSolveResults() != null;
-        currentWorkIndex++;
-        if(getCurrentWorkIndex() >= getTotalWorkItems())
-            isCompleted = true;
-        if(progressCallback != null)
-            progressCallback.accept(this);
-            */
-
+    public String getFileNameForSolve(SolveTask solve) {
+        return String.format("%d - %s - %s.cfr", solve.getHandData().id_hand,
+                CardResolver.getHandStringForPlayer(workSettings.hero, solve.getHandData()),
+                CardResolver.getBoardString(solve.getHandData()));
     }
 
     @Override

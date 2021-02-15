@@ -65,9 +65,9 @@ public class WorkItem {
             handXofYText.setText("");
         } else {
             currentHandText.setText(w.getCurrentHand() + " - " + w.getCurrentBoard());
-            handXofYText.setText("Hand " + (w.getCurrentWorkIndex() + 1) + " of " + w.getTotalWorkItems());
+            handXofYText.setText("Completed " + w.getCompletedTaskCount() + " of " + w.getTotalTasks() + " hands");
         }
-        float progress = ((float)w.getCurrentWorkIndex()) / ((float)w.getTotalWorkItems());
+        float progress = ((float)w.getCompletedTaskCount()) / ((float)w.getTotalTasks());
         progressBar.setProgress(progress);
     }
 

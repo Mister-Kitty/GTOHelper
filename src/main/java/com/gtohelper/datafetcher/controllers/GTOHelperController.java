@@ -2,7 +2,6 @@ package com.gtohelper.datafetcher.controllers;
 
 import com.gtohelper.datafetcher.controllers.solversettings.SolverSettingsController;
 import com.gtohelper.domain.*;
-import com.gtohelper.utility.Logger;
 import com.gtohelper.utility.Popups;
 import com.gtohelper.utility.SaveFileHelper;
 import com.gtohelper.utility.StateManager;
@@ -110,9 +109,9 @@ public class GTOHelperController  {
         if(workFolder == null)
             return;
 
-        boolean success = StateManager.saveWorkObject(work, workFolder);
+        boolean success = StateManager.saveNewWorkObject(work, workFolder);
         if(!success) {
-            StateManager.deleteEmptyWorkFolder(workFolder);
+            Popups.showError(String.format("Failed to write new work %s's data file to it's folder %s. Check write permissions", work.toString()));
             return;
         }
 
@@ -125,7 +124,7 @@ public class GTOHelperController  {
     }
 
     private Work buildWork(List<HandData> hands, Work.WorkSettings settings) {
-        ArrayList<SolveData> solveList = new ArrayList<>();
+        ArrayList<SolveTask> solveList = new ArrayList<>();
 
         BettingOptions treeData = solverSettingsController.getBetSettingByName(settings.getBetSettingName());
         if(treeData == null) {
@@ -146,7 +145,7 @@ public class GTOHelperController  {
         }
 
         for(HandData hand : hands) {
-            solveList.add(new SolveData(hand));
+            solveList.add(new SolveTask(hand));
         }
 
         return new Work(solveList, settings, workRanges, treeData, rakeData);
