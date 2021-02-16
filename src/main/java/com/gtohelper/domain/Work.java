@@ -66,15 +66,15 @@ public class Work implements Serializable {
     */
 
     public boolean hasNextTask() {
-        return getCompletedTaskCount() <= getTotalTaskCount();
+        return getNewTaskCount() > 0;
     }
 
+    // This is a lazy, shitty way of doing this. I could refactor this later.
     public SolveTask nextTask() {
         // We have a nextTask if there exist any non-completed tasks. But we want to return tasks in a ring/loop.
         for(int nextWorkIndex = nextTasksIndex(currentWorkIndex); nextWorkIndex != currentWorkIndex; nextWorkIndex = nextTasksIndex(currentWorkIndex)) {
 
-            // This is a lazy, shitty way of doing this. I could refactor this later.
-            if(!tasks.get(nextWorkIndex).isSolveCompleted()) {
+            if(tasks.get(nextWorkIndex).getSolveState() == SolveTask.SolveTaskState.NEW) {
                 currentWorkIndex = nextWorkIndex;
                 return tasks.get(nextWorkIndex);
             }
@@ -95,6 +95,10 @@ public class Work implements Serializable {
         Properties/functions for GUI progress/status display.
      */
 
+    public List<SolveTask> getReadonlyTaskList() {
+        return Collections.unmodifiableList(tasks);
+    }
+
     public String getCurrentHand() {
         return CardResolver.getHandStringForPlayer(workSettings.hero, getCurrentTask().getHandData());
     }
@@ -103,20 +107,16 @@ public class Work implements Serializable {
         return CardResolver.getBoardString(getCurrentTask().getHandData());
     }
 
-    public List<HandData> getHandDataList() {
-        return tasks.stream().map(t -> t.getHandData()).collect(Collectors.toList());
-    }
-
     public int getTotalTaskCount() {
         return tasks.size();
     }
 
     public int getCompletedTaskCount() {
-        return (int) tasks.stream().filter(t -> t.isSolveCompleted()).count();
+        return (int) tasks.stream().filter(t -> t.getSolveState() == SolveTask.SolveTaskState.COMPLETED).count();
     }
 
-    public int getTasksWithErrorCount() {
-        return (int) tasks.stream().filter(t -> t.hasError()).count();
+    public int getNewTaskCount() {
+        return (int) tasks.stream().filter(t -> t.getSolveState() == SolveTask.SolveTaskState.NEW).count();
     }
 
     /*

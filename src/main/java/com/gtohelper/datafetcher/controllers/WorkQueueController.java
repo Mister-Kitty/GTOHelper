@@ -1,35 +1,23 @@
 package com.gtohelper.datafetcher.controllers;
 
 import com.gtohelper.datafetcher.models.WorkQueueModel;
-import com.gtohelper.domain.GlobalSolverSettings;
-import com.gtohelper.domain.HandData;
-import com.gtohelper.domain.Work;
-import com.gtohelper.fxml.WorkItem;
+import com.gtohelper.domain.*;
 import com.gtohelper.fxml.WorkListViewCell;
 import com.gtohelper.utility.CardResolver;
 import com.gtohelper.utility.Popups;
 import com.gtohelper.utility.StateManager;
 import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-import javafx.stage.StageStyle;
 import javafx.util.Callback;
 
-import javax.swing.event.ChangeEvent;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class WorkQueueController {
@@ -48,8 +36,11 @@ public class WorkQueueController {
     ObservableList<Work> futureWorkItems = FXCollections.observableArrayList();
 
     @FXML
-    ListView<HandData> handsList;
-    ObservableList<HandData> handsListItems = FXCollections.observableArrayList();
+    ListView<SolveTask> taskList;
+    ObservableList<SolveTask> handsListItems = FXCollections.observableArrayList();
+
+    @FXML
+    ScrollPane taskInfoScrollPane;
 
     @FXML
     Work selectedItem;
@@ -57,9 +48,17 @@ public class WorkQueueController {
     @FXML
     TextField handID, datePlayed, limit, potInBB, PFBetLevel, BBEffective, solveSuitability;
     @FXML
-    TextField OOPName, OOPSeat, OOPHand, OOPPFAction;
+    TextField OOPName, OOPSeat, OOPHand, OOPAction;
     @FXML
-    TextField IPName, IPSeat, IPHand, IPPFAction;
+    TextField IPName, IPSeat, IPHand, IPAction;
+
+    @FXML
+    Text taskStateHeader, taskStateText1, taskStateText2, taskStateText3, taskStateText4;
+    @FXML
+    TextField taskStateField1, taskStateField2, taskStateField3, taskStateField4;
+    @FXML
+    Hyperlink viewInBrowser, viewInPioViewer;
+
     @FXML
     Button startButton, stopButton;
 
@@ -76,23 +75,32 @@ public class WorkQueueController {
         finishedWork.setItems(finishedWorkItems);
         futureWorkQueue.setItems(futureWorkItems);
         currentWorkItem.setItems(currentWorkItems);
-        handsList.setItems(handsListItems);
+        taskList.setItems(handsListItems);
 
         finishedWork.setCellFactory(listView -> new WorkListViewCell());
         futureWorkQueue.setCellFactory(listView -> new WorkListViewCell());
         currentWorkItem.setCellFactory(listView -> new WorkListViewCell());
-        handsList.setCellFactory(new Callback<ListView<HandData>, ListCell<HandData>>() {
+        taskList.setCellFactory(new Callback<ListView<SolveTask>, ListCell<SolveTask>>() {
             @Override
-            public ListCell<HandData> call(ListView<HandData> param) {
-                return new ListCell<HandData>() {
+            public ListCell<SolveTask> call(ListView<SolveTask> param) {
+                return new ListCell<SolveTask>() {
                     @Override
-                    public void updateItem(HandData handData, boolean empty)
+                    public void updateItem(SolveTask task, boolean empty)
                     {
-                        super.updateItem(handData,empty);
-                        if (empty || handData == null)
+                        super.updateItem(task,empty);
+                        if (empty || task == null)
                             setText(null);
-                        else
-                            setText(CardResolver.getBoardString(handData));
+                        else {
+
+                            if(task.getSolveState() == SolveTask.SolveTaskState.COMPLETED)
+                                getStyleClass().add("solve-task-completed");
+                            else if (task.getSolveState() == SolveTask.SolveTaskState.ERRORED)
+                                getStyleClass().add("solve-task-errored");
+                            else if (task.getSolveState() == SolveTask.SolveTaskState.IGNORED)
+                                getStyleClass().add("solve-task-ignored");
+
+                            setText(CardResolver.getBoardString(task.getHandData()));
+                        }
                     }
                 };
             }
@@ -104,11 +112,16 @@ public class WorkQueueController {
                 (observable, oldValue, newValue) -> changed("current", oldValue, newValue));
         futureWorkQueue.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> changed("future", oldValue, newValue));
-        handsList.getSelectionModel().selectedItemProperty().addListener(
+        taskList.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> updateHandDataFields(newValue));
+
+        // Do these programmatically so that SceneBuilder still renders
+        taskInfoScrollPane.setVisible(false);
     }
 
     public void changed(String source, Work oldValue, Work newValue) {
+        taskInfoScrollPane.setVisible(true);
+
         if(newValue != null) {
             selectedItem = newValue;
             if(source.equals("finished")) {
@@ -123,17 +136,20 @@ public class WorkQueueController {
             }
 
             handsListItems.clear();
-            handsListItems.addAll(selectedItem.getHandDataList());
+            handsListItems.addAll(selectedItem.getReadonlyTaskList());
         }
     }
 
-    private void updateHandDataFields(HandData handData) {
-        if(handData == null) {
+    private void updateHandDataFields(SolveTask task) {
+        if(task == null) {
             handID.setText(""); datePlayed.setText(""); limit.setText(""); potInBB.setText(""); PFBetLevel.setText("");
             BBEffective.setText(""); solveSuitability.setText("");
-            OOPName.setText(""); OOPSeat.setText(""); OOPHand.setText(""); OOPPFAction.setText("");
-            IPName.setText(""); IPSeat.setText(""); IPHand.setText(""); IPPFAction.setText("");
+            OOPName.setText(""); OOPSeat.setText(""); OOPHand.setText(""); OOPAction.setText("");
+            IPName.setText(""); IPSeat.setText(""); IPHand.setText(""); IPAction.setText("");
+
+            setSolveStateFieldsVisibility(false);
         } else {
+            HandData handData = task.getHandData();
             handID.setText(""+handData.id_hand);
             datePlayed.setText(handData.date_played.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             limit.setText(handData.limit_name);
@@ -144,12 +160,42 @@ public class WorkQueueController {
             OOPName.setText(handData.oopPlayer.player_name);
             OOPSeat.setText(handData.oopPlayer.seat.toString());
             OOPHand.setText(CardResolver.getHandString(handData.oopPlayer));
-            OOPPFAction.setText(handData.oopPlayer.p_action);
+            OOPAction.setText(handData.oopPlayer.getCompactedActionStrings("  |  "));
             IPName.setText(handData.ipPlayer.player_name);
             IPSeat.setText(handData.ipPlayer.seat.toString());
             IPHand.setText(CardResolver.getHandString(handData.ipPlayer));
-            IPPFAction.setText(handData.ipPlayer.p_action);
+            IPAction.setText(handData.ipPlayer.getCompactedActionStrings("  |  "));
+
+            if(task.getSolveState() == SolveTask.SolveTaskState.COMPLETED)
+                setCompletedSolveStateFields();
+            else if(task.getSolveState() == SolveTask.SolveTaskState.IGNORED)
+                setIgnoredSolveStateFields();
+            else if(task.getSolveState() == SolveTask.SolveTaskState.NEW)
+                setNewSolveStateFields();
+            else if(task.getSolveState() == SolveTask.SolveTaskState.ERRORED)
+                setErroredSolveStateFields();
         }
+    }
+
+    private void setSolveStateFieldsVisibility(boolean visibility) {
+        taskStateText1.setVisible(visibility); taskStateText2.setVisible(visibility); taskStateText3.setVisible(visibility); taskStateText4.setVisible(visibility);
+        taskStateField1.setVisible(visibility); taskStateField2.setVisible(visibility); taskStateField3.setVisible(visibility); taskStateField4.setVisible(visibility);
+    }
+
+    private void setCompletedSolveStateFields() {
+
+    }
+
+    private void setIgnoredSolveStateFields() {
+
+    }
+
+    private void setNewSolveStateFields() {
+
+    }
+
+    private void setErroredSolveStateFields() {
+
     }
 
     @FXML

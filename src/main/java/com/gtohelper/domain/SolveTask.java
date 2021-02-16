@@ -10,7 +10,14 @@ public class SolveTask implements Serializable {
           objects may represent errors, deferral of computation (pending decision), or ... something.
      */
 
-    private boolean solveCompleted = false;
+    public enum SolveTaskState implements Serializable {
+        NEW,
+        ERRORED,
+        COMPLETED,
+        IGNORED;
+    }
+
+    private SolveTaskState solveState = SolveTaskState.NEW;
     private final HandData handData;
     private SolverOutput solverOutput;
     private HandSolverAnalysis handSolverAnalysis;
@@ -19,7 +26,8 @@ public class SolveTask implements Serializable {
         handData = h;
     }
 
-    public boolean isSolveCompleted() { return solveCompleted; } // solveCompleted is an override state to results.success
+    public SolveTaskState getSolveState() { return solveState; }
+    public void setSolveState(SolveTaskState state) { solveState = state; }
     public boolean hasError() { return solverOutput.hasError(); }
     public HandData getHandData() { return handData; }
     public SolverOutput getSolveResults() {
@@ -30,6 +38,6 @@ public class SolveTask implements Serializable {
         solverOutput = results;
 
         if(results.success)
-            solveCompleted = true;
+            solveState = SolveTaskState.COMPLETED;
     }
 }

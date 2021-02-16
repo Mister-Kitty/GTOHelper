@@ -1,0 +1,19 @@
+.task-list {
+    -fx-box-border: transparent;
+}
+
+.solve-task-completed {
+    -fx-background-color: #d6f5d6;
+}
+
+.solve-task-errored {
+    -fx-background-color: #ffffb3;
+}
+
+.solve-task-ignored {
+    -fx-background-color: #ffcccc;
+}
+
+.text-field {
+    -fx-text-box-border: transparent;
+}

@@ -280,6 +280,23 @@ public class HandData implements Serializable {
             else
                 return Street.PRE;
         }
+
+        public String getCompactedActionStrings(String separator) {
+            String result = p_action;
+            if(f_action.isEmpty())
+                return result;
+
+            result += separator + f_action;
+            if(t_action.isEmpty())
+                return result;
+
+            result += separator + t_action;
+            if(r_action.isEmpty())
+                return result;
+
+            result += separator + r_action;
+            return result;
+        }
     }
 
     // The following 2 functions are defined to never return the same player, even if they're tied.
