@@ -8,16 +8,11 @@
 
 <GridPane fx:id="rootGridPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" >
    <children>
-      <Label fx:id="titleLabel" graphicTextGap="0.0" text="Review hands for Dec 16" GridPane.columnSpan="2147483647" GridPane.rowIndex="1" />
-      <Label fx:id="ETALabel" text="ETA (Work in progress):" GridPane.rowIndex="2" />
-      <Text fx:id="currentHandText" text="Current Hand:" GridPane.rowIndex="4" />
+      <Text fx:id="name" GridPane.rowIndex="1" />
+      <Text fx:id="ETA" GridPane.rowIndex="2" />
+      <Text fx:id="handsCompleted" GridPane.rowIndex="3"/>
+      <Text fx:id="handsErrored" GridPane.rowIndex="4" />
       <ProgressBar fx:id="progressBar" prefWidth="160.0" progress="0.33" GridPane.rowIndex="5" />
-
-      <Text fx:id="handXofYText" text="Hand X of Y" GridPane.rowIndex="3">
-         <GridPane.margin>
-            <Insets />
-         </GridPane.margin>
-      </Text>
    </children>
    <columnConstraints>
       <ColumnConstraints />

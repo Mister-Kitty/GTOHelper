@@ -35,9 +35,12 @@ public class SolveTask implements Serializable {
     }
 
     public void saveSolveResults(SolverOutput results) {
+        assert results.success != results.hasError();
         solverOutput = results;
 
         if(results.success)
             solveState = SolveTaskState.COMPLETED;
+        else if (results.hasError())
+            solveState = SolveTaskState.ERRORED;
     }
 }

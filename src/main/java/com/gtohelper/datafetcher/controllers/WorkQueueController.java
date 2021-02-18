@@ -2,6 +2,8 @@ package com.gtohelper.datafetcher.controllers;
 
 import com.gtohelper.datafetcher.models.WorkQueueModel;
 import com.gtohelper.domain.*;
+import com.gtohelper.fxml.Board;
+import com.gtohelper.fxml.Hand;
 import com.gtohelper.fxml.WorkListViewCell;
 import com.gtohelper.utility.CardResolver;
 import com.gtohelper.utility.Popups;
@@ -11,7 +13,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
 
@@ -99,7 +101,20 @@ public class WorkQueueController {
                             else if (task.getSolveState() == SolveTask.SolveTaskState.IGNORED)
                                 getStyleClass().add("solve-task-ignored");
 
-                            setText(CardResolver.getBoardString(task.getHandData()));
+                            /*
+                                I admit, this is lazy. I should really create a SolveTask FXML and controller. Buuuuuuut this is only 8 lines...
+                             */
+                            HBox box = new HBox();
+                            Board b = new Board(task.getHandData());
+                            Text space = new Text(" - ");
+                            Hand h = new Hand(task.getHandData().getHandDataForPlayer(selectedItem.getWorkSettings().getHero().id_player));
+
+                            box.getChildren().add(h);
+                            box.getChildren().add(space);
+                            box.getChildren().add(b);
+
+                            setGraphic(box);
+                            //setText(CardResolver.getBoardString(task.getHandData()));
                         }
                     }
                 };
@@ -230,6 +245,7 @@ public class WorkQueueController {
     }
 
     public void receiveNewWork(Work work) {
+        work.setProgressCallbackToTaskGUI(this::workAttemptReported);
         workQueueModel.receiveNewWork(work);
     }
 
@@ -258,6 +274,9 @@ public class WorkQueueController {
         }
     }
 
+    public void workAttemptReported(SolveTask w) {
+        taskList.refresh();
+    }
 
     public void saveGetGlobalSolverSettingsCallback(Supplier<GlobalSolverSettings> callback) {
         getGlobalSolverSettingsCallback = callback;
@@ -266,12 +285,6 @@ public class WorkQueueController {
     /*
 
      */
-
-    private void saveAllWorkState() {
-
-
-    }
-
     public void loadWork(GlobalSolverSettings solverSettings) {
         ArrayList<Work> loadedWork = StateManager.readAllWorkObjectFiles(solverSettings);
         for(Work work : loadedWork) {

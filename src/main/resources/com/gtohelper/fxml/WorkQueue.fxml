@@ -111,7 +111,7 @@
                                           </HBox>
                                           <HBox>
                                              <children>
-                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Limit: " />
+                                                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Game: " />
                                                 <TextField fx:id="limit" editable="false" prefHeight="13.0" HBox.hgrow="ALWAYS">
                                                    <font>
                                                       <Font size="9.0" />

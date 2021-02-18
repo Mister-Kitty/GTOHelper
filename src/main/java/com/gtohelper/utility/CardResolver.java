@@ -94,7 +94,10 @@ public class CardResolver {
     }
 
     public static String getHandString(HandData.PlayerHandData playerHand) {
-        return resolveToString(playerHand.holecard_1) + " " + resolveToString(playerHand.holecard_2);
+        if(playerHand != null)
+            return resolveToString(playerHand.holecard_1) + " " + resolveToString(playerHand.holecard_2);
+        else
+            return "";
     }
 
     public static String getFlopString(HandData data) {

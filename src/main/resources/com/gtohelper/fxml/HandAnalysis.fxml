@@ -71,8 +71,8 @@
                                 <TableView fx:id="handsTable" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="ALWAYS">
                                     <columns>
                                         <TableColumn fx:id="handsTableDateColumn" maxWidth="120.0" minWidth="120.0" prefWidth="120.0" resizable="false" text="Date" />
-                                        <TableColumn fx:id="handsTableCardsColumn" maxWidth="50.0" minWidth="50.0" prefWidth="50.0" resizable="false" text="Cards" />
-                                        <TableColumn fx:id="handsTableRunoutColumn" maxWidth="100.0" minWidth="100.0" prefWidth="100.0" resizable="false" text="Runout" />
+                                        <TableColumn fx:id="handsTableHandColumn" maxWidth="50.0" minWidth="50.0" prefWidth="50.0" resizable="false" text="Cards" />
+                                        <TableColumn fx:id="handsTableBoardColumn" maxWidth="100.0" minWidth="100.0" prefWidth="100.0" resizable="false" text="Runout" />
                                         <TableColumn fx:id="handsTableCWonColumn" minWidth="80.0" prefWidth="200.0" text="\$ Pot" />
                                     </columns>
                                     <columnResizePolicy>

@@ -165,21 +165,23 @@ public class WorkQueueModel {
             RakeData rakeData = work.getRakeData();
 
             String saveFolderName = solverSettings.getWorkResultsFolder(work);
-            File saveFolder = new File(saveFolderName);
 
             while(!work.isCompleted() && !stopRequested) {
                 // workSuccess() & workfailed() increment the internal Work.CurrentTask. As such, ONLY use currentSolve. Do not call getCurrentTask again!
                 SolveTask currentTask = work.getCurrentTask();
                 String fileName = work.getFileNameForSolve(currentTask);
+                String fullFileLocation = saveFolderName + fileName;
+                File resultsFile = new File(fullFileLocation);
 
                 /*
                     Preliminary valid state checks.
                  */
-                if(new File(saveFolder, fileName).exists()) {
+                if(resultsFile.exists()) {
                     // Because we check for new save files upon startup, this should only happen if someone pastes something in at runtime.
-                    Logger.log(String.format("For work %s the solve results file %s already exists. Skipping.", work.toString(), fileName));
-                    // More to do here -> getSolveResults().foundNewSolveFile();
-                    work.workSkipped();
+                    Logger.log(String.format("For work %s the solve results file %s already exists. Loading & computing results.", work.toString(), fileName));
+                    // More work to do here -> getSolveResults().foundNewSolveFile();
+                    loadSolve(resultsFile);
+                    work.taskSkipped(currentTask);
                     continue;
                 }
 
@@ -199,16 +201,16 @@ public class WorkQueueModel {
                  */
                 currentTask.saveSolveResults(results);
                 if(results.success) {
-                    solver.dumpTree("\"" + saveFolderName + fileName + "\"", "no_rivers");
-                    work.workSucceeded();
+                    solver.dumpTree("\"" + fullFileLocation + "\"", "no_rivers");
+                    work.taskSucceeded(currentTask);
                 } else {
-                    work.workFailed();
+                    work.taskFailed(currentTask);
                 }
 
                 /*
                     Save the WorkObject and continue to next task. Fail if we cannot write.
                  */
-                boolean saveSuccess = StateManager.saveExistingWorkObject(work, saveFolder);
+                boolean saveSuccess = StateManager.saveExistingWorkObject(work, new File(saveFolderName));
                 if(!saveSuccess) {
                     String errorString = String.format("File read/write error while trying to update work %s's data file.\n " +
                             "Since progress can not be saved, computation on this work is being halted.", work.toString());
@@ -315,6 +317,13 @@ public class WorkQueueModel {
 
             return results;
         }
+    }
+
+    private void loadSolve(File solveFile) {
+
+
+
+
     }
 
     // Priority queue strategies that can be set by user.

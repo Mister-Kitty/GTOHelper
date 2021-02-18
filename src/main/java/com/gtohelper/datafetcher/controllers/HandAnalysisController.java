@@ -2,22 +2,24 @@ package com.gtohelper.datafetcher.controllers;
 
 import com.gtohelper.datafetcher.models.HandAnalysisModel;
 import com.gtohelper.domain.*;
+import com.gtohelper.fxml.Board;
+import com.gtohelper.fxml.Hand;
 import com.gtohelper.utility.CardResolver;
 import com.gtohelper.utility.SaveFileHelper;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
+import javafx.util.Callback;
 
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
-
-import static javafx.scene.control.TableView.CONSTRAINED_RESIZE_POLICY;
 
 public class HandAnalysisController {
 
@@ -30,8 +32,8 @@ public class HandAnalysisController {
     TableView<HandData> handsTable;
     @FXML TableColumn<HandData, String> handsTableDateColumn;
     @FXML TableColumn<HandData, String> handsTableCWonColumn;
-    @FXML TableColumn<HandData, String> handsTableCardsColumn;
-    @FXML TableColumn<HandData, String> handsTableRunoutColumn;
+    @FXML TableColumn<HandData, Hand> handsTableHandColumn;
+    @FXML TableColumn<HandData, Board> handsTableBoardColumn;
 
     @FXML TextField workName;
     @FXML ChoiceBox<String> betSizingsChoiceBox;
@@ -151,12 +153,49 @@ public class HandAnalysisController {
             return row;
         });
 
+        handsTable.setFixedCellSize(24.0); // This is a bypass around how the TableView seems to blow up the height of Board objects
         handsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         handsTable.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> updateSolveButtonDisabledState());
         handsTableDateColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().date_played.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
         handsTableCWonColumn.setCellValueFactory(p -> new SimpleStringProperty("" + p.getValue().amt_pot));
-        handsTableCardsColumn.setCellValueFactory(p -> new SimpleStringProperty(CardResolver.getHandStringForPlayer(player, p.getValue())));
-        handsTableRunoutColumn.setCellValueFactory(p -> new SimpleStringProperty(CardResolver.getBoardString(p.getValue())));
+
+        handsTableHandColumn.setCellValueFactory(p -> new ReadOnlyObjectWrapper(new Hand(p.getValue().getHandDataForPlayer(player.id_player))));
+        handsTableHandColumn.setCellFactory(new Callback<TableColumn<HandData, Hand>, TableCell<HandData, Hand>> () {
+            @Override
+            public TableCell<HandData, Hand> call(TableColumn<HandData, Hand> param) {
+                return new TableCell<HandData, Hand>() {
+                    @Override
+                    public void updateItem(Hand hand, boolean empty) {
+                        super.updateItem(hand, empty);
+
+                        if (empty || hand == null) {
+                            setGraphic(null);
+                        } else {
+                            setGraphic(hand);
+                        }
+                    }
+                };
+            }
+        });
+        handsTableBoardColumn.setCellValueFactory(p -> new ReadOnlyObjectWrapper(new Board(p.getValue())));
+        handsTableBoardColumn.setCellFactory(new Callback<TableColumn<HandData, Board>, TableCell<HandData, Board>> () {
+            @Override
+            public TableCell<HandData, Board> call(TableColumn<HandData, Board> param) {
+                return new TableCell<HandData, Board>() {
+                    @Override
+                    public void updateItem(Board board, boolean empty) {
+                        super.updateItem(board, empty);
+
+                        if (empty || board == null) {
+                            setGraphic(null);
+                        } else {
+                            setGraphic(board);
+                        }
+                   }
+                };
+            }
+        });
+
     }
 
     private void updateSolveButtonDisabledState() {

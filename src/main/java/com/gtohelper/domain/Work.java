@@ -6,7 +6,6 @@ import sun.plugin.dom.exception.InvalidStateException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public class Work implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -20,7 +19,9 @@ public class Work implements Serializable {
     private boolean isCompleted = false;
     private int currentWorkIndex = 0;
 
-    private transient Consumer<Work> progressCallback;
+    // To be clear, the first updates the work GUI and the second updates the task GUI.
+    private transient Consumer<Work> progressCallbackToWorkGUI;
+    private transient Consumer<SolveTask> progressCallbackToTaskGUI;
 
     public static class WorkSettings implements Serializable {
         private static final long serialVersionUID = 1L;
@@ -53,6 +54,7 @@ public class Work implements Serializable {
         }
 
         public String getName() { return name; }
+        public Player getHero() { return hero; }
         public boolean getUsePercentPotOverBBPerHundred() { return usePercentPotOverBBPerHundred; }
         public float getPercentOfPotAccuracy() { return percentOfPotAccuracy; }
         public float getbbPerHundredAccuracy() { return bbPerHundredAccuracy; }
@@ -111,6 +113,10 @@ public class Work implements Serializable {
         return tasks.size();
     }
 
+    public int getErroredTaskCount() {
+        return (int) tasks.stream().filter(t -> t.getSolveState() == SolveTask.SolveTaskState.ERRORED).count();
+    }
+
     public int getCompletedTaskCount() {
         return (int) tasks.stream().filter(t -> t.getSolveState() == SolveTask.SolveTaskState.COMPLETED).count();
     }
@@ -152,8 +158,12 @@ public class Work implements Serializable {
 
     public void setError(String error) { this.error = error; }
 
-    public void setProgressCallback(Consumer<Work> callback) {
-        progressCallback = callback;
+    public void setProgressCallbackToWorkGUI(Consumer<Work> callback) {
+        progressCallbackToWorkGUI = callback;
+    }
+
+    public void setProgressCallbackToTaskGUI(Consumer<SolveTask> callback) {
+        progressCallbackToTaskGUI = callback;
     }
 
     public Work(List<SolveTask> w, WorkSettings settings, Ranges r, BettingOptions b, RakeData rake) {
@@ -166,28 +176,30 @@ public class Work implements Serializable {
         rakeData = rake;
     }
 
-    public void workSucceeded() {
-        afterWorkAttemptedReported();
+    public void taskSucceeded(SolveTask currentTask) {
+        afterTaskAttemptedReported(currentTask);
     }
 
-    public void workFailed() {
-        afterWorkAttemptedReported();
+    public void taskFailed(SolveTask currentTask) {
+        afterTaskAttemptedReported(currentTask);
     }
 
-    public void workSkipped() {
-        afterWorkAttemptedReported();
+    public void taskSkipped(SolveTask currentTask) {
+        afterTaskAttemptedReported(currentTask);
     }
 
     // Awkward name... just call this after workSuccess() etc.
-    private void afterWorkAttemptedReported() {
+    private void afterTaskAttemptedReported(SolveTask currentTask) {
         if(!hasNextTask()) {
             isCompleted = true;
         } else {
             nextTask();
         }
 
-        if(progressCallback != null)
-            progressCallback.accept(this);
+        if(progressCallbackToWorkGUI != null)
+            progressCallbackToWorkGUI.accept(this);
+        if(progressCallbackToTaskGUI != null)
+            progressCallbackToTaskGUI.accept(currentTask);
     }
 
     public String getFileNameForSolve(SolveTask solve) {
