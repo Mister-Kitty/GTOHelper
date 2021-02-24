@@ -18,7 +18,7 @@ public class Work implements Serializable {
     private WorkSettings workSettings;
 
     private String error;
-    private transient Path location;
+    private transient Path saveFileLocation;
     private int currentWorkIndex = 0;
 
     // To be clear, the first updates the work GUI and the second updates the task GUI.
@@ -160,8 +160,8 @@ public class Work implements Serializable {
     public void clearError() { error = null; }
     public void setError(String error) { this.error = error; }
 
-    public void setLocation(Path location) { this.location = location; }
-    public Path getLocation() { return location; }
+    public void setSaveFileLocation(Path saveFileLocation) { this.saveFileLocation = saveFileLocation; }
+    public Path getSaveFileLocation() { return saveFileLocation; }
 
     public void setProgressCallbackToWorkGUI(Consumer<Work> callback) {
         progressCallbackToWorkGUI = callback;
@@ -169,6 +169,10 @@ public class Work implements Serializable {
 
     public void setProgressCallbackToTaskGUI(Consumer<SolveTask> callback) {
         progressCallbackToTaskGUI = callback;
+    }
+
+    public Work(List<SolveTask> w, WorkSettings settings, Ranges r, BettingOptions b) {
+        this(w, settings, r, b, null);
     }
 
     public Work(List<SolveTask> w, WorkSettings settings, Ranges r, BettingOptions b, RakeData rake) {

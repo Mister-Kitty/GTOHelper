@@ -1,6 +1,7 @@
 package com.gtohelper.domain;
 
 import java.io.Serializable;
+import java.nio.file.Path;
 
 public class SolverOutput implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -12,7 +13,7 @@ public class SolverOutput implements Serializable {
 
     private String error;
     public boolean success = false;
-    public transient String solveFileName;
+    public transient Path solveFile;
 
     public SolverOutput() {}
 

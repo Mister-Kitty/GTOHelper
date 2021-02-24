@@ -15,6 +15,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -105,7 +106,7 @@ public class GTOHelperController  {
             return;
 
         // One last fail-prone condition before we proceed. Create the folder and save the Work State in it.
-        File workFolder = StateManager.createWorkFolder(work, getGlobalSolverSettings());
+        Path workFolder = StateManager.createWorkFolder(work, getGlobalSolverSettings());
         if(workFolder == null)
             return;
 
@@ -139,10 +140,13 @@ public class GTOHelperController  {
             return null;
         }
 
-        RakeData rakeData = solverSettingsController.loadRakeData();
-        if(rakeData == null) {
-            Popups.showError("Failed to load rake data. Fix this in the Bet Settings tab or select no rake and retry.");
-            return null;
+        RakeData rakeData = null;
+        if(settings.getUseRake()) {
+            rakeData = solverSettingsController.loadRakeData();
+            if (rakeData == null) {
+                Popups.showError("Failed to load rake data. Fix this in the Bet Settings tab or select no rake and retry.");
+                return null;
+            }
         }
 
         for(HandData hand : hands) {

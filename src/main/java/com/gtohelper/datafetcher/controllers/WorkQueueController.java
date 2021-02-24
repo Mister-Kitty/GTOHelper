@@ -6,6 +6,7 @@ import com.gtohelper.fxml.Board;
 import com.gtohelper.fxml.FinishedWorkListViewCell;
 import com.gtohelper.fxml.Hand;
 import com.gtohelper.utility.CardResolver;
+import com.gtohelper.utility.Logger;
 import com.gtohelper.utility.Popups;
 import com.gtohelper.utility.StateManager;
 import javafx.application.Platform;
@@ -18,6 +19,9 @@ import javafx.scene.text.Text;
 import javafx.util.Callback;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.function.Supplier;
@@ -218,20 +222,22 @@ public class WorkQueueController {
     @FXML
     public void startWorker() {
         GlobalSolverSettings globalSolverSettings = getGlobalSolverSettingsCallback.get();
-        String solverLocation = globalSolverSettings.getSolverLocation();
+        Path solverLocation = globalSolverSettings.getSolverLocation();
+        Path resultsPath = globalSolverSettings.getSolverResultsFolder();
 
-        if(globalSolverSettings.getSolverLocation().isEmpty()) {
+        if(solverLocation == null) {
             Popups.showError("Piosolver location not set.");
             return;
-        }
-
-        if(globalSolverSettings.getSolveResultsFolder().isEmpty()) {
-            Popups.showError("Solve results output folder not set.");
+        } else if (!Files.exists(solverLocation)) {
+            Popups.showError("The set Piosolver location \"" + solverLocation.toString() + "\" does not exist or is invalid");
             return;
         }
 
-        if (!new File(solverLocation).exists()) {
-            Popups.showError("The set Piosolver location \"" + solverLocation + "\" does not exist or is invalid");
+        if(resultsPath == null) {
+            Popups.showError("Solve results output folder not set.");
+            return;
+        } else if (!Files.exists(resultsPath)) {
+            Popups.showError("The solver results output location \"" + resultsPath.toString() + "\" does not exist or is invalid");
             return;
         }
 
@@ -288,7 +294,17 @@ public class WorkQueueController {
 
      */
     public void loadWork(GlobalSolverSettings solverSettings) {
-        ArrayList<Work> loadedWork = StateManager.readAllWorkObjectFiles(solverSettings);
+        ArrayList<Work> loadedWork;
+        try {
+            loadedWork = StateManager.readAllWorkObjectFiles(solverSettings);
+        } catch (IOException e) {
+            String error = String.format("Drive input/output error occured while trying to load work files from folder %s. \n" +
+                    "Check for read permissions; or, less likely, for data corruption.", solverSettings.getSolverResultsFolder());
+            Logger.log(error);
+            Popups.showError(error);
+            return;
+        }
+
         for(Work work : loadedWork) {
             if(work.hasNextTask()) {
                 receiveNewWork(work);
@@ -301,7 +317,7 @@ public class WorkQueueController {
     // Figure out how much is done.
     private void processCompletedWork(Work work, GlobalSolverSettings solverSettings) {
         // Find all HandIDs present in our directory.
-        String directory = solverSettings.getSolveResultsFolder() + "\\" + work.getWorkSettings().getName();
+        String directory = solverSettings.getSolverResultsFolder() + "\\" + work.getWorkSettings().getName();
 
         for(String fileName : (new File(directory)).list((dir, name) -> name.endsWith(".cfr"))) {
             int firstDashIndex = fileName.indexOf("-");

@@ -10,6 +10,8 @@ import com.gtohelper.utility.StateManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -91,7 +93,7 @@ public class WorkQueueModel {
             solverSettings = solveSettings;
             try {
                 solver = new PioSolver();
-                solver.connectAndInit(solverSettings.getSolverLocation());
+                solver.connectAndInit(solverSettings.getSolverLocation().toString());
             } catch (IOException e) {
                 Logger.log(Logger.Channel.PIO, "Error occured launching Pio. Perhaps the executable address changed or we do not have read permission?\n" +
                         e.toString());
@@ -167,14 +169,12 @@ public class WorkQueueModel {
             BettingOptions bettingOptions = work.getBettingOptions();
             RakeData rakeData = work.getRakeData();
 
-            String saveFolderName = solverSettings.getWorkResultsFolder(work);
+            Path saveFolderName = solverSettings.getWorkResultsFolder(work);
 
             while(work.hasNextTask() && !stopRequested) {
-                // workSuccess() & workfailed() increment the internal Work.CurrentTask. As such, ONLY use currentSolve. Do not call getCurrentTask again!
                 SolveTask currentTask = work.nextTask();
-                String fileName = work.getFileNameForSolve(currentTask);
-                String fullFileLocation = saveFolderName + fileName;
-                File resultsFile = new File(fullFileLocation);
+                String cfgFileName = work.getFileNameForSolve(currentTask);
+                Path fullFilePath = saveFolderName.resolve(cfgFileName);
 
                 /*
                     Do the actual solving
@@ -185,12 +185,12 @@ public class WorkQueueModel {
                     // Note that we allow any cfg file name as long as it starts with the handid. So we use the file name found
                     // (and stored) in the SolveState rather than the generated filename.
                     solveFileFound = true;
-                    results = loadSolve(new File(currentTask.getSolveResults().solveFileName));
-                } else if(resultsFile.exists()) {
+                    results = loadSolve(currentTask.getSolveResults().solveFile);
+                } else if(Files.exists(fullFilePath)) {
                     // Given our file check on startup, we should only this this if someone pastes a file in during runtime.
-                    Logger.log(String.format("For work %s the solve results file %s already exists. Loading & computing results.", work.toString(), fileName));
+                    Logger.log(String.format("For work %s the solve results file %s already exists. Loading & computing results.", work.toString(), cfgFileName));
                     solveFileFound = true;
-                    results = loadSolve(resultsFile);
+                    results = loadSolve(fullFilePath);
                 } else {
                     solveFileFound = false;
                     results = dispatchSolve(currentTask, settings, ranges, bettingOptions, rakeData);
@@ -208,7 +208,7 @@ public class WorkQueueModel {
                 currentTask.saveSolveResults(results);
                 if(results.success) {
                     if(!solveFileFound)
-                        solver.dumpTree("\"" + fullFileLocation + "\"", "no_rivers");
+                        solver.dumpTree("\"" + fullFilePath + "\"", "no_rivers");
                     work.taskSucceeded(currentTask);
                 } else {
                     work.taskFailed(currentTask);
@@ -217,7 +217,7 @@ public class WorkQueueModel {
                 /*
                     Save the WorkObject and continue to next task. Fail if we cannot write.
                  */
-                boolean saveSuccess = StateManager.saveExistingWorkObject(work, solverSettings);
+                boolean saveSuccess = StateManager.saveExistingWorkObject(work);
                 if(!saveSuccess) {
                     String errorString = String.format("File read/write error while trying to update work %s's data file.\n " +
                             "Since progress can not be saved, computation on this work is being halted.", work.toString());
@@ -325,12 +325,12 @@ public class WorkQueueModel {
             return results;
         }
 
-        private SolverOutput loadSolve(File solveFile) {
+        private SolverOutput loadSolve(Path solveFile) {
             SolverOutput results = new SolverOutput();
 
             try {
                 // We wrap in try/catch instead of throwing the IOException because we should continue other work if the file is corrupt.
-                solver.loadTree(solveFile.getAbsolutePath());
+                solver.loadTree(solveFile.toString());
             } catch (IOException e) {
                 String error = String.format("Input/output error while loading solve from file %s. It's likely that the file is garbage.");
                 Logger.log(Logger.Channel.PIO, error);

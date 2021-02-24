@@ -1,49 +1,59 @@
 package com.gtohelper.domain;
 
-public class GlobalSolverSettings {
-    String solverLocation, viewerLocation, rakeLocation, solveResultsFolder, solveResultsBackupFolder;
+import java.nio.file.Path;
 
-    public String getSolverLocation() {
+public class GlobalSolverSettings {
+    Path solverLocation, viewerLocation, rakeLocation, solverResultsFolder, solverResultsArchiveFolder;
+
+    /*
+        File locations below
+     */
+
+    public Path getSolverLocation() {
         return solverLocation;
     }
 
-    public void setSolverLocation(String solverLocation) {
+    public void setSolverLocation(Path solverLocation) {
         this.solverLocation = solverLocation;
     }
 
-    public String getViewerLocation() {
+    public Path getViewerLocation() {
         return viewerLocation;
     }
 
-    public void setViewerLocation(String viewerLocation) {
+    public void setViewerLocation(Path viewerLocation) {
         this.viewerLocation = viewerLocation;
     }
 
-    public String getRakeLocation() {
+    public Path getRakeLocation() {
         return rakeLocation;
     }
 
-    public void setRakeLocation(String rakeLocation) {
+    public void setRakeLocation(Path rakeLocation) {
         this.rakeLocation = rakeLocation;
     }
 
-    public String getSolveResultsFolder() {
-        return solveResultsFolder;
+    /*
+        Folder locations below
+     */
+
+    public Path getSolverResultsFolder() {
+        return solverResultsFolder;
     }
 
-    public void setSolveResultsFolder(String solveResultsFolder) {
-        this.solveResultsFolder = solveResultsFolder;
+    public void setSolverResultsFolder(Path solverResultsFolder) {
+        this.solverResultsFolder = solverResultsFolder;
     }
 
-    public String getSolveResultsBackupFolder() {
-        return solveResultsBackupFolder;
+    public Path getSolverResultsArchiveFolder() {
+        return solverResultsArchiveFolder;
     }
 
-    public void setSolveResultsBackupFolder(String solveResultsBackupFolder) {
-        this.solveResultsBackupFolder = solveResultsBackupFolder;
+    public void setSolverResultsArchiveFolder(Path solverResultsArchiveFolder) {
+        this.solverResultsArchiveFolder = solverResultsArchiveFolder;
     }
 
-    public String getWorkResultsFolder(Work work) {
-        return solveResultsFolder + "\\" + work.getWorkSettings().getName()+ "\\";
+    public Path getWorkResultsFolder(Work work) {
+        return solverResultsFolder.resolve(work.getWorkSettings().getName());
     }
 }

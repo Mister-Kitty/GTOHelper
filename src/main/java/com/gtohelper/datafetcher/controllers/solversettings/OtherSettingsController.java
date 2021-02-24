@@ -3,6 +3,8 @@ package com.gtohelper.datafetcher.controllers.solversettings;
 import com.gtohelper.datafetcher.models.solversettings.OtherSettingsModel;
 import com.gtohelper.domain.GlobalSolverSettings;
 import com.gtohelper.domain.RakeData;
+import com.gtohelper.utility.Logger;
+import com.gtohelper.utility.Popups;
 import com.gtohelper.utility.SaveFileHelper;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
@@ -12,6 +14,7 @@ import javafx.stage.FileChooser;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.function.Function;
 
 public class OtherSettingsController {
@@ -70,31 +73,31 @@ public class OtherSettingsController {
     }
 
     private void selectSolverFile(File file) throws IOException {
-        solverLocation.setText(file.getPath());
+        solverLocation.setText(file.getCanonicalPath());
         otherSettingsModel.saveTextField("solverLocation", file.getAbsolutePath());
         otherSettingsModel.saveAll();
     }
 
     private void selectViewerFile(File file) throws IOException {
-        viewerLocation.setText(file.getPath());
+        viewerLocation.setText(file.getCanonicalPath());
         otherSettingsModel.saveTextField("viewerLocation", file.getAbsolutePath());
         otherSettingsModel.saveAll();
     }
 
     private void selectRakeFile(File file) throws IOException {
-        rakeLocation.setText(file.getPath());
+        rakeLocation.setText(file.getCanonicalPath());
         otherSettingsModel.saveTextField("rakeLocation", file.getAbsolutePath());
         otherSettingsModel.saveAll();
     }
 
     private void selectResultsFolder(File folder) throws IOException {
-        solveResultsFolder.setText(folder.getPath());
+        solveResultsFolder.setText(folder.getCanonicalPath());
         otherSettingsModel.saveTextField("solveResultsFolder", folder.getAbsolutePath());
         otherSettingsModel.saveAll();
     }
 
     private void selectResultsBackupFolder(File folder) throws IOException {
-        solveResultsBackupFolder.setText(folder.getPath());
+        solveResultsBackupFolder.setText(folder.getCanonicalPath());
         otherSettingsModel.saveTextField("solveResultsBackupFolder", folder.getAbsolutePath());
         otherSettingsModel.saveAll();
     }
@@ -165,25 +168,32 @@ public class OtherSettingsController {
     public GlobalSolverSettings getGlobalSolverSettings() {
         GlobalSolverSettings settings = new GlobalSolverSettings();
 
-        settings.setSolverLocation(solverLocation.getText());
-        settings.setViewerLocation(viewerLocation.getText());
-        settings.setRakeLocation(rakeLocation.getText());
-        settings.setSolveResultsFolder(solveResultsFolder.getText());
-        settings.setSolveResultsBackupFolder(solveResultsBackupFolder.getText());
+        settings.setSolverLocation(Paths.get(solverLocation.getText()));
+        settings.setViewerLocation(Paths.get(viewerLocation.getText()));
+        settings.setRakeLocation(Paths.get(rakeLocation.getText()));
+        settings.setSolverResultsFolder(Paths.get(solveResultsFolder.getText()));
+        settings.setSolverResultsArchiveFolder(Paths.get(solveResultsBackupFolder.getText()));
 
         return settings;
     }
 
     public RakeData loadRakeData() {
         File rakeFile = new File(rakeLocation.getText());
-        if(!rakeFile.exists())
+        if(!rakeFile.exists()) {
+            String error = String.format("Specified rake file %s does not exist.", rakeFile.getAbsolutePath());
+            Logger.log(error);
+            Popups.showError(error);
             return null;
+        }
 
         String fileData = null;
         try {
             fileData = loadFile(rakeFile);
         } catch (IOException e) {
-            // todo: log error
+            String error = String.format("Input/output error trying to read rake file %s.", rakeFile.getAbsolutePath());
+            Logger.log(error);
+            Logger.log(e);
+            Popups.showError(error);
             return null;
         }
 
