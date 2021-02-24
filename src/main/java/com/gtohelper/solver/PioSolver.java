@@ -239,6 +239,12 @@ public class PioSolver implements ISolver {
     }
 
     @Override
+    public void loadTree(String saveLocation) throws IOException {
+        writeToOutput("load_tree " + saveLocation);
+        readNLinesFromInput(1);
+    }
+
+    @Override
     public void disconnect() {
         try { input.close(); } catch (IOException e) {}
         try { output.close(); } catch (IOException e) {}

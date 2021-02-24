@@ -109,7 +109,8 @@ public class GTOHelperController  {
         if(workFolder == null)
             return;
 
-        boolean success = StateManager.saveNewWorkObject(work, workFolder);
+        // Note that saveNewWorkObject() will fill in work.location field.
+        boolean success = StateManager.saveNewWorkObject(work, getGlobalSolverSettings());
         if(!success) {
             Popups.showError(String.format("Failed to write new work %s's data file to it's folder %s. Check write permissions", work.toString()));
             return;

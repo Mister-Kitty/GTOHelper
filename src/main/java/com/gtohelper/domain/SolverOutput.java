@@ -31,9 +31,4 @@ public class SolverOutput implements Serializable {
     /*
         Utility functions
      */
-
-    public void foundNewSolveFile() {
-        success = true;
-        // WIP
-    }
 }

@@ -13,6 +13,7 @@ public class SolveTask implements Serializable {
     public enum SolveTaskState implements Serializable {
         NEW,
         ERRORED,
+        CFG_FOUND,
         COMPLETED,
         IGNORED;
     }

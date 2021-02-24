@@ -3,8 +3,8 @@ package com.gtohelper.datafetcher.controllers;
 import com.gtohelper.datafetcher.models.WorkQueueModel;
 import com.gtohelper.domain.*;
 import com.gtohelper.fxml.Board;
+import com.gtohelper.fxml.FinishedWorkListViewCell;
 import com.gtohelper.fxml.Hand;
-import com.gtohelper.fxml.WorkListViewCell;
 import com.gtohelper.utility.CardResolver;
 import com.gtohelper.utility.Popups;
 import com.gtohelper.utility.StateManager;
@@ -79,9 +79,9 @@ public class WorkQueueController {
         currentWorkItem.setItems(currentWorkItems);
         taskList.setItems(handsListItems);
 
-        finishedWork.setCellFactory(listView -> new WorkListViewCell());
-        futureWorkQueue.setCellFactory(listView -> new WorkListViewCell());
-        currentWorkItem.setCellFactory(listView -> new WorkListViewCell());
+        finishedWork.setCellFactory(listView -> new FinishedWorkListViewCell(this));
+        futureWorkQueue.setCellFactory(listView -> new FinishedWorkListViewCell(this));
+        currentWorkItem.setCellFactory(listView -> new FinishedWorkListViewCell(this));
         taskList.setCellFactory(new Callback<ListView<SolveTask>, ListCell<SolveTask>>() {
             @Override
             public ListCell<SolveTask> call(ListView<SolveTask> param) {
@@ -100,6 +100,8 @@ public class WorkQueueController {
                                 getStyleClass().add("solve-task-errored");
                             else if (task.getSolveState() == SolveTask.SolveTaskState.IGNORED)
                                 getStyleClass().add("solve-task-ignored");
+                            else if (task.getSolveState() == SolveTask.SolveTaskState.CFG_FOUND)
+                                getStyleClass().add("solve-task-cfg-found");
 
                             /*
                                 I admit, this is lazy. I should really create a SolveTask FXML and controller. Buuuuuuut this is only 8 lines...
@@ -246,7 +248,7 @@ public class WorkQueueController {
 
     public void receiveNewWork(Work work) {
         work.setProgressCallbackToTaskGUI(this::workAttemptReported);
-        workQueueModel.receiveNewWork(work);
+        workQueueModel.addWorkToFutureQueue(work);
     }
 
     public void updateGUI() {
@@ -288,10 +290,10 @@ public class WorkQueueController {
     public void loadWork(GlobalSolverSettings solverSettings) {
         ArrayList<Work> loadedWork = StateManager.readAllWorkObjectFiles(solverSettings);
         for(Work work : loadedWork) {
-            if(work.isCompleted()) {
-                finishedWorkItems.add(work);
-            } else {
+            if(work.hasNextTask()) {
                 receiveNewWork(work);
+            } else {
+                finishedWorkItems.add(work);
             }
         }
     }
@@ -314,5 +316,20 @@ public class WorkQueueController {
 
 
 
+    }
+
+    /*
+        Below are functions for manipulating Work, which are called by WorkListViewCellBase extenders
+     */
+
+    public void moveFromFinishedToFutureWorkQueue(Work work) {
+        workQueueModel.removeWorkFromFinished(work);
+        work.clearError();
+        workQueueModel.addWorkToFutureQueue(work);
+    }
+
+    public void deleteWorkFileFromDisk(Work work) {
+        workQueueModel.removeWorkFromFinished(work);
+        StateManager.deleteWorkFileFromDisk(work);
     }
 }

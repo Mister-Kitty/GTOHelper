@@ -4,11 +4,13 @@ import com.gtohelper.utility.CardResolver;
 import sun.plugin.dom.exception.InvalidStateException;
 
 import java.io.Serializable;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Consumer;
 
 public class Work implements Serializable {
     private static final long serialVersionUID = 1L;
+    private final UUID id = UUID.randomUUID();
     private ArrayList<SolveTask> tasks;
     private Ranges ranges;
     private BettingOptions bettingOptions;
@@ -16,7 +18,7 @@ public class Work implements Serializable {
     private WorkSettings workSettings;
 
     private String error;
-    private boolean isCompleted = false;
+    private transient Path location;
     private int currentWorkIndex = 0;
 
     // To be clear, the first updates the work GUI and the second updates the task GUI.
@@ -68,7 +70,7 @@ public class Work implements Serializable {
     */
 
     public boolean hasNextTask() {
-        return getNewTaskCount() > 0;
+        return getNewTaskCount() + getCFGFoundTaskCount() > 0;
     }
 
     // This is a lazy, shitty way of doing this. I could refactor this later.
@@ -76,7 +78,8 @@ public class Work implements Serializable {
         // We have a nextTask if there exist any non-completed tasks. But we want to return tasks in a ring/loop.
         for(int nextWorkIndex = nextTasksIndex(currentWorkIndex); nextWorkIndex != currentWorkIndex; nextWorkIndex = nextTasksIndex(currentWorkIndex)) {
 
-            if(tasks.get(nextWorkIndex).getSolveState() == SolveTask.SolveTaskState.NEW) {
+            if(tasks.get(nextWorkIndex).getSolveState() == SolveTask.SolveTaskState.NEW ||
+                    tasks.get(nextWorkIndex).getSolveState() == SolveTask.SolveTaskState.CFG_FOUND) {
                 currentWorkIndex = nextWorkIndex;
                 return tasks.get(nextWorkIndex);
             }
@@ -88,8 +91,7 @@ public class Work implements Serializable {
     private int nextTasksIndex(int index) {
         return (index + 1) % tasks.size();
     }
-
-    public SolveTask getCurrentTask() {
+    private SolveTask getCurrentTask() {
         return tasks.get(currentWorkIndex);
     }
 
@@ -121,6 +123,10 @@ public class Work implements Serializable {
         return (int) tasks.stream().filter(t -> t.getSolveState() == SolveTask.SolveTaskState.COMPLETED).count();
     }
 
+    public int getCFGFoundTaskCount() {
+        return (int) tasks.stream().filter(t -> t.getSolveState() == SolveTask.SolveTaskState.CFG_FOUND).count();
+    }
+
     public int getNewTaskCount() {
         return (int) tasks.stream().filter(t -> t.getSolveState() == SolveTask.SolveTaskState.NEW).count();
     }
@@ -150,13 +156,12 @@ public class Work implements Serializable {
         return tasks.size();
     }
 
-    public boolean isCompleted() {
-        return isCompleted;
-    }
-
-    public boolean getHasError() { return error != null && !error.isEmpty(); }
-
+    public boolean hasError() { return error != null && !error.isEmpty(); }
+    public void clearError() { error = null; }
     public void setError(String error) { this.error = error; }
+
+    public void setLocation(Path location) { this.location = location; }
+    public Path getLocation() { return location; }
 
     public void setProgressCallbackToWorkGUI(Consumer<Work> callback) {
         progressCallbackToWorkGUI = callback;
@@ -184,18 +189,8 @@ public class Work implements Serializable {
         afterTaskAttemptedReported(currentTask);
     }
 
-    public void taskSkipped(SolveTask currentTask) {
-        afterTaskAttemptedReported(currentTask);
-    }
-
     // Awkward name... just call this after workSuccess() etc.
     private void afterTaskAttemptedReported(SolveTask currentTask) {
-        if(!hasNextTask()) {
-            isCompleted = true;
-        } else {
-            nextTask();
-        }
-
         if(progressCallbackToWorkGUI != null)
             progressCallbackToWorkGUI.accept(this);
         if(progressCallbackToTaskGUI != null)
@@ -211,5 +206,17 @@ public class Work implements Serializable {
     @Override
     public String toString() {
         return workSettings.getName();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
+
+        if (!(obj instanceof Work)) {
+            return false;
+        }
+
+        return ((Work) obj).id.equals(this.id);
     }
 }

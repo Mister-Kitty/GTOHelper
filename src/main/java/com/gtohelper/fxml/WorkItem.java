@@ -55,7 +55,7 @@ public class WorkItem {
     public void updateFieldsFromWork(Work w) {
         name.setText(w.getWorkSettings().getName());
 
-        if(w.isCompleted())
+        if(!w.hasNextTask())
             ETA.setText("Work completed");
         else
             ETA.setText("ETA (work in progress):");

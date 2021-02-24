@@ -50,8 +50,13 @@ public class WorkQueueModel {
         return result;
     }
 
-    public void receiveNewWork(Work work) {
+    public void addWorkToFutureQueue(Work work) {
         futureWorkQueue.add(work);
+        updateGUICallback.run();
+    }
+
+    public void removeWorkFromFinished(Work work) {
+        finishedWork.remove(work);
         updateGUICallback.run();
     }
 
@@ -132,11 +137,9 @@ public class WorkQueueModel {
                     }
 
                     if (stopRequested) {
-                        // Save our Work progress and reinsert it back into the queue ...
-                        if (current != null && !current.isCompleted()) {
-                            futureWorkQueue.add(current);
-                            updateGUICallback.run();
-                        }
+                        futureWorkQueue.add(current);
+                        updateGUICallback.run();
+
 
                         try {
                             solver.shutdown();
@@ -166,29 +169,32 @@ public class WorkQueueModel {
 
             String saveFolderName = solverSettings.getWorkResultsFolder(work);
 
-            while(!work.isCompleted() && !stopRequested) {
+            while(work.hasNextTask() && !stopRequested) {
                 // workSuccess() & workfailed() increment the internal Work.CurrentTask. As such, ONLY use currentSolve. Do not call getCurrentTask again!
-                SolveTask currentTask = work.getCurrentTask();
+                SolveTask currentTask = work.nextTask();
                 String fileName = work.getFileNameForSolve(currentTask);
                 String fullFileLocation = saveFolderName + fileName;
                 File resultsFile = new File(fullFileLocation);
 
                 /*
-                    Preliminary valid state checks.
-                 */
-                if(resultsFile.exists()) {
-                    // Because we check for new save files upon startup, this should only happen if someone pastes something in at runtime.
-                    Logger.log(String.format("For work %s the solve results file %s already exists. Loading & computing results.", work.toString(), fileName));
-                    // More work to do here -> getSolveResults().foundNewSolveFile();
-                    loadSolve(resultsFile);
-                    work.taskSkipped(currentTask);
-                    continue;
-                }
-
-                /*
                     Do the actual solving
                  */
-                SolverOutput results = dispatchSolve(currentTask, settings, ranges, bettingOptions, rakeData);
+                SolverOutput results;
+                boolean solveFileFound;
+                if(currentTask.getSolveState() == SolveTask.SolveTaskState.CFG_FOUND) {
+                    // Note that we allow any cfg file name as long as it starts with the handid. So we use the file name found
+                    // (and stored) in the SolveState rather than the generated filename.
+                    solveFileFound = true;
+                    results = loadSolve(new File(currentTask.getSolveResults().solveFileName));
+                } else if(resultsFile.exists()) {
+                    // Given our file check on startup, we should only this this if someone pastes a file in during runtime.
+                    Logger.log(String.format("For work %s the solve results file %s already exists. Loading & computing results.", work.toString(), fileName));
+                    solveFileFound = true;
+                    results = loadSolve(resultsFile);
+                } else {
+                    solveFileFound = false;
+                    results = dispatchSolve(currentTask, settings, ranges, bettingOptions, rakeData);
+                }
 
                 /*
                     Back out of saving state early if we are told to stop
@@ -201,7 +207,8 @@ public class WorkQueueModel {
                  */
                 currentTask.saveSolveResults(results);
                 if(results.success) {
-                    solver.dumpTree("\"" + fullFileLocation + "\"", "no_rivers");
+                    if(!solveFileFound)
+                        solver.dumpTree("\"" + fullFileLocation + "\"", "no_rivers");
                     work.taskSucceeded(currentTask);
                 } else {
                     work.taskFailed(currentTask);
@@ -210,7 +217,7 @@ public class WorkQueueModel {
                 /*
                     Save the WorkObject and continue to next task. Fail if we cannot write.
                  */
-                boolean saveSuccess = StateManager.saveExistingWorkObject(work, new File(saveFolderName));
+                boolean saveSuccess = StateManager.saveExistingWorkObject(work, solverSettings);
                 if(!saveSuccess) {
                     String errorString = String.format("File read/write error while trying to update work %s's data file.\n " +
                             "Since progress can not be saved, computation on this work is being halted.", work.toString());
@@ -317,14 +324,29 @@ public class WorkQueueModel {
 
             return results;
         }
+
+        private SolverOutput loadSolve(File solveFile) {
+            SolverOutput results = new SolverOutput();
+
+            try {
+                // We wrap in try/catch instead of throwing the IOException because we should continue other work if the file is corrupt.
+                solver.loadTree(solveFile.getAbsolutePath());
+            } catch (IOException e) {
+                String error = String.format("Input/output error while loading solve from file %s. It's likely that the file is garbage.");
+                Logger.log(Logger.Channel.PIO, error);
+                Logger.log(Logger.Channel.PIO, e.getMessage());
+                results.setError(error);
+                return results;
+            }
+
+            if(!stopRequested)
+                results.success = true;
+
+            return results;
+        }
     }
 
-    private void loadSolve(File solveFile) {
 
-
-
-
-    }
 
     // Priority queue strategies that can be set by user.
     Comparator<Work> leastWorkToDoFirst = Comparator.comparingInt(Work::getTotalTaskCount);

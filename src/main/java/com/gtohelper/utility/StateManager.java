@@ -10,6 +10,11 @@ import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Optional;
 
+/*
+    Note!: As per my arbitrary convention, all public functions should take GlobalSolverSetting objects instead of direct folders.
+
+    P.S. work.location needs to be saved by us.
+ */
 public class StateManager {
 
     public static File createWorkFolder(Work work, GlobalSolverSettings solverSettings) {
@@ -38,11 +43,20 @@ public class StateManager {
         return null;
     }
 
-    public static boolean saveNewWorkObject(Work work, File saveFolder) {
-        return saveWorkObject(work, saveFolder, work.getWorkSettings().getName() + ".gto");
+    public static boolean saveNewWorkObject(Work work, GlobalSolverSettings solverSettings) {
+        File rootResultsDirectory = new File(solverSettings.getSolveResultsFolder());
+
+  //      Path directoryPath = Paths.get()
+
+        boolean success = saveWorkObject(work, rootResultsDirectory, work.getWorkSettings().getName() + ".gto");
+ //       if(success)
+  //          work.setLocation();
+        return success;
     }
 
-    public static boolean saveExistingWorkObject(Work work, File saveFolder) {
+    public static boolean saveExistingWorkObject(Work work, GlobalSolverSettings solverSettings) {
+        File saveFolder = new File(solverSettings.getWorkResultsFolder(work));
+
         String oldFileName = work.getWorkSettings().getName() + ".gto";
         String newFileName = work.getWorkSettings().getName() + ".gto.new";
 
@@ -119,7 +133,7 @@ public class StateManager {
         return results;
     }
 
-    public static Work readWorkObjectFile(File file) {
+    private static Work readWorkObjectFile(File file) {
         FileInputStream fileInputStream;
         ObjectInputStream in;
 
@@ -150,6 +164,12 @@ public class StateManager {
         }
     }
 
+    public static void deleteWorkFileFromDisk(Work work) {
+  //      String fileName = work.getWorkSettings().getName() + ".gto";
+  //      String saveFolderName = solverSettings.getWorkResultsFolder(work);
+  //      Path workItemPath = Paths.get(saveFolder.getAbsolutePath() + "\\" + oldFileName);
+    }
+
     private static void fillFoundSolveFilesForWork(Work work, File workFolder) {
         for(SolveTask solve : work.getTasks()) {
             int handId = solve.getHandData().id_hand;
@@ -165,12 +185,16 @@ public class StateManager {
                     // Solve Results is null.
                     // Maybe we've copied in existing results for the work?
                     // Or maybe an error writing back the .gto file for this work after the dump was successful?
-                    solve.saveSolveResults(new SolverOutput());
-                    solve.getSolveResults().solveFileName = result.get().toAbsolutePath().toString();
+                    SolverOutput results = new SolverOutput();
+                    results.solveFileName = result.get().toAbsolutePath().toString();
+
+                    solve.saveSolveResults(results);
+                    solve.setSolveState(SolveTask.SolveTaskState.CFG_FOUND);
+
                     Logger.log(String.format("Found solve file %s which matches a hand to be solved by work %s.\n" +
                             "However, solve metadata/statistics were not found in work. Assuming file is valid and solving stats for hand.",
                             solve.getSolveResults().solveFileName, work.toString()));
-                    solve.getSolveResults().foundNewSolveFile();
+
                 }
 
             } catch (IOException e) {

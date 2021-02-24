@@ -6,12 +6,16 @@
     -fx-background-color: #d6f5d6;
 }
 
-.solve-task-errored {
+.solve-task-ignored {
     -fx-background-color: #ffffb3;
 }
 
-.solve-task-ignored {
+.solve-task-errored {
     -fx-background-color: #ffcccc;
+}
+
+.solve-task-cfg-found {
+    -fx-background-color: #ccdbff;
 }
 
 .text-field {

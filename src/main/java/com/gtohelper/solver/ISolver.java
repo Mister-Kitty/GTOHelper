@@ -37,6 +37,7 @@ public interface ISolver {
     void waitForReady() throws IOException, InterruptedException;
     String waitForSolve() throws IOException;
 
+    void loadTree(String saveLocation) throws IOException;
     void dumpTree(String saveLocation, String options) throws IOException;
     void disconnect();
 

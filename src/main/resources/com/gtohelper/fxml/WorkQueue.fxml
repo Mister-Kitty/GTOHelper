@@ -65,7 +65,7 @@
       
                            </children>
                         </AnchorPane>
-                        <AnchorPane GridPane.halignment="LEFT" GridPane.hgrow="NEVER" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS" VBox.vgrow="ALWAYS">
+                        <AnchorPane GridPane.halignment="LEFT" GridPane.hgrow="NEVER" GridPane.rowIndex="1" GridPane.rowSpan="2" GridPane.vgrow="ALWAYS" VBox.vgrow="ALWAYS">
                            <children>
                               <ListView fx:id="taskList" prefWidth="160.0" styleClass="task-list" stylesheets="/com/gtohelper/style/workQueue.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="ALWAYS">
 
@@ -73,7 +73,7 @@
                            </children>
 
                         </AnchorPane>
-                        <AnchorPane GridPane.columnSpan="2" GridPane.rowIndex="2" VBox.vgrow="NEVER">
+                        <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="2" VBox.vgrow="NEVER">
                            <children>
                               <ToolBar AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                                 <items>
