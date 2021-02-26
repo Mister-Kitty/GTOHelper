@@ -18,7 +18,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 import java.util.function.Consumer;
 
 /*
-    updateGUICallback.run() MUST be called after every change to finishedWork and futureWorkQueue.
+    updateGUICallback.run() MUST be called after every change to finishedWork and pendingWorkQueue.
  */
 
 public class WorkQueueModel {
@@ -27,10 +27,10 @@ public class WorkQueueModel {
     Consumer<Boolean> updateSolverStatusCallback;
     Runnable updateGUICallback;
     private PriorityBlockingQueue<Work> finishedWork;
-    private PriorityBlockingQueue<Work> futureWorkQueue;
+    private PriorityBlockingQueue<Work> pendingWorkQueue;
 
     public WorkQueueModel(Consumer<Boolean> solverStatusCallback, Runnable updateGUI) {
-        futureWorkQueue = new PriorityBlockingQueue<>(defaultInitialCapacity, leastWorkToDoFirst);
+        pendingWorkQueue = new PriorityBlockingQueue<>(defaultInitialCapacity, leastWorkToDoFirst);
         finishedWork = new PriorityBlockingQueue<>(defaultInitialCapacity, leastWorkToDoFirst);
         updateSolverStatusCallback = solverStatusCallback;
         updateGUICallback = updateGUI;
@@ -40,8 +40,8 @@ public class WorkQueueModel {
         return new ArrayList(finishedWork);
     }
 
-    public ArrayList<Work> getFutureWorkQueue() {
-        return new ArrayList(futureWorkQueue);
+    public ArrayList<Work> getPendingWorkQueue() {
+        return new ArrayList(pendingWorkQueue);
     }
 
     public Work getCurrentWork() {
@@ -52,8 +52,8 @@ public class WorkQueueModel {
         return result;
     }
 
-    public void addWorkToFutureQueue(Work work) {
-        futureWorkQueue.add(work);
+    public void addWorkToPendingQueue(Work work) {
+        pendingWorkQueue.add(work);
         updateGUICallback.run();
     }
 
@@ -123,7 +123,7 @@ public class WorkQueueModel {
                 while (true) {
                     current = null;
                     try {
-                        current = futureWorkQueue.take();
+                        current = pendingWorkQueue.take();
                         updateGUICallback.run();
                         solver.waitForReady();
                         doWork(current);
@@ -139,7 +139,7 @@ public class WorkQueueModel {
                     }
 
                     if (stopRequested) {
-                        futureWorkQueue.add(current);
+                        pendingWorkQueue.add(current);
                         updateGUICallback.run();
 
 

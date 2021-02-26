@@ -5,6 +5,7 @@ import com.gtohelper.domain.SolveTask;
 import com.gtohelper.domain.SolverOutput;
 import com.gtohelper.domain.Work;
 
+import java.awt.*;
 import java.io.*;
 import java.nio.file.*;
 import java.util.ArrayList;
@@ -181,15 +182,59 @@ public class StateManager {
         }
     }
 
-    public static boolean deleteWorkFileFromDisk(Work work) {
-        try {
-            Files.delete(work.getSaveFileLocation());
+    public static boolean recycleElseDeleteWorkFolder(Work work) {
+        Path parentFolder = work.getSaveFileLocation().getParent();
+        boolean success = recycleFile(parentFolder);
+        if(success)
             return true;
-        }  catch (NoSuchFileException e) {
-            assert false; // separate this exception out for debugging purposes
-            Logger.log(e);
-            return false;
-        } catch (IOException e) {
+
+        String error = String.format("Failed to move %s to recycle. Delete from disk?", parentFolder.toString());
+        boolean choice = Popups.showConfirmation(error);
+        if(choice)
+            return deleteFile(parentFolder);
+
+        return false;
+    }
+
+    public static boolean recycleElseDeleteWorkFile(Work work) {
+        boolean success = recycleFile(work.getSaveFileLocation());
+        if(success)
+            return true;
+
+        String error = String.format("Failed to move %s to recycle. Delete from disk?", work.getSaveFileLocation().toString());
+        boolean choice = Popups.showConfirmation(error);
+        if(choice)
+            return deleteFile(work.getSaveFileLocation());
+
+        return false;
+    }
+
+    private static boolean recycleFile(Path file) {
+        boolean desktopSupported = Desktop.isDesktopSupported();
+
+        if(desktopSupported) {
+            try {
+                return Desktop.getDesktop().moveToTrash(file.toFile());
+            } catch (UnsupportedOperationException e) {
+                // Ignore and allow to fall through
+            } catch (Exception e) {
+                String error = String.format("Error while trying to move %s to the recycle.", file.toString());
+                Logger.log(error);
+                Logger.log(e);
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean deleteFile(Path file) {
+        try {
+            Files.delete(file);
+            return true;
+        }  catch (IOException e) {
+            String error = String.format("Error while trying to move %s to the recycle.", file.toString());
+            Logger.log(error);
             Logger.log(e);
             return false;
         }

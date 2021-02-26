@@ -3,6 +3,7 @@ package com.gtohelper.datafetcher.controllers;
 import com.gtohelper.datafetcher.models.WorkQueueModel;
 import com.gtohelper.domain.*;
 import com.gtohelper.fxml.Board;
+import com.gtohelper.fxml.CurrentWorkListViewCell;
 import com.gtohelper.fxml.FinishedWorkListViewCell;
 import com.gtohelper.fxml.Hand;
 import com.gtohelper.utility.CardResolver;
@@ -38,8 +39,8 @@ public class WorkQueueController {
     ObservableList<Work> currentWorkItems = FXCollections.observableArrayList();
 
     @FXML
-    ListView<Work> futureWorkQueue;
-    ObservableList<Work> futureWorkItems = FXCollections.observableArrayList();
+    ListView<Work> pendingWorkQueue;
+    ObservableList<Work> pendingWorkItems = FXCollections.observableArrayList();
 
     @FXML
     ListView<SolveTask> taskList;
@@ -79,13 +80,13 @@ public class WorkQueueController {
 
     private void initializeControls() {
         finishedWork.setItems(finishedWorkItems);
-        futureWorkQueue.setItems(futureWorkItems);
+        pendingWorkQueue.setItems(pendingWorkItems);
         currentWorkItem.setItems(currentWorkItems);
         taskList.setItems(handsListItems);
 
         finishedWork.setCellFactory(listView -> new FinishedWorkListViewCell(this));
-        futureWorkQueue.setCellFactory(listView -> new FinishedWorkListViewCell(this));
-        currentWorkItem.setCellFactory(listView -> new FinishedWorkListViewCell(this));
+        pendingWorkQueue.setCellFactory(listView -> new FinishedWorkListViewCell(this));
+        currentWorkItem.setCellFactory(listView -> new CurrentWorkListViewCell(this));
         taskList.setCellFactory(new Callback<ListView<SolveTask>, ListCell<SolveTask>>() {
             @Override
             public ListCell<SolveTask> call(ListView<SolveTask> param) {
@@ -131,8 +132,8 @@ public class WorkQueueController {
                 (observable, oldValue, newValue) -> changed("finished", oldValue, newValue));
         currentWorkItem.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> changed("current", oldValue, newValue));
-        futureWorkQueue.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) -> changed("future", oldValue, newValue));
+        pendingWorkQueue.getSelectionModel().selectedItemProperty().addListener(
+                (observable, oldValue, newValue) -> changed("pending", oldValue, newValue));
         taskList.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> updateHandDataFields(newValue));
 
@@ -147,11 +148,11 @@ public class WorkQueueController {
             selectedItem = newValue;
             if(source.equals("finished")) {
                 currentWorkItem.getSelectionModel().clearSelection();
-                futureWorkQueue.getSelectionModel().clearSelection();
+                pendingWorkQueue.getSelectionModel().clearSelection();
             } else if(source.equals("current")) {
                 finishedWork.getSelectionModel().clearSelection();
-                futureWorkQueue.getSelectionModel().clearSelection();
-            } else if(source.equals("future")) {
+                pendingWorkQueue.getSelectionModel().clearSelection();
+            } else if(source.equals("pending")) {
                 finishedWork.getSelectionModel().clearSelection();
                 currentWorkItem.getSelectionModel().clearSelection();
             }
@@ -254,7 +255,7 @@ public class WorkQueueController {
 
     public void receiveNewWork(Work work) {
         work.setProgressCallbackToTaskGUI(this::workAttemptReported);
-        workQueueModel.addWorkToFutureQueue(work);
+        workQueueModel.addWorkToPendingQueue(work);
     }
 
     public void updateGUI() {
@@ -267,8 +268,8 @@ public class WorkQueueController {
             if(current != null)
                 currentWorkItems.add(current);
 
-            futureWorkItems.clear();
-            futureWorkItems.addAll(workQueueModel.getFutureWorkQueue());
+            pendingWorkItems.clear();
+            pendingWorkItems.addAll(workQueueModel.getPendingWorkQueue());
         });
     }
 
@@ -338,14 +339,25 @@ public class WorkQueueController {
         Below are functions for manipulating Work, which are called by WorkListViewCellBase extenders
      */
 
-    public void moveFromFinishedToFutureWorkQueue(Work work) {
+    public void clearErrorAndQueue(Work work) {
         workQueueModel.removeWorkFromFinished(work);
         work.clearError();
-        workQueueModel.addWorkToFutureQueue(work);
+        workQueueModel.addWorkToPendingQueue(work);
     }
 
-    public void deleteWorkFileFromDisk(Work work) {
-        workQueueModel.removeWorkFromFinished(work);
-        StateManager.deleteWorkFileFromDisk(work);
+    public void moveWorkFileToRecycle(Work work) {
+        boolean success = StateManager.recycleElseDeleteWorkFile(work);
+        if(success)
+            workQueueModel.removeWorkFromFinished(work);
+        else
+            Popups.showWarning("A problem occured. Check the logging tab for details.");
+    }
+
+    public void moveWorkFolderToRecycle(Work work) {
+        boolean success = StateManager.recycleElseDeleteWorkFolder(work);
+        if(success)
+            workQueueModel.removeWorkFromFinished(work);
+        else
+            Popups.showWarning("A problem occured. Check the logging tab for details.");
     }
 }

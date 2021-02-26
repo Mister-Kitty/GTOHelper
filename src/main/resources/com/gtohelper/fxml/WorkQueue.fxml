@@ -41,14 +41,14 @@
                   <ListView fx:id="currentWorkItem" editable="true" maxHeight="108.0" minHeight="108.0" prefHeight="108.0" prefWidth="170.0" VBox.vgrow="NEVER" />
                   <AnchorPane style="-fx-background-color: LIGHTGREY;" VBox.vgrow="NEVER">
                      <children>
-                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Future Work Queue" textAlignment="CENTER" wrappingWidth="200.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="NEVER">
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Pending Work Queue" textAlignment="CENTER" wrappingWidth="200.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="NEVER">
                            <font>
                               <Font size="13.0" />
                            </font>
                         </Text>
                      </children>
                   </AnchorPane>
-                  <ListView fx:id="futureWorkQueue" editable="true" prefWidth="170.0" HBox.hgrow="NEVER" VBox.vgrow="ALWAYS" />
+                  <ListView fx:id="pendingWorkQueue" editable="true" prefWidth="170.0" HBox.hgrow="NEVER" VBox.vgrow="ALWAYS" />
                </children>
             </VBox>
             <AnchorPane HBox.hgrow="ALWAYS">
