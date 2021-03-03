@@ -160,7 +160,7 @@ public class HandAnalysisController {
         handsTableCWonColumn.setCellValueFactory(p -> new SimpleStringProperty("" + p.getValue().amt_pot));
 
         handsTableHandColumn.setCellValueFactory(p -> new ReadOnlyObjectWrapper(new Hand(p.getValue().getHandDataForPlayer(player.id_player))));
-        handsTableHandColumn.setCellFactory(new Callback<TableColumn<HandData, Hand>, TableCell<HandData, Hand>> () {
+        handsTableHandColumn.setCellFactory(new Callback<>() {
             @Override
             public TableCell<HandData, Hand> call(TableColumn<HandData, Hand> param) {
                 return new TableCell<HandData, Hand>() {
@@ -178,7 +178,7 @@ public class HandAnalysisController {
             }
         });
         handsTableBoardColumn.setCellValueFactory(p -> new ReadOnlyObjectWrapper(new Board(p.getValue())));
-        handsTableBoardColumn.setCellFactory(new Callback<TableColumn<HandData, Board>, TableCell<HandData, Board>> () {
+        handsTableBoardColumn.setCellFactory(new Callback<>() {
             @Override
             public TableCell<HandData, Board> call(TableColumn<HandData, Board> param) {
                 return new TableCell<HandData, Board>() {
@@ -191,7 +191,7 @@ public class HandAnalysisController {
                         } else {
                             setGraphic(board);
                         }
-                   }
+                    }
                 };
             }
         });

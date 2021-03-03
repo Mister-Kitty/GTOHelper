@@ -4,13 +4,11 @@ import com.gtohelper.datafetcher.controllers.WorkQueueController;
 import com.gtohelper.domain.Work;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListCell;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
 
 public abstract class WorkListViewCellBase extends ListCell<Work> {
     WorkQueueController workController;
     ContextMenu contextMenu = new ContextMenu();
-    Work currentWork;
+    Work thisWork;
 
     public WorkListViewCellBase(WorkQueueController controller) {
         super();
@@ -25,10 +23,10 @@ public abstract class WorkListViewCellBase extends ListCell<Work> {
         if (empty || work == null) {
             setGraphic(null);
             setContextMenu(null);
-            currentWork = null;
+            thisWork = null;
         } else {
             WorkItem data = new WorkItem(work);
-            currentWork = work;
+            thisWork = work;
             setContextMenu(contextMenu);
             setMenuItemEnableStates(work);
             setGraphic(data.getRootGridPane());

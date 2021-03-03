@@ -7,24 +7,25 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 
 
-public class FinishedWorkListViewCell extends WorkListViewCellBase {
-    MenuItem compressAndArchive = new MenuItem();
-    MenuItem moveToPendingWorkQueue = new MenuItem();
+public class PendingWorkListViewCell extends WorkListViewCellBase {
+    MenuItem moveUp = new MenuItem();
+    MenuItem moveDown = new MenuItem();
     SeparatorMenuItem separator = new SeparatorMenuItem();
     MenuItem delete = new MenuItem();
     MenuItem deleteAndClean = new MenuItem();
 
 
-    public FinishedWorkListViewCell(WorkQueueController controller) {
+    public PendingWorkListViewCell(WorkQueueController controller) {
         super(controller);
         initializeContextMenu();
     }
 
     protected void initializeContextMenu() {
-        compressAndArchive.setText("Compress & archive (work in progress)");
+        moveUp.setText("Move up");
+        moveUp.setOnAction(event -> workController.moveWorkUp(thisWork));
 
-        moveToPendingWorkQueue.setText("Move to pending queue");
-        moveToPendingWorkQueue.setOnAction(event -> workController.clearErrorAndQueue(thisWork));
+        moveDown.setText("Move down");
+        moveDown.setOnAction(event -> workController.moveWorkDown(thisWork));
 
         delete.setText("Delete");
         delete.setOnAction(event -> {
@@ -40,8 +41,8 @@ public class FinishedWorkListViewCell extends WorkListViewCellBase {
                 workController.moveWorkFolderToRecycle(thisWork);
         });
 
-        contextMenu.getItems().add(compressAndArchive);
-        contextMenu.getItems().add(moveToPendingWorkQueue);
+        contextMenu.getItems().add(moveUp);
+        contextMenu.getItems().add(moveDown);
         contextMenu.getItems().add(separator);
         contextMenu.getItems().add(delete);
         contextMenu.getItems().add(deleteAndClean);
@@ -49,11 +50,15 @@ public class FinishedWorkListViewCell extends WorkListViewCellBase {
 
     @Override
     protected void setMenuItemEnableStates(Work work) {
-        if(thisWork.hasError() || thisWork.hasNextTask())
-            moveToPendingWorkQueue.disableProperty().set(false);
+        if(getIndex() > 0)
+            moveUp.disableProperty().set(false);
         else
-            moveToPendingWorkQueue.disableProperty().set(true);
+            moveUp.disableProperty().set(true);
 
-        compressAndArchive.disableProperty().set(true);
+        if(getIndex() < getListView().getItems().size() - 1)
+            moveDown.disableProperty().set(false);
+        else
+            moveDown.disableProperty().set(true);
+
     }
 }

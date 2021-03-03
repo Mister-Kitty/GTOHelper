@@ -1,7 +1,6 @@
 package com.gtohelper.domain;
 
 import com.gtohelper.utility.CardResolver;
-import sun.plugin.dom.exception.InvalidStateException;
 
 import java.io.Serializable;
 import java.nio.file.Path;
@@ -10,24 +9,22 @@ import java.util.function.Consumer;
 
 public class Work implements Serializable {
     private static final long serialVersionUID = 1L;
-    private final UUID id = UUID.randomUUID();
-    private ArrayList<SolveTask> tasks;
-    private Ranges ranges;
-    private BettingOptions bettingOptions;
-    private RakeData rakeData;
-    private WorkSettings workSettings;
+    private final ArrayList<SolveTask> tasks;
+    private final Ranges ranges;
+    private final BettingOptions bettingOptions;
+    private final RakeData rakeData;
+    private final WorkSettings workSettings;
 
     private String error;
     private transient Path saveFileLocation;
-    private int currentWorkIndex = 0;
+    private transient int currentWorkIndex = -1;
 
     // To be clear, the first updates the work GUI and the second updates the task GUI.
-    private transient Consumer<Work> progressCallbackToWorkGUI;
-    private transient Consumer<SolveTask> progressCallbackToTaskGUI;
+    private transient Consumer<Work> progressCallbackToWorkItemGUI;
 
     public static class WorkSettings implements Serializable {
         private static final long serialVersionUID = 1L;
-        private String name;
+        private final String name;
         private final Player hero;
         private boolean usePercentPotOverBBPerHundred;
         private float percentOfPotAccuracy;
@@ -73,10 +70,12 @@ public class Work implements Serializable {
         return getNewTaskCount() + getCFGFoundTaskCount() > 0;
     }
 
-    // This is a lazy, shitty way of doing this. I could refactor this later.
     public SolveTask nextTask() {
+        if(!hasNextTask())
+            throw new IllegalStateException("No incomplete tasks found. This may be a corrupt work file.");
+
         // We have a nextTask if there exist any non-completed tasks. But we want to return tasks in a ring/loop.
-        for(int nextWorkIndex = nextTasksIndex(currentWorkIndex); nextWorkIndex != currentWorkIndex; nextWorkIndex = nextTasksIndex(currentWorkIndex)) {
+        for(int nextWorkIndex = nextTasksIndex(currentWorkIndex); ; nextWorkIndex = nextTasksIndex(currentWorkIndex)) {
 
             if(tasks.get(nextWorkIndex).getSolveState() == SolveTask.SolveTaskState.NEW ||
                     tasks.get(nextWorkIndex).getSolveState() == SolveTask.SolveTaskState.CFG_FOUND) {
@@ -84,8 +83,6 @@ public class Work implements Serializable {
                 return tasks.get(nextWorkIndex);
             }
         }
-
-        throw new InvalidStateException("No incomplete tasks found. This is likely a corrupt Work file, but could be a programming error.");
     }
 
     private int nextTasksIndex(int index) {
@@ -163,12 +160,8 @@ public class Work implements Serializable {
     public void setSaveFileLocation(Path saveFileLocation) { this.saveFileLocation = saveFileLocation; }
     public Path getSaveFileLocation() { return saveFileLocation; }
 
-    public void setProgressCallbackToWorkGUI(Consumer<Work> callback) {
-        progressCallbackToWorkGUI = callback;
-    }
-
-    public void setProgressCallbackToTaskGUI(Consumer<SolveTask> callback) {
-        progressCallbackToTaskGUI = callback;
+    public void setProgressCallbackToWorkItemGUI(Consumer<Work> callback) {
+        progressCallbackToWorkItemGUI = callback;
     }
 
     public Work(List<SolveTask> w, WorkSettings settings, Ranges r, BettingOptions b) {
@@ -195,15 +188,13 @@ public class Work implements Serializable {
 
     // Awkward name... just call this after workSuccess() etc.
     private void afterTaskAttemptedReported(SolveTask currentTask) {
-        if(progressCallbackToWorkGUI != null)
-            progressCallbackToWorkGUI.accept(this);
-        if(progressCallbackToTaskGUI != null)
-            progressCallbackToTaskGUI.accept(currentTask);
+        if(progressCallbackToWorkItemGUI != null)
+            progressCallbackToWorkItemGUI.accept(this);
     }
 
     public String getFileNameForSolve(SolveTask solve) {
         return String.format("%d - %s - %s.cfr", solve.getHandData().id_hand,
-                CardResolver.getHandStringForPlayer(workSettings.hero, solve.getHandData()),
+                CardResolver.getHandStringForPlayer(workSettings.getHero(), solve.getHandData()),
                 CardResolver.getBoardString(solve.getHandData()));
     }
 
@@ -221,6 +212,6 @@ public class Work implements Serializable {
             return false;
         }
 
-        return ((Work) obj).id.equals(this.id);
+        return ((Work) obj).getWorkSettings().getName().equals(this.getWorkSettings().getName());
     }
 }

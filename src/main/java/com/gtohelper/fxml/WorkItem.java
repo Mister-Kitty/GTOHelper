@@ -47,7 +47,7 @@ public class WorkItem {
     @FXML
     void initialize() {
         updateFieldsFromWork(work);
-        work.setProgressCallbackToWorkGUI(this::updateFieldsFromWork);
+        work.setProgressCallbackToWorkItemGUI(this::updateFieldsFromWork);
     }
 
     // we could hook our fields up to these properties directly ~ but doing so would require we declare and

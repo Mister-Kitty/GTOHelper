@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 public class SolveTask implements Serializable {
     private static final long serialVersionUID = 1L;
+    private final long id;
 
     /*
         The existence of SolveResults isn't sufficient to say that the work is completed, as these
@@ -23,7 +24,8 @@ public class SolveTask implements Serializable {
     private SolverOutput solverOutput;
     private HandSolverAnalysis handSolverAnalysis;
 
-    public SolveTask(HandData h) {
+    public SolveTask(long solveId, HandData h) {
+        id = solveId;
         handData = h;
     }
 
@@ -43,5 +45,18 @@ public class SolveTask implements Serializable {
             solveState = SolveTaskState.COMPLETED;
         else if (results.hasError())
             solveState = SolveTaskState.ERRORED;
+    }
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
+
+        if (!(obj instanceof SolveTask)) {
+            return false;
+        }
+
+        return ((SolveTask) obj).id == (this.id);
     }
 }

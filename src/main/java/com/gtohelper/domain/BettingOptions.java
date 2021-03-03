@@ -20,7 +20,7 @@ public class BettingOptions implements Serializable {
         this.name = name;
     }
 
-    public class Options implements Serializable{
+    public class Options implements Serializable {
         private static final long serialVersionUID = 1L;
         public int allInThresholdPercent;
         public int allInOnlyIfLessThanNPercent;
@@ -45,6 +45,7 @@ public class BettingOptions implements Serializable {
     }
 
     public static class IPStreetAction extends StreetAction {
+        private static final long serialVersionUID = 1L;
         boolean can3Bet;
 
         public boolean getCan3Bet() { return can3Bet; }
@@ -61,6 +62,7 @@ public class BettingOptions implements Serializable {
     }
 
     public static class OOPStreetAction extends StreetAction {
+        private static final long serialVersionUID = 1L;
         public Bets donks = new Bets();
 
         public Bets getDonks() { return donks; }
@@ -140,6 +142,7 @@ public class BettingOptions implements Serializable {
     }
 
     public static class Raises extends Bets {
+        private static final long serialVersionUID = 1L;
         ArrayList<Float> multiplierOptions = new ArrayList<Float>();
 
         private Raises() {}

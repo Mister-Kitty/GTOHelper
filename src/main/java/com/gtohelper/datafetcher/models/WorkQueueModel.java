@@ -3,37 +3,41 @@ package com.gtohelper.datafetcher.models;
 import com.gtohelper.domain.*;
 import com.gtohelper.solver.ISolver;
 import com.gtohelper.solver.PioSolver;
-import com.gtohelper.utility.CardResolver;
-import com.gtohelper.utility.Logger;
-import com.gtohelper.utility.Popups;
-import com.gtohelper.utility.StateManager;
+import com.gtohelper.utility.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.concurrent.PriorityBlockingQueue;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 
 /*
     updateGUICallback.run() MUST be called after every change to finishedWork and pendingWorkQueue.
  */
 
-public class WorkQueueModel {
+public class WorkQueueModel extends Saveable {
     private QueueWorker worker;
-    final int defaultInitialCapacity = 15;
     Consumer<Boolean> updateSolverStatusCallback;
-    Runnable updateGUICallback;
-    private PriorityBlockingQueue<Work> finishedWork;
-    private PriorityBlockingQueue<Work> pendingWorkQueue;
+    Runnable updateWorkGUICallback;
+    Consumer<Work> updateTaskGUIForWorkCallback;
 
-    public WorkQueueModel(Consumer<Boolean> solverStatusCallback, Runnable updateGUI) {
-        pendingWorkQueue = new PriorityBlockingQueue<>(defaultInitialCapacity, leastWorkToDoFirst);
-        finishedWork = new PriorityBlockingQueue<>(defaultInitialCapacity, leastWorkToDoFirst);
+    // No indexable java.concurrent structure with .take() exists. So
+    // we use the BlockingQueue and lock it for rebuilds to move item indexes ~ which are only valid if the Queue size > 2.
+    private Object pendingQueueLock = new Object();
+    private LinkedBlockingQueue<Work> finishedWork;
+    private LinkedBlockingQueue<Work> pendingWorkQueue;
+
+    public WorkQueueModel(SaveFileHelper saveHelper, Consumer<Boolean> solverStatusCallback,
+                          Runnable updateWorkGUI, Consumer<Work> updateTaskGUIForWork) {
+        super(saveHelper, "WorkQueue");
+        pendingWorkQueue = new LinkedBlockingQueue<>();
+        finishedWork = new LinkedBlockingQueue<>();
         updateSolverStatusCallback = solverStatusCallback;
-        updateGUICallback = updateGUI;
+        updateWorkGUICallback = updateWorkGUI;
+        updateTaskGUIForWorkCallback = updateTaskGUIForWork;
     }
 
     public ArrayList<Work> getFinishedWork() {
@@ -52,15 +56,75 @@ public class WorkQueueModel {
         return result;
     }
 
+    @Override
+    public HashMap<String, String> getDefaultValues() {
+        HashMap<String, String> values = new HashMap<>();
+        values.put("pendingWorkOrder", "");
+        return values;
+    }
+
+    /*
+        GUI manipulation code below. Gets called from controller in most cases.
+     */
+
     public void addWorkToPendingQueue(Work work) {
         pendingWorkQueue.add(work);
-        updateGUICallback.run();
+        updateWorkGUICallback.run();
     }
 
     public void removeWorkFromFinished(Work work) {
         finishedWork.remove(work);
-        updateGUICallback.run();
+        updateWorkGUICallback.run();
     }
+
+    public void moveWorkUp(Work work) {
+        synchronized (pendingQueueLock) {
+            if(pendingWorkQueue.size() < 2) {
+                // Race condition between button press and worker.
+                assert false;
+                return;
+            }
+
+            ArrayList<Work> newQueue = getPendingWorkQueue();
+            int workIndex = newQueue.indexOf(work);
+            Collections.swap(newQueue, workIndex, workIndex - 1);
+
+            pendingWorkQueue.clear();
+            pendingWorkQueue.addAll(newQueue);
+        }
+        updateWorkGUICallback.run();
+    }
+
+    public void moveWorkDown(Work work) {
+        synchronized (pendingQueueLock) {
+            if(pendingWorkQueue.size() < 2) {
+                // Race condition between button press and worker.
+                assert false;
+                return;
+            }
+
+            ArrayList<Work> newQueue = getPendingWorkQueue();
+            int workIndex = newQueue.indexOf(work);
+            Collections.swap(newQueue, workIndex, workIndex + 1);
+
+            pendingWorkQueue.clear();
+            pendingWorkQueue.addAll(newQueue);
+        }
+        updateWorkGUICallback.run();
+    }
+
+    public void setTaskStateForWork(Work work, SolveTask task, SolveTask.SolveTaskState state) {
+        /*
+            This is trivial because we share object references to the underlying SolveTask instance.
+            This function is being built out for the sake of modularity and the easy of future separation into separate programs.
+         */
+        task.setSolveState(state);
+        updateWorkGUICallback.run();
+    }
+
+    /*
+        Worker manipulation functions
+     */
 
     public boolean startWorker(GlobalSolverSettings solverSettings) {
         assert worker == null;
@@ -81,6 +145,10 @@ public class WorkQueueModel {
         worker.stopSolver();
     }
 
+    /*
+        Only worker code below. Other utility, etc, functions should be added above.
+     */
+
     protected class QueueWorker extends Thread {
         private ISolver solver;
         GlobalSolverSettings solverSettings;
@@ -95,8 +163,9 @@ public class WorkQueueModel {
                 solver = new PioSolver();
                 solver.connectAndInit(solverSettings.getSolverLocation().toString());
             } catch (IOException e) {
-                Logger.log(Logger.Channel.PIO, "Error occured launching Pio. Perhaps the executable address changed or we do not have read permission?\n" +
-                        e.toString());
+                String error = "Error occured launching Pio. Perhaps the executable address changed or we do not have read permission? See log for error details.";
+                Logger.log(e);
+                Popups.showError(error);
                 fatalErrorOccured = true;
             }
         }
@@ -123,8 +192,10 @@ public class WorkQueueModel {
                 while (true) {
                     current = null;
                     try {
-                        current = pendingWorkQueue.take();
-                        updateGUICallback.run();
+                        synchronized (pendingQueueLock) {
+                            current = pendingWorkQueue.take();
+                        }
+                        updateWorkGUICallback.run();
                         solver.waitForReady();
                         doWork(current);
                     } catch (IOException e) {
@@ -139,8 +210,10 @@ public class WorkQueueModel {
                     }
 
                     if (stopRequested) {
-                        pendingWorkQueue.add(current);
-                        updateGUICallback.run();
+                        synchronized (pendingQueueLock) {
+                            pendingWorkQueue.add(current);
+                        }
+                        updateWorkGUICallback.run();
 
 
                         try {
@@ -153,7 +226,7 @@ public class WorkQueueModel {
                         return;
                     } else {
                         finishedWork.add(current);
-                        updateGUICallback.run();
+                        updateWorkGUICallback.run();
                     }
                 }
             } finally {
@@ -208,7 +281,7 @@ public class WorkQueueModel {
                 currentTask.saveSolveResults(results);
                 if(results.success) {
                     if(!solveFileFound)
-                        solver.dumpTree("\"" + fullFilePath + "\"", "no_rivers");
+                        solver.dumpTree("\"" + fullFilePath.toAbsolutePath() + "\"", "no_rivers");
                     work.taskSucceeded(currentTask);
                 } else {
                     work.taskFailed(currentTask);
@@ -225,6 +298,8 @@ public class WorkQueueModel {
                     work.setError(errorString);
                     return;
                 }
+
+                updateTaskGUIForWorkCallback.accept(current);
             }
 
         }
@@ -346,8 +421,4 @@ public class WorkQueueModel {
         }
     }
 
-
-
-    // Priority queue strategies that can be set by user.
-    Comparator<Work> leastWorkToDoFirst = Comparator.comparingInt(Work::getTotalTaskCount);
 }

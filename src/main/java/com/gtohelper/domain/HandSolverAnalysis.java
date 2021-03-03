@@ -1,7 +1,9 @@
 package com.gtohelper.domain;
 
-public class HandSolverAnalysis {
+import java.io.Serializable;
 
+public class HandSolverAnalysis implements Serializable {
+    private static final long serialVersionUID = 1L;
 
 
 

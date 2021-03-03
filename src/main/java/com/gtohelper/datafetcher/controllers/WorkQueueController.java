@@ -2,22 +2,14 @@ package com.gtohelper.datafetcher.controllers;
 
 import com.gtohelper.datafetcher.models.WorkQueueModel;
 import com.gtohelper.domain.*;
-import com.gtohelper.fxml.Board;
-import com.gtohelper.fxml.CurrentWorkListViewCell;
-import com.gtohelper.fxml.FinishedWorkListViewCell;
-import com.gtohelper.fxml.Hand;
-import com.gtohelper.utility.CardResolver;
-import com.gtohelper.utility.Logger;
-import com.gtohelper.utility.Popups;
-import com.gtohelper.utility.StateManager;
+import com.gtohelper.fxml.*;
+import com.gtohelper.utility.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
-import javafx.util.Callback;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,10 +17,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public class WorkQueueController {
-    WorkQueueModel workQueueModel = new WorkQueueModel(this::updateSolverStatusCallback, this::updateGUI);
+    WorkQueueModel workQueueModel;
 
     @FXML
     ListView<Work> finishedWork;
@@ -43,8 +39,8 @@ public class WorkQueueController {
     ObservableList<Work> pendingWorkItems = FXCollections.observableArrayList();
 
     @FXML
-    ListView<SolveTask> taskList;
-    ObservableList<SolveTask> handsListItems = FXCollections.observableArrayList();
+    ListView<SolveTask> solveTaskListView;
+    ObservableList<SolveTask> solveTaskItems = FXCollections.observableArrayList();
 
     @FXML
     ScrollPane taskInfoScrollPane;
@@ -78,55 +74,21 @@ public class WorkQueueController {
         initializeControls();
     }
 
+    public void loadModel(SaveFileHelper saveHelper) {
+        workQueueModel = new WorkQueueModel(saveHelper, this::updateSolverStatusCallback, this::updateWorkGUI, this::updateTaskGUIForWork);
+        loadFieldsFromModel();
+    }
+
     private void initializeControls() {
         finishedWork.setItems(finishedWorkItems);
         pendingWorkQueue.setItems(pendingWorkItems);
         currentWorkItem.setItems(currentWorkItems);
-        taskList.setItems(handsListItems);
+        solveTaskListView.setItems(solveTaskItems);
 
         finishedWork.setCellFactory(listView -> new FinishedWorkListViewCell(this));
-        pendingWorkQueue.setCellFactory(listView -> new FinishedWorkListViewCell(this));
+        pendingWorkQueue.setCellFactory(listView -> new PendingWorkListViewCell(this));
         currentWorkItem.setCellFactory(listView -> new CurrentWorkListViewCell(this));
-        taskList.setCellFactory(new Callback<ListView<SolveTask>, ListCell<SolveTask>>() {
-            @Override
-            public ListCell<SolveTask> call(ListView<SolveTask> param) {
-                return new ListCell<SolveTask>() {
-                    @Override
-                    public void updateItem(SolveTask task, boolean empty)
-                    {
-                        super.updateItem(task,empty);
-                        if (empty || task == null)
-                            setText(null);
-                        else {
-
-                            if(task.getSolveState() == SolveTask.SolveTaskState.COMPLETED)
-                                getStyleClass().add("solve-task-completed");
-                            else if (task.getSolveState() == SolveTask.SolveTaskState.ERRORED)
-                                getStyleClass().add("solve-task-errored");
-                            else if (task.getSolveState() == SolveTask.SolveTaskState.IGNORED)
-                                getStyleClass().add("solve-task-ignored");
-                            else if (task.getSolveState() == SolveTask.SolveTaskState.CFG_FOUND)
-                                getStyleClass().add("solve-task-cfg-found");
-
-                            /*
-                                I admit, this is lazy. I should really create a SolveTask FXML and controller. Buuuuuuut this is only 8 lines...
-                             */
-                            HBox box = new HBox();
-                            Board b = new Board(task.getHandData());
-                            Text space = new Text(" - ");
-                            Hand h = new Hand(task.getHandData().getHandDataForPlayer(selectedItem.getWorkSettings().getHero().id_player));
-
-                            box.getChildren().add(h);
-                            box.getChildren().add(space);
-                            box.getChildren().add(b);
-
-                            setGraphic(box);
-                            //setText(CardResolver.getBoardString(task.getHandData()));
-                        }
-                    }
-                };
-            }
-        });
+        solveTaskListView.setCellFactory(listView -> new SolveTaskListViewCell(this));
 
         finishedWork.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> changed("finished", oldValue, newValue));
@@ -134,7 +96,7 @@ public class WorkQueueController {
                 (observable, oldValue, newValue) -> changed("current", oldValue, newValue));
         pendingWorkQueue.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> changed("pending", oldValue, newValue));
-        taskList.getSelectionModel().selectedItemProperty().addListener(
+        solveTaskListView.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> updateHandDataFields(newValue));
 
         // Do these programmatically so that SceneBuilder still renders
@@ -142,7 +104,7 @@ public class WorkQueueController {
     }
 
     public void changed(String source, Work oldValue, Work newValue) {
-        taskInfoScrollPane.setVisible(true);
+        taskInfoScrollPane.setVisible(true); // don't want scroll bar to render with no work picked, as said above.
 
         if(newValue != null) {
             selectedItem = newValue;
@@ -157,8 +119,12 @@ public class WorkQueueController {
                 currentWorkItem.getSelectionModel().clearSelection();
             }
 
-            handsListItems.clear();
-            handsListItems.addAll(selectedItem.getReadonlyTaskList());
+
+            // The hands list GUI needs to know the work's hero ~ which is strictly independant of the solve task.
+            // So we get the hero for the work and rebuild the SolveTask GUI
+            solveTaskItems.clear();
+            solveTaskListView.setCellFactory(listView -> new SolveTaskListViewCell(this, selectedItem.getWorkSettings().getHero().id_player));
+            solveTaskItems.addAll(selectedItem.getReadonlyTaskList());
         }
     }
 
@@ -222,7 +188,7 @@ public class WorkQueueController {
 
     @FXML
     public void startWorker() {
-        GlobalSolverSettings globalSolverSettings = getGlobalSolverSettingsCallback.get();
+        GlobalSolverSettings globalSolverSettings = getGlobalSolverSettings();
         Path solverLocation = globalSolverSettings.getSolverLocation();
         Path resultsPath = globalSolverSettings.getSolverResultsFolder();
 
@@ -254,11 +220,10 @@ public class WorkQueueController {
     }
 
     public void receiveNewWork(Work work) {
-        work.setProgressCallbackToTaskGUI(this::workAttemptReported);
         workQueueModel.addWorkToPendingQueue(work);
     }
 
-    public void updateGUI() {
+    public void updateWorkGUI() {
         Platform.runLater(() -> {
             finishedWorkItems.clear();
             finishedWorkItems.addAll(workQueueModel.getFinishedWork());
@@ -283,37 +248,23 @@ public class WorkQueueController {
         }
     }
 
-    public void workAttemptReported(SolveTask w) {
-        taskList.refresh();
+    public void updateTaskGUIForWork(Work work) {
+        if(selectedItem.equals(work))
+            solveTaskListView.refresh();
     }
 
     public void saveGetGlobalSolverSettingsCallback(Supplier<GlobalSolverSettings> callback) {
         getGlobalSolverSettingsCallback = callback;
     }
 
+    private GlobalSolverSettings getGlobalSolverSettings() {
+        return getGlobalSolverSettingsCallback.get();
+    }
+
     /*
 
      */
-    public void loadWork(GlobalSolverSettings solverSettings) {
-        ArrayList<Work> loadedWork;
-        try {
-            loadedWork = StateManager.readAllWorkObjectFiles(solverSettings);
-        } catch (IOException e) {
-            String error = String.format("Drive input/output error occured while trying to load work files from folder %s. \n" +
-                    "Check for read permissions; or, less likely, for data corruption.", solverSettings.getSolverResultsFolder());
-            Logger.log(error);
-            Popups.showError(error);
-            return;
-        }
 
-        for(Work work : loadedWork) {
-            if(work.hasNextTask()) {
-                receiveNewWork(work);
-            } else {
-                finishedWorkItems.add(work);
-            }
-        }
-    }
 
     // Figure out how much is done.
     private void processCompletedWork(Work work, GlobalSolverSettings solverSettings) {
@@ -333,6 +284,62 @@ public class WorkQueueController {
 
 
 
+    }
+
+    /*
+        Load work from disk.
+     */
+
+    void loadFieldsFromModel() {
+        String workOrder = workQueueModel.loadTextField("pendingWorkOrder");
+        String workNameOrderResults = loadWork(getGlobalSolverSettings(), workOrder);
+        if(workNameOrderResults != null) {
+            workQueueModel.saveTextField("pendingWorkOrder", workNameOrderResults);
+            // saveAll() write back gets executed by our parent controller after all controllers load.
+        }
+    }
+
+    private String loadWork(GlobalSolverSettings solverSettings, String pendingWorkNameOrder) {
+        ArrayList<Work> loadedWork;
+        try {
+            loadedWork = StateManager.readAllWorkObjectFiles(solverSettings);
+        } catch (IOException e) {
+            String error = String.format("Disk input/output error occured while trying to load work files from folder %s. \n" +
+                    "Check for read permissions; or, less likely, for data corruption.", solverSettings.getSolverResultsFolder());
+            Logger.log(error);
+            Popups.showError(error);
+            return null;
+        }
+
+        // First, search for matching work names that are supposed to exist, and load them in order.
+        // When found, remove from loadedWork so that they are not double counted.
+        ArrayList<String> pendingWorkNameResults = new ArrayList<>();
+        for(String workName : pendingWorkNameOrder.split(",")) {
+            Optional<Work> searchResult = loadedWork.stream().filter(w -> w.getWorkSettings().getName().equals(workName)).findFirst();
+            if(searchResult.isPresent()) {
+                Work work = searchResult.get();
+                fillLoadedWorkIntoQueue(work);
+
+                pendingWorkNameResults.add(work.getWorkSettings().getName());
+                loadedWork.remove(work);
+            }
+        }
+
+        // Then we append all found but not 'supposed to be there' work items to the end of the queue.
+        for(Work work : loadedWork) {
+            fillLoadedWorkIntoQueue(work);
+            pendingWorkNameResults.add(work.getWorkSettings().getName());
+        }
+
+        return String.join(",", pendingWorkNameResults);
+    }
+
+    private void fillLoadedWorkIntoQueue(Work work) {
+        if(work.hasNextTask()) {
+            receiveNewWork(work);
+        } else {
+            finishedWorkItems.add(work);
+        }
     }
 
     /*
@@ -360,4 +367,23 @@ public class WorkQueueController {
         else
             Popups.showWarning("A problem occured. Check the logging tab for details.");
     }
+
+    public void moveWorkUp(Work work) {
+        workQueueModel.moveWorkUp(work);
+    }
+
+    public void moveWorkDown(Work work) {
+        workQueueModel.moveWorkDown(work);
+    }
+
+    /*
+        Below are functions for manipulating SolveTask
+     */
+
+    public void ignoreSolveTaskFromCurrentWork(SolveTask solve) {
+        workQueueModel.setTaskStateForWork(selectedItem, solve, SolveTask.SolveTaskState.IGNORED);
+    }
+
+
+
 }

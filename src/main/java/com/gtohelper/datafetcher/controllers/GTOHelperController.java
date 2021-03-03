@@ -15,6 +15,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -75,8 +76,14 @@ public class GTOHelperController  {
         dbConnectionController.loadModel(saveHelper);
         handAnalysisController.loadModel(saveHelper);
         solverSettingsController.loadModels(saveHelper);
+        workQueueController.loadModel(saveHelper);
 
-        workQueueController.loadWork(getGlobalSolverSettings());
+        try {
+            saveHelper.saveAll();
+        } catch (IOException e) {
+            Popups.showError("Disk error trying to save the config file to disk. Changes you make likely won't be saved. \n" +
+                    "Ensure GTOHelper has OS permission to write to our config.properties file.");
+        }
     }
 
     /*
@@ -113,7 +120,7 @@ public class GTOHelperController  {
         // Note that saveNewWorkObject() will fill in work.location field.
         boolean success = StateManager.saveNewWorkObject(work, getGlobalSolverSettings());
         if(!success) {
-            Popups.showError(String.format("Failed to write new work %s's data file to it's folder %s. Check write permissions", work.toString()));
+            Popups.showError(String.format("Failed to write new work %s's data file into it's folder. Check write permissions", work.toString()));
             return;
         }
 
@@ -149,8 +156,10 @@ public class GTOHelperController  {
             }
         }
 
+        long id = 1L;
         for(HandData hand : hands) {
-            solveList.add(new SolveTask(hand));
+            solveList.add(new SolveTask(id, hand));
+            id++;
         }
 
         return new Work(solveList, settings, workRanges, treeData, rakeData);
