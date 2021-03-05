@@ -102,36 +102,32 @@ public class BetSettingsController {
 
     @FXML
     private void onSaveButtonPress() {
-        try {
-            String settingName = settingsName.getText();
-            saveToBetSettingsNames(settingName);
+        String settingName = settingsName.getText();
+        saveToBetSettingsNames(settingName);
 
-            BettingOptions newItem = buildGameTreeData();
-            savedBetSettingsTable.getItems().add(newItem);
-            savedBetSettingsTable.getSelectionModel().select(newItem);
+        BettingOptions newItem = buildGameTreeData();
+        savedBetSettingsTable.getItems().add(newItem);
+        savedBetSettingsTable.getSelectionModel().select(newItem);
 
-            betSettingsModel.saveSubGroupTextField(settingName, "flopBetIP", flopBetIP.getText());
-            betSettingsModel.saveSubGroupTextField(settingName, "flopRaiseIP", flopRaiseIP.getText());
-            betSettingsModel.saveSubGroupTextField(settingName, "turnBetIP", turnBetIP.getText());
-            betSettingsModel.saveSubGroupTextField(settingName, "turnRaiseIP", turnRaiseIP.getText());
-            betSettingsModel.saveSubGroupTextField(settingName, "riverBetIP", riverBetIP.getText());
-            betSettingsModel.saveSubGroupTextField(settingName, "riverRaiseIP", riverRaiseIP.getText());
+        betSettingsModel.saveSubGroupTextField(settingName, "flopBetIP", flopBetIP.getText());
+        betSettingsModel.saveSubGroupTextField(settingName, "flopRaiseIP", flopRaiseIP.getText());
+        betSettingsModel.saveSubGroupTextField(settingName, "turnBetIP", turnBetIP.getText());
+        betSettingsModel.saveSubGroupTextField(settingName, "turnRaiseIP", turnRaiseIP.getText());
+        betSettingsModel.saveSubGroupTextField(settingName, "riverBetIP", riverBetIP.getText());
+        betSettingsModel.saveSubGroupTextField(settingName, "riverRaiseIP", riverRaiseIP.getText());
 
-            betSettingsModel.saveSubGroupTextField(settingName, "flopCBetOOP", flopCBetOOP.getText());
-            betSettingsModel.saveSubGroupTextField(settingName, "flopDonkOOP", flopDonkOOP.getText());
-            betSettingsModel.saveSubGroupTextField(settingName, "flopRaiseOOP", flopRaiseOOP.getText());
-            betSettingsModel.saveSubGroupTextField(settingName, "turnBetOOP", turnBetOOP.getText());
-            betSettingsModel.saveSubGroupTextField(settingName, "turnDonkOOP", turnDonkOOP.getText());
-            betSettingsModel.saveSubGroupTextField(settingName, "turnRaiseOOP", turnRaiseOOP.getText());
-            betSettingsModel.saveSubGroupTextField(settingName, "riverBetOOP", riverBetOOP.getText());
-            betSettingsModel.saveSubGroupTextField(settingName, "riverDonkOOP", riverDonkOOP.getText());
-            betSettingsModel.saveSubGroupTextField(settingName, "riverRaiseOOP", riverRaiseOOP.getText());
+        betSettingsModel.saveSubGroupTextField(settingName, "flopCBetOOP", flopCBetOOP.getText());
+        betSettingsModel.saveSubGroupTextField(settingName, "flopDonkOOP", flopDonkOOP.getText());
+        betSettingsModel.saveSubGroupTextField(settingName, "flopRaiseOOP", flopRaiseOOP.getText());
+        betSettingsModel.saveSubGroupTextField(settingName, "turnBetOOP", turnBetOOP.getText());
+        betSettingsModel.saveSubGroupTextField(settingName, "turnDonkOOP", turnDonkOOP.getText());
+        betSettingsModel.saveSubGroupTextField(settingName, "turnRaiseOOP", turnRaiseOOP.getText());
+        betSettingsModel.saveSubGroupTextField(settingName, "riverBetOOP", riverBetOOP.getText());
+        betSettingsModel.saveSubGroupTextField(settingName, "riverDonkOOP", riverDonkOOP.getText());
+        betSettingsModel.saveSubGroupTextField(settingName, "riverRaiseOOP", riverRaiseOOP.getText());
 
 
-            betSettingsModel.saveAll();
-        } catch (IOException e) {
-            //todo log error
-        }
+        betSettingsModel.saveAllAndPopupOnError();
     }
 
     private void saveToBetSettingsNames(String settingName) {

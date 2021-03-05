@@ -31,14 +31,14 @@ public class PendingWorkListViewCell extends WorkListViewCellBase {
         delete.setOnAction(event -> {
             boolean choice = Popups.showConfirmation(String.format("Move work item %s's .gto file to the Recycle Bin? Solve CFG files will remain.", thisWork.toString()));
             if(choice)
-                workController.moveWorkFileToRecycle(thisWork);
+                workController.movePendingWorkFileToRecycle(thisWork);
         });
 
         deleteAndClean.setText("Delete and remove folder");
         deleteAndClean.setOnAction(event -> {
             boolean choice = Popups.showConfirmation(String.format("Move work item %s's solve folder and contents to the Recyble Bin?", thisWork.toString()));
             if(choice)
-                workController.moveWorkFolderToRecycle(thisWork);
+                workController.movePendingWorkFolderToRecycle(thisWork);
         });
 
         contextMenu.getItems().add(moveUp);

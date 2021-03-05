@@ -21,27 +21,23 @@ import java.util.function.Consumer;
 public class WorkQueueModel extends Saveable {
     private QueueWorker worker;
     Consumer<Boolean> updateSolverStatusCallback;
+    Consumer<Work> deliverFinishedWorkCallback;
     Runnable updateWorkGUICallback;
     Consumer<Work> updateTaskGUIForWorkCallback;
 
     // No indexable java.concurrent structure with .take() exists. So
     // we use the BlockingQueue and lock it for rebuilds to move item indexes ~ which are only valid if the Queue size > 2.
     private Object pendingQueueLock = new Object();
-    private LinkedBlockingQueue<Work> finishedWork;
     private LinkedBlockingQueue<Work> pendingWorkQueue;
 
-    public WorkQueueModel(SaveFileHelper saveHelper, Consumer<Boolean> solverStatusCallback,
+    public WorkQueueModel(SaveFileHelper saveHelper, Consumer<Boolean> solverStatusCallback, Consumer<Work> deliverFinishedWork,
                           Runnable updateWorkGUI, Consumer<Work> updateTaskGUIForWork) {
         super(saveHelper, "WorkQueue");
         pendingWorkQueue = new LinkedBlockingQueue<>();
-        finishedWork = new LinkedBlockingQueue<>();
         updateSolverStatusCallback = solverStatusCallback;
+        deliverFinishedWorkCallback = deliverFinishedWork;
         updateWorkGUICallback = updateWorkGUI;
         updateTaskGUIForWorkCallback = updateTaskGUIForWork;
-    }
-
-    public ArrayList<Work> getFinishedWork() {
-        return new ArrayList(finishedWork);
     }
 
     public ArrayList<Work> getPendingWorkQueue() {
@@ -69,11 +65,6 @@ public class WorkQueueModel extends Saveable {
 
     public void addWorkToPendingQueue(Work work) {
         pendingWorkQueue.add(work);
-        updateWorkGUICallback.run();
-    }
-
-    public void removeWorkFromFinished(Work work) {
-        finishedWork.remove(work);
         updateWorkGUICallback.run();
     }
 
@@ -113,13 +104,63 @@ public class WorkQueueModel extends Saveable {
         updateWorkGUICallback.run();
     }
 
-    public void setTaskStateForWork(Work work, SolveTask task, SolveTask.SolveTaskState state) {
+    /*
+
+     */
+
+    public boolean movePendingWorkFileToRecycle(Work work) {
+        synchronized (pendingQueueLock) {
+            // Race condition of someone clicking the context menu and the work moving up the queue...
+            // This may actually never happen or be possible (because the context menu may close on item change), but whatever...
+            if(!pendingWorkQueue.contains(work)) {
+                assert false;
+                return false;
+            }
+
+            boolean success = StateManager.recycleElseDeleteWorkFile(work);
+            if (success)
+                pendingWorkQueue.remove(work);
+            else
+                Popups.showWarning("A problem occured. Check the logging tab for details.");
+
+            return success;
+        }
+    }
+
+    public boolean movePendingWorkFolderToRecycle(Work work) {
+        synchronized (pendingQueueLock) {
+            if(!pendingWorkQueue.contains(work)) {
+                assert false;
+                return false;
+            }
+
+            boolean success = StateManager.recycleElseDeleteWorkFolder(work);
+            if(success)
+                pendingWorkQueue.remove(work);
+            else
+                Popups.showWarning("A problem occured. Check the logging tab for details.");
+
+            return success;
+        }
+    }
+
+    public void setTaskStateForCurrentWork(Work work, SolveTask task, SolveTask.SolveTaskState state) {
         /*
             This is trivial because we share object references to the underlying SolveTask instance.
             This function is being built out for the sake of modularity and the easy of future separation into separate programs.
          */
+        assert work.getTasks().contains(task);
+
         task.setSolveState(state);
-        updateWorkGUICallback.run();
+        boolean saveSuccess = StateManager.saveExistingWorkObject(work);
+        if(!saveSuccess) {
+            String errorString = "Disk error while trying to save the updated task's state.\n"
+                    + "Check write permissions. Program can continue but state may be different upon restart.";
+            Logger.log(errorString);
+            Popups.showWarning(errorString);
+        }
+
+        updateTaskGUIForWorkCallback.accept(work);
     }
 
     /*
@@ -190,7 +231,6 @@ public class WorkQueueModel extends Saveable {
         public void run() {
             try {
                 while (true) {
-                    current = null;
                     try {
                         synchronized (pendingQueueLock) {
                             current = pendingWorkQueue.take();
@@ -225,7 +265,8 @@ public class WorkQueueModel extends Saveable {
 
                         return;
                     } else {
-                        finishedWork.add(current);
+                        deliverFinishedWorkCallback.accept(current);
+                        current = null;
                         updateWorkGUICallback.run();
                     }
                 }

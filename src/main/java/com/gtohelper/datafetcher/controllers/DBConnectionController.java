@@ -56,13 +56,7 @@ public class DBConnectionController {
         connectionSuccess.setValue(value);
         if(value) {
             updateSites();
-
-            try {
-                dbConnectionModel.saveAll();
-            } catch (IOException e) {
-                // todo: log in debugger
-                //  results.setText("Error when trying to save config file. Error logged in debug tab");
-            }
+            dbConnectionModel.saveAllAndPopupOnError();
         }
     }
 
@@ -108,13 +102,7 @@ public class DBConnectionController {
         setConnectionSuccess(true);
         updatePropsFromFields();
 
-        try {
-            dbConnectionModel.saveAll();
-        } catch (IOException e) {
-            reply = "Database access succeeded, but saving the information to the config file has failed. " +
-                    "Fill in poker site & username info below to continue. To have this auto-complete in the future" +
-                    "ensure this program has file write permissions, or try running as Admin.";
-        }
+        dbConnectionModel.saveAllAndPopupOnError();
 
         return true;
     }

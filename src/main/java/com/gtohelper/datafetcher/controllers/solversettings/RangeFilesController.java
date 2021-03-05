@@ -117,15 +117,11 @@ public class RangeFilesController {
 
     @FXML
     private void onSaveBindingsButtonPress() {
-        try {
-            actionToRangeFileMap.forEach((k, v) -> {
-                String relativePath = getFilePathRelativeToFolder(rangeFolderLocation.getText(), v.getPath());
-                rangeFilesModel.saveTextField(k, relativePath);
-            });
-            rangeFilesModel.saveAll();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        actionToRangeFileMap.forEach((k, v) -> {
+            String relativePath = getFilePathRelativeToFolder(rangeFolderLocation.getText(), v.getPath());
+            rangeFilesModel.saveTextField(k, relativePath);
+        });
+        rangeFilesModel.saveAllAndPopupOnError();
     }
 
     private String getFilePathRelativeToFolder(String folderPath, String filePath) {

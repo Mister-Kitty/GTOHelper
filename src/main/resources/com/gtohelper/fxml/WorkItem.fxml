@@ -11,7 +11,7 @@
       <Text fx:id="name" GridPane.rowIndex="1" />
       <Text fx:id="ETA" GridPane.rowIndex="2" />
       <Text fx:id="handsCompleted" GridPane.rowIndex="3"/>
-      <Text fx:id="handsErrored" GridPane.rowIndex="4" />
+      <Text fx:id="handsErroredSkipped" GridPane.rowIndex="4" />
       <ProgressBar fx:id="progressBar" prefWidth="160.0" progress="0.33" GridPane.rowIndex="5" />
    </children>
    <columnConstraints>

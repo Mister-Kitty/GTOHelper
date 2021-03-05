@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 public class WorkQueueController {
     WorkQueueModel workQueueModel;
@@ -75,7 +74,7 @@ public class WorkQueueController {
     }
 
     public void loadModel(SaveFileHelper saveHelper) {
-        workQueueModel = new WorkQueueModel(saveHelper, this::updateSolverStatusCallback, this::updateWorkGUI, this::updateTaskGUIForWork);
+        workQueueModel = new WorkQueueModel(saveHelper, this::updateSolverStatusCallback, this::workFinishedCallback, this::updateWorkGUICallback, this::updateTaskGUIForWorkCallback);
         loadFieldsFromModel();
     }
 
@@ -156,8 +155,8 @@ public class WorkQueueController {
 
             if(task.getSolveState() == SolveTask.SolveTaskState.COMPLETED)
                 setCompletedSolveStateFields();
-            else if(task.getSolveState() == SolveTask.SolveTaskState.IGNORED)
-                setIgnoredSolveStateFields();
+            else if(task.getSolveState() == SolveTask.SolveTaskState.SKIPPED)
+                setSkippedSolveStateFields();
             else if(task.getSolveState() == SolveTask.SolveTaskState.NEW)
                 setNewSolveStateFields();
             else if(task.getSolveState() == SolveTask.SolveTaskState.ERRORED)
@@ -174,7 +173,7 @@ public class WorkQueueController {
 
     }
 
-    private void setIgnoredSolveStateFields() {
+    private void setSkippedSolveStateFields() {
 
     }
 
@@ -223,11 +222,21 @@ public class WorkQueueController {
         workQueueModel.addWorkToPendingQueue(work);
     }
 
-    public void updateWorkGUI() {
-        Platform.runLater(() -> {
-            finishedWorkItems.clear();
-            finishedWorkItems.addAll(workQueueModel.getFinishedWork());
 
+    /*
+        Below thar be callbacks passed to the model constructor.
+     */
+    public void workFinishedCallback(Work work) {
+        Platform.runLater(() -> {
+            finishedWorkItems.add(work);
+
+            // Because it's a future we have to use the idempotent rebuild rather than the more elegant 'removeFromCSVTextFieldAndSave()'
+            rebuildAndSaveWorkQueueOrder();
+        });
+    }
+
+    public void updateWorkGUICallback() {
+        Platform.runLater(() -> {
             currentWorkItems.clear();
             Work current = workQueueModel.getCurrentWork();
             if(current != null)
@@ -248,7 +257,11 @@ public class WorkQueueController {
         }
     }
 
-    public void updateTaskGUIForWork(Work work) {
+    /*
+        Here are callbacks we receive from after our construction, pulled out and set in GTOHelperController
+     */
+
+    public void updateTaskGUIForWorkCallback(Work work) {
         if(selectedItem.equals(work))
             solveTaskListView.refresh();
     }
@@ -338,42 +351,83 @@ public class WorkQueueController {
         if(work.hasNextTask()) {
             receiveNewWork(work);
         } else {
+            // Don't use workFinished. See the function itself for why.
             finishedWorkItems.add(work);
         }
     }
 
     /*
-        Below are functions for manipulating Work, which are called by WorkListViewCellBase extenders
+        Below are functions for manipulating Work, which are called by WorkListViewCellBase extenders.
+        You'll notice that the finishedWorkQueue is modified directly whereas all pendingWorkQueue needs to
+        be send to the model to solve synchronization issues.
      */
 
-    public void clearErrorAndQueue(Work work) {
-        workQueueModel.removeWorkFromFinished(work);
+    private void rebuildAndSaveWorkQueueOrder() {
+        ArrayList<String> orderedWorkNames = new ArrayList<>();
+        for(Work work : currentWorkItems) {
+            orderedWorkNames.add(work.getName());
+        }
+
+        String resultString = String.join(",", orderedWorkNames);
+        workQueueModel.saveTextField("pendingWorkOrder", resultString);
+        workQueueModel.saveAllAndPopupOnError();
+    }
+
+    private boolean removeFromCSVTextFieldAndSave(String fieldName, String value) {
+        String field = workQueueModel.loadTextField(fieldName);
+        List<String> resultsList = Arrays.asList(field.split(","));
+        boolean success = resultsList.remove(value);
+        if(success) {
+            String newString = String.join(",", resultsList);
+            workQueueModel.saveTextField(fieldName, newString);
+            workQueueModel.saveAllAndPopupOnError();
+        }
+        return success;
+    }
+
+    public void clearErrorOrStopFromFinishedAndQueue(Work work) {
+        finishedWorkItems.remove(work);
         work.clearError();
         workQueueModel.addWorkToPendingQueue(work);
+        rebuildAndSaveWorkQueueOrder();
     }
 
-    public void moveWorkFileToRecycle(Work work) {
+    public void moveFinishedWorkFileToRecycle(Work work) {
         boolean success = StateManager.recycleElseDeleteWorkFile(work);
-        if(success)
-            workQueueModel.removeWorkFromFinished(work);
-        else
-            Popups.showWarning("A problem occured. Check the logging tab for details.");
+        if(success) finishedWorkItems.remove(work);
+        else Popups.showWarning("A problem occured. Check the logging tab for details.");
     }
 
-    public void moveWorkFolderToRecycle(Work work) {
+    public void moveFinishedWorkFolderToRecycle(Work work) {
         boolean success = StateManager.recycleElseDeleteWorkFolder(work);
-        if(success)
-            workQueueModel.removeWorkFromFinished(work);
-        else
-            Popups.showWarning("A problem occured. Check the logging tab for details.");
+        if(success) finishedWorkItems.remove(work);
+        else Popups.showWarning("A problem occured. Check the logging tab for details.");
+    }
+
+    public void movePendingWorkFileToRecycle(Work work) {
+        boolean success = workQueueModel.movePendingWorkFileToRecycle(work);
+        if(success) {
+            removeFromCSVTextFieldAndSave("pendingWorkOrder", work.getName());
+            workQueueModel.saveAllAndPopupOnError();
+        }
+    }
+
+    public void movePendingWorkFolderToRecycle(Work work) {
+        boolean success = workQueueModel.movePendingWorkFolderToRecycle(work);
+        if(success) {
+            removeFromCSVTextFieldAndSave("pendingWorkOrder", work.getName());
+            workQueueModel.saveAllAndPopupOnError();
+        }
     }
 
     public void moveWorkUp(Work work) {
         workQueueModel.moveWorkUp(work);
+        rebuildAndSaveWorkQueueOrder();
     }
 
     public void moveWorkDown(Work work) {
         workQueueModel.moveWorkDown(work);
+        rebuildAndSaveWorkQueueOrder();
     }
 
     /*
@@ -381,9 +435,13 @@ public class WorkQueueController {
      */
 
     public void ignoreSolveTaskFromCurrentWork(SolveTask solve) {
-        workQueueModel.setTaskStateForWork(selectedItem, solve, SolveTask.SolveTaskState.IGNORED);
+        workQueueModel.setTaskStateForCurrentWork(selectedItem, solve, SolveTask.SolveTaskState.SKIPPED);
+        // workQueueModel calls updateTaskGUIForWorkCallback, so there is no further work.
     }
 
-
+    public void clearErrorIgnoreSolveTaskFromCurrentWork(SolveTask solve) {
+        workQueueModel.setTaskStateForCurrentWork(selectedItem, solve, SolveTask.SolveTaskState.NEW);
+        // workQueueModel calls updateTaskGUIForWorkCallback, so there is no further work.
+    }
 
 }

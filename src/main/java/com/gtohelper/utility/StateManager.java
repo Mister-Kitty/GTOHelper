@@ -63,7 +63,7 @@ public class StateManager {
     }
 
     // Because the work is pre existing, we don't use the current save location, as it can be modified.
-    public static boolean saveExistingWorkObject(Work work) {
+    public static synchronized boolean saveExistingWorkObject(Work work) {
         Path saveFolder = work.getSaveFileLocation().getParent();
 
         Path oldFile = saveFolder.resolve(work.getWorkSettings().getName() + ".gto");

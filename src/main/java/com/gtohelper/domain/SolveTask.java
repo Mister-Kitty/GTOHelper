@@ -16,7 +16,7 @@ public class SolveTask implements Serializable {
         ERRORED,
         CFG_FOUND,
         COMPLETED,
-        IGNORED;
+        SKIPPED;
     }
 
     private SolveTaskState solveState = SolveTaskState.NEW;

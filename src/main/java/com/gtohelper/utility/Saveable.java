@@ -1,7 +1,9 @@
 package com.gtohelper.utility;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 public abstract class Saveable {
     SaveFileHelper saveHelper;
@@ -40,7 +42,20 @@ public abstract class Saveable {
         return objectName + delimiter + fieldname;
     }
 
+    // deprecated
     public void saveAll() throws IOException {
         saveHelper.saveAll();
+    }
+
+    public boolean saveAllAndPopupOnError() {
+        try {
+            saveHelper.saveAll();
+            return true;
+        } catch (IOException e) {
+            String error = "Disk error while trying to update config file. Ensure we have write permissions and that the file is not open elsewhere.";
+            Logger.log(error);
+            Popups.showWarning(error);
+            return false;
+        }
     }
 }

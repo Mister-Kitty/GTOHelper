@@ -116,6 +116,10 @@ public class Work implements Serializable {
         return (int) tasks.stream().filter(t -> t.getSolveState() == SolveTask.SolveTaskState.ERRORED).count();
     }
 
+    public int getIgnoreTaskCount() {
+        return (int) tasks.stream().filter(t -> t.getSolveState() == SolveTask.SolveTaskState.SKIPPED).count();
+    }
+
     public int getCompletedTaskCount() {
         return (int) tasks.stream().filter(t -> t.getSolveState() == SolveTask.SolveTaskState.COMPLETED).count();
     }
@@ -143,7 +147,7 @@ public class Work implements Serializable {
     /*
         Other Accessor functions
      */
-
+    public String getName() { return workSettings.getName(); }
 
     public ArrayList<SolveTask> getTasks() {
         return tasks;

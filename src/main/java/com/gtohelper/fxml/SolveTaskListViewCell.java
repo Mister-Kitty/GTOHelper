@@ -2,7 +2,6 @@ package com.gtohelper.fxml;
 
 import com.gtohelper.datafetcher.controllers.WorkQueueController;
 import com.gtohelper.domain.SolveTask;
-import com.gtohelper.domain.Work;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.MenuItem;
@@ -12,6 +11,7 @@ import javafx.scene.text.Text;
 public class SolveTaskListViewCell extends ListCell<SolveTask> {
     ContextMenu contextMenu = new ContextMenu();
     MenuItem ignore = new MenuItem();
+    MenuItem clearErrorIgnore = new MenuItem();
 
     WorkQueueController workController;
     SolveTask thisSolveTask;
@@ -32,7 +32,11 @@ public class SolveTaskListViewCell extends ListCell<SolveTask> {
         ignore.setText("Skip / ignore");
         ignore.setOnAction(event ->  workController.ignoreSolveTaskFromCurrentWork(thisSolveTask));
 
+        clearErrorIgnore.setText("Clear error / ignore state");
+        clearErrorIgnore.setOnAction(event ->  workController.clearErrorIgnoreSolveTaskFromCurrentWork(thisSolveTask));
+
         contextMenu.getItems().add(ignore);
+        contextMenu.getItems().add(clearErrorIgnore);
     }
 
     @Override
@@ -49,8 +53,8 @@ public class SolveTaskListViewCell extends ListCell<SolveTask> {
                 getStyleClass().add("solve-task-completed");
             else if (task.getSolveState() == SolveTask.SolveTaskState.ERRORED)
                 getStyleClass().add("solve-task-errored");
-            else if (task.getSolveState() == SolveTask.SolveTaskState.IGNORED)
-                getStyleClass().add("solve-task-ignored");
+            else if (task.getSolveState() == SolveTask.SolveTaskState.SKIPPED)
+                getStyleClass().add("solve-task-skipped");
             else if (task.getSolveState() == SolveTask.SolveTaskState.CFG_FOUND)
                 getStyleClass().add("solve-task-cfg-found");
 
@@ -74,11 +78,25 @@ public class SolveTaskListViewCell extends ListCell<SolveTask> {
     }
 
     private void setMenuItemEnableStates(SolveTask task) {
-        if(task.getSolveState() == SolveTask.SolveTaskState.COMPLETED)
-            ignore.disableProperty().set(true);
-        else
-            ignore.disableProperty().set(false);
+        ignore.disableProperty().set(true);
+        clearErrorIgnore.disableProperty().set(true);
 
+        switch (task.getSolveState()) {
+            case NEW:
+            case CFG_FOUND:
+                ignore.disableProperty().set(false);
+                break;
+            case SKIPPED:
+                clearErrorIgnore.disableProperty().set(false);
+                break;
+            case COMPLETED:
+
+                break;
+            case ERRORED:
+                ignore.disableProperty().set(false);
+                clearErrorIgnore.disableProperty().set(false);
+                break;
+        }
 
 
     }

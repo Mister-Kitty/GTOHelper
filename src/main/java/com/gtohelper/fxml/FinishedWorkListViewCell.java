@@ -24,20 +24,20 @@ public class FinishedWorkListViewCell extends WorkListViewCellBase {
         compressAndArchive.setText("Compress & archive (work in progress)");
 
         moveToPendingWorkQueue.setText("Move to pending queue");
-        moveToPendingWorkQueue.setOnAction(event -> workController.clearErrorAndQueue(thisWork));
+        moveToPendingWorkQueue.setOnAction(event -> workController.clearErrorOrStopFromFinishedAndQueue(thisWork));
 
-        delete.setText("Delete");
+        delete.setText("Recycle / delete work");
         delete.setOnAction(event -> {
             boolean choice = Popups.showConfirmation(String.format("Move work item %s's .gto file to the Recycle Bin? Solve CFG files will remain.", thisWork.toString()));
             if(choice)
-                workController.moveWorkFileToRecycle(thisWork);
+                workController.moveFinishedWorkFileToRecycle(thisWork);
         });
 
-        deleteAndClean.setText("Delete and remove folder");
+        deleteAndClean.setText("Recycle / delete work & folder");
         deleteAndClean.setOnAction(event -> {
             boolean choice = Popups.showConfirmation(String.format("Move work item %s's solve folder and contents to the Recyble Bin?", thisWork.toString()));
             if(choice)
-                workController.moveWorkFolderToRecycle(thisWork);
+                workController.moveFinishedWorkFolderToRecycle(thisWork);
         });
 
         contextMenu.getItems().add(compressAndArchive);
@@ -49,7 +49,7 @@ public class FinishedWorkListViewCell extends WorkListViewCellBase {
 
     @Override
     protected void setMenuItemEnableStates(Work work) {
-        if(thisWork.hasError() || thisWork.hasNextTask())
+        if(thisWork.hasNextTask())
             moveToPendingWorkQueue.disableProperty().set(false);
         else
             moveToPendingWorkQueue.disableProperty().set(true);

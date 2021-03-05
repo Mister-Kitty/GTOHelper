@@ -18,7 +18,7 @@ public class WorkItem {
     @FXML
     Text handsCompleted;
     @FXML
-    Text handsErrored;
+    Text handsErroredSkipped;
     @FXML
     ProgressBar progressBar;
 
@@ -61,7 +61,7 @@ public class WorkItem {
             ETA.setText("ETA (work in progress):");
 
         handsCompleted.setText(w.getCompletedTaskCount() + " of " + w.getTotalTasks() + " hands completed");
-        handsErrored.setText(w.getErroredTaskCount() + " hands with errors");
+        handsErroredSkipped.setText(String.format("%d hands errored/skipped", w.getErroredTaskCount() + w.getIgnoreTaskCount()));
 
         float progress = ((float)w.getCompletedTaskCount()) / ((float)w.getTotalTasks());
         progressBar.setProgress(progress);
