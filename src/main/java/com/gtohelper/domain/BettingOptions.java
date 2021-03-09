@@ -31,13 +31,13 @@ public class BettingOptions implements Serializable {
     public static abstract class StreetAction implements Serializable{
         private static final long serialVersionUID = 1L;
         Street street;
-        boolean canAllIn;
+        boolean addAllIn;
         Bets bets = new Bets();
         Raises raises = new Raises();
 
         public Street getStreet() { return street; }
-        public boolean getCanAllIn() { return canAllIn; }
-        public void setCanAllIn(boolean can) { canAllIn = can; }
+        public boolean getAddAllIn() { return addAllIn; }
+        public void setAddAllIn(boolean add) { addAllIn = add; }
         public Bets getBets() { return bets; }
         public void setBets(String betsString) { bets = new Bets(betsString); }
         public Raises getRaises() { return raises; }
@@ -53,8 +53,8 @@ public class BettingOptions implements Serializable {
 
         public IPStreetAction(Street s) { street = s; }
 
-        public void setActionData(boolean canAllIn, boolean can3Bet, String betsString, String raisesString) {
-            this.canAllIn = canAllIn;
+        public void setActionData(boolean addAllIn, boolean can3Bet, String betsString, String raisesString) {
+            this.addAllIn = addAllIn;
             this.can3Bet = can3Bet;
             this.bets = new Bets(betsString);
             this.raises = new Raises(raisesString);
@@ -71,14 +71,14 @@ public class BettingOptions implements Serializable {
         public OOPStreetAction(Street s) { street = s; }
 
         public void setActionData(boolean canAllIn, String betsString, String raisesString, String donksString) {
-            this.canAllIn = canAllIn;
+            this.addAllIn = canAllIn;
             this.bets = new Bets(betsString);
             this.raises = new Raises(raisesString);
             this.donks = new Bets(donksString);
         }
     }
 
-    public static class Bets implements Serializable{
+    public static class Bets implements Serializable {
         private static final long serialVersionUID = 1L;
         boolean allIn = false;
         String initialString;
@@ -88,7 +88,7 @@ public class BettingOptions implements Serializable {
 
         // I should probably have setBetString be a function rather than passed into the constructor.... whatever.
         public Bets(String betsString) {
-            initialString = betsString;
+            initialString = betsString.trim();
             parseBetStrings(betsString);
         }
 
@@ -119,7 +119,8 @@ public class BettingOptions implements Serializable {
         }
 
         public ArrayList<Integer> getSizeOfAllBets(int currentPot, int effectiveStack, int facingBet, boolean addAllIn) {
-            ArrayList<Integer> results = new ArrayList<Integer>();
+
+            ArrayList<Integer> results = new ArrayList<>();
             for(Integer i : percentOptions) {
                 Float percent = i.floatValue() / 100;
                 Integer betPot = Math.round((currentPot + facingBet) * percent);
@@ -134,8 +135,9 @@ public class BettingOptions implements Serializable {
                     results.add(betPot);
             }
 
-            if((addAllIn || allIn) && !results.contains(effectiveStack))
-                results.add(effectiveStack);
+            // Note the isEmpty(), as pio only adds allins to nonempty bets/raises.
+            if((addAllIn || allIn) && !initialString.isEmpty() && !results.contains(effectiveStack + facingBet))
+                results.add(effectiveStack + facingBet);
 
             return results;
         }
@@ -148,7 +150,7 @@ public class BettingOptions implements Serializable {
         private Raises() {}
 
         public Raises(String raiseString) {
-            initialString = raiseString;
+            initialString = raiseString.trim();
             parseBetStrings(raiseString);
         }
 

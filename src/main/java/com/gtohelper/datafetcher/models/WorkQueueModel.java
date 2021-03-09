@@ -388,19 +388,19 @@ public class WorkQueueModel extends Saveable {
             final boolean turnIso = false;
             solver.setIsomorphism(flopIso, turnIso);
 
-            solver.setIPFlop(bettingOptions.IPFlop.getCanAllIn(), !bettingOptions.IPFlop.getCan3Bet(),
+            solver.setIPFlop(bettingOptions.IPFlop.getAddAllIn(), !bettingOptions.IPFlop.getCan3Bet(),
                     bettingOptions.IPFlop.getBets().getInitialString(), bettingOptions.IPFlop.getRaises().getInitialString());
-            solver.setOOPFlop(bettingOptions.OOPFlop.getCanAllIn(), bettingOptions.OOPFlop.getBets().getInitialString(),
+            solver.setOOPFlop(bettingOptions.OOPFlop.getAddAllIn(), bettingOptions.OOPFlop.getBets().getInitialString(),
                     bettingOptions.OOPFlop.getDonks().getInitialString(), bettingOptions.OOPFlop.getRaises().getInitialString());
 
-            solver.setIPTurn(bettingOptions.IPTurn.getCanAllIn(), !bettingOptions.IPTurn.getCan3Bet(),
+            solver.setIPTurn(bettingOptions.IPTurn.getAddAllIn(), !bettingOptions.IPTurn.getCan3Bet(),
                     bettingOptions.IPTurn.getBets().getInitialString(), bettingOptions.IPTurn.getRaises().getInitialString());
-            solver.setOOPTurn(bettingOptions.OOPTurn.getCanAllIn(), bettingOptions.OOPTurn.getBets().getInitialString(),
+            solver.setOOPTurn(bettingOptions.OOPTurn.getAddAllIn(), bettingOptions.OOPTurn.getBets().getInitialString(),
                     bettingOptions.OOPTurn.getDonks().getInitialString(), bettingOptions.OOPTurn.getRaises().getInitialString());
 
-            solver.setIPRiver(bettingOptions.IPRiver.getCanAllIn(), !bettingOptions.IPRiver.getCan3Bet(),
+            solver.setIPRiver(bettingOptions.IPRiver.getAddAllIn(), !bettingOptions.IPRiver.getCan3Bet(),
                     bettingOptions.IPRiver.getBets().getInitialString(), bettingOptions.IPRiver.getRaises().getInitialString());
-            solver.setOOPRiver(bettingOptions.OOPRiver.getCanAllIn(), bettingOptions.OOPRiver.getBets().getInitialString(),
+            solver.setOOPRiver(bettingOptions.OOPRiver.getAddAllIn(), bettingOptions.OOPRiver.getBets().getInitialString(),
                     bettingOptions.OOPRiver.getDonks().getInitialString(), bettingOptions.OOPRiver.getRaises().getInitialString());
 
             solver.clearLines();

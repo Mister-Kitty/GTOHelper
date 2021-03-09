@@ -76,7 +76,7 @@ class PioSolverTest {
 
         for(String s : test1Results) {
             if(!test1SolverResults.contains(s))
-                assert(test1SolverResults.contains(s));
+                assert false;
         }
 
         // Results have been validated. Send the tree to Pio and validate the tree size estimate
@@ -98,6 +98,65 @@ class PioSolverTest {
         solver.go();
         String calcResults = solver.waitForSolve();
         assert(!calcResults.isEmpty());
+    }
+
+    void initializeOptions2Test() throws IOException {
+        int allInThresholdPercent = 100;
+        int allInOnlyIfLessThanNPercent = 500;
+        final boolean forceOOPBet = false;
+        final boolean forceOOPCheckIPBet = false;
+        solver.setGameTreeOptions(allInThresholdPercent, allInOnlyIfLessThanNPercent, forceOOPBet, forceOOPCheckIPBet);
+
+        final boolean flopIso = true;
+        final boolean turnIso = false;
+        solver.setIsomorphism(flopIso, turnIso);
+    }
+
+    void setBetsizes2Test() {
+        solver.setIPFlop(true, false, "52", "2.5x");
+        solver.setOOPFlop(true, "","2.5x", "52");
+
+        solver.setIPTurn(false, false, "52,allin", "3x");
+        solver.setOOPTurn(false, "52", "3x", "");
+
+        solver.setIPRiver(true, false, "52", "3x");
+        solver.setOOPRiver(true, "52", "3x", "");
+    }
+
+    @Test
+    void getAddLines2Test() throws IOException {
+        // This tree tests 'all-in threshold' and 'dont 3bet' options.
+        setRange1Test();
+        setFlopData1Test();
+        initializeOptions2Test();
+        setBetsizes2Test();
+
+        solver.clearLines();
+        solver.buildTree();
+
+        // Tree is build. Test results.
+        ArrayList<String> test2SolverResults = solver.getAllInLeaves();
+        for(String s : test2SolverResults) {
+            if(!test2Results.contains(s))
+                assert false;
+        }
+
+        for(String s : test2Results) {
+            if(!test2SolverResults.contains(s))
+                assert false;
+        }
+
+        // Results have been validated. Send the tree to Pio and validate the tree size estimate
+        solver.setBuiltTreeAsActive();
+
+        String treeSize = solver.getEstimateSchematicTree();
+        assert(treeSize.equals("estimated tree size: 580 MB"));
+
+        String showMemory = solver.getShowMemory();
+        assert(!showMemory.isEmpty());
+
+        String calc = solver.getCalcResults();
+        assert(!calc.isEmpty());
     }
 
     final String test1Board = "Qs Jh 2h";
@@ -159,6 +218,108 @@ class PioSolverTest {
         "96 96 96 292 684 910",
         "96 96 96 96 292 684 910",
         "96 96 96 96 96 292 684 910"));
+
+    final ArrayList<String> test2Results = new ArrayList<String>(
+            Arrays.asList("0 0 0 0 0 910",
+                    "0 0 0 0 0 96 288 672 910",
+                    "0 0 0 0 0 96 288 910",
+                    "0 0 0 0 0 96 910",
+                    "0 0 0 0 910",
+                    "0 0 0 0 96 288 672 910",
+                    "0 0 0 0 96 288 910",
+                    "0 0 0 0 96 910",
+                    "0 0 0 910",
+                    "0 0 0 96 288 288 288 684 910",
+                    "0 0 0 96 288 288 288 910",
+                    "0 0 0 96 288 288 684 910",
+                    "0 0 0 96 288 288 910",
+                    "0 0 0 96 288 672 672 672 910",
+                    "0 0 0 96 288 672 910",
+                    "0 0 0 96 96 96 292 684 910",
+                    "0 0 0 96 96 96 292 910",
+                    "0 0 0 96 96 96 910",
+                    "0 0 96 288 288 288 684 910",
+                    "0 0 96 288 288 288 910",
+                    "0 0 96 288 672 672 672 910",
+                    "0 0 96 288 672 672 910",
+                    "0 0 96 288 672 910",
+                    "0 0 96 96 292 684 910",
+                    "0 0 96 96 292 910",
+                    "0 0 96 96 910",
+                    "0 0 96 96 96 292 684 910",
+                    "0 0 96 96 96 292 910",
+                    "0 0 96 96 96 910",
+                    "0 910",
+                    "0 96 240 240 240 240 240 586 910",
+                    "0 96 240 240 240 240 240 910",
+                    "0 96 240 240 240 240 586 910",
+                    "0 96 240 240 240 240 910",
+                    "0 96 240 240 240 586 586 586 910",
+                    "0 96 240 240 240 586 910",
+                    "0 96 240 240 240 910",
+                    "0 96 240 240 586 586 586 910",
+                    "0 96 240 240 586 586 910",
+                    "0 96 240 240 586 910",
+                    "0 96 240 456 456 456 456 456 910",
+                    "0 96 240 456 456 456 456 910",
+                    "0 96 240 456 456 456 910",
+                    "0 96 240 456 780 780 780 780 780 910",
+                    "0 96 240 456 780 780 780 780 910",
+                    "0 96 240 456 780 780 780 910",
+                    "0 96 240 456 780 780 910",
+                    "0 96 240 456 780 910",
+                    "0 96 240 456 910",
+                    "0 96 240 910",
+                    "0 96 910",
+                    "0 96 96 96 292 292 292 692 910",
+                    "0 96 96 96 292 292 292 910",
+                    "0 96 96 96 292 684 684 684 910",
+                    "0 96 96 96 292 684 684 910",
+                    "0 96 96 96 292 684 910",
+                    "0 96 96 96 910",
+                    "0 96 96 96 96 292 684 910",
+                    "0 96 96 96 96 292 910",
+                    "0 96 96 96 96 910",
+                    "0 96 96 96 96 96 292 684 910",
+                    "0 96 96 96 96 96 292 910",
+                    "0 96 96 96 96 96 910",
+                    "910",
+                    "96 240 240 240 240 240 586 910",
+                    "96 240 240 240 240 240 910",
+                    "96 240 240 240 240 586 910",
+                    "96 240 240 240 240 910",
+                    "96 240 240 240 586 586 586 910",
+                    "96 240 240 240 586 910",
+                    "96 240 240 240 910",
+                    "96 240 456 456 456 456 456 910",
+                    "96 240 456 456 456 456 910",
+                    "96 240 456 456 456 910",
+                    "96 240 456 456 910",
+                    "96 240 456 780 780 780 780 780 910",
+                    "96 240 456 780 780 780 780 910",
+                    "96 240 456 780 780 780 910",
+                    "96 240 456 780 910",
+                    "96 240 456 910",
+                    "96 240 910",
+                    "96 910",
+                    "96 96 292 292 292 692 910",
+                    "96 96 292 292 292 910",
+                    "96 96 292 292 692 910",
+                    "96 96 292 292 910",
+                    "96 96 292 684 684 684 910",
+                    "96 96 292 684 910",
+                    "96 96 96 292 292 292 692 910",
+                    "96 96 96 292 292 292 910",
+                    "96 96 96 292 684 684 684 910",
+                    "96 96 96 292 684 684 910",
+                    "96 96 96 292 684 910",
+                    "96 96 96 910",
+                    "96 96 96 96 292 684 910",
+                    "96 96 96 96 292 910",
+                    "96 96 96 96 910",
+                    "96 96 96 96 96 292 684 910",
+                    "96 96 96 96 96 292 910",
+                    "96 96 96 96 96 910"));
 
     final String OOPRange1 = "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0 0 0 0 0 0.5 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0 0 " +
             "0 0 0 0 0 0.5 0 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0 0.25 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0.25 0.25 0 0 0 " +

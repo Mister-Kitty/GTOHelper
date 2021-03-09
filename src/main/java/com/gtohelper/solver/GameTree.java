@@ -189,7 +189,7 @@ class Node {
         if(firstNode || OOPandWeCalledBetLastStreet) {
             // We're donking
             Bets donkBets = ((OOPStreetAction) actions).getDonks();
-            for(Integer betSize : donkBets.getSizeOfAllBets(nodeData.currentPot, nodeData.effectiveStack, 0, actions.getCanAllIn())) {
+            for(Integer betSize : donkBets.getSizeOfAllBets(nodeData.currentPot, nodeData.effectiveStack, 0, actions.getAddAllIn())) {
                 Node donkNode = new Node(this, treeData, getNextBetNodeData(this, treeData, betSize));
                 betRaiseNodes.add(donkNode);
             }
@@ -197,7 +197,7 @@ class Node {
         } else if (facingCheckOrCall) {
             // We're betting
             Bets bets = actions.getBets();
-            for(Integer betSize : bets.getSizeOfAllBets(nodeData.currentPot, nodeData.effectiveStack, 0, actions.getCanAllIn())) {
+            for(Integer betSize : bets.getSizeOfAllBets(nodeData.currentPot, nodeData.effectiveStack, 0, actions.getAddAllIn())) {
                 Node betNode = new Node(this, treeData, getNextBetNodeData(this, treeData, betSize));
                 betRaiseNodes.add(betNode);
             }
@@ -209,7 +209,7 @@ class Node {
             // It's easier to break down a raise as a call + bet.
             int currentPotAfterCall = nodeData.currentPot + nodeData.facingBet;
 
-            for(Integer raiseSize : bets.getSizeOfRaisesOntop(currentPotAfterCall, nodeData.effectiveStack, nodeData.facingBet, actions.getCanAllIn())) {
+            for(Integer raiseSize : bets.getSizeOfRaisesOntop(currentPotAfterCall, nodeData.effectiveStack, nodeData.facingBet, actions.getAddAllIn())) {
                 Node raiseNode = new Node(this, treeData, getNextRaiseNodeData(this, treeData, raiseSize));
                 betRaiseNodes.add(raiseNode);
             }

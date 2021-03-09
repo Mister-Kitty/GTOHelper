@@ -23,11 +23,15 @@ public class BetSettingsController {
     @FXML
     TextField flopBetIP, flopRaiseIP, turnBetIP,
             turnRaiseIP, riverBetIP, riverRaiseIP;
+    @FXML
+    CheckBox flopAllinIP, turnAllinIP, riverAllinIP;
 
     @FXML
     TextField flopCBetOOP, flopDonkOOP, flopRaiseOOP,
             turnBetOOP, turnDonkOOP, turnRaiseOOP,
             riverBetOOP, riverDonkOOP, riverRaiseOOP;
+    @FXML
+    CheckBox flopAllinOOP, turnAllinOOP, riverAllinOOP;
 
     @FXML
     Button saveButton, deleteButton;
@@ -41,13 +45,13 @@ public class BetSettingsController {
     private BettingOptions buildGameTreeData() {
         BettingOptions data = new BettingOptions(settingsName.getText());
 
-        data.IPFlop.setActionData(false, false, flopBetIP.getText(), flopRaiseIP.getText());
-        data.IPTurn.setActionData(false, false, turnBetIP.getText(), turnRaiseIP.getText());
-        data.IPRiver.setActionData(false, false, riverBetIP.getText(), riverRaiseIP.getText());
+        data.IPFlop.setActionData(flopAllinIP.isSelected(), false, flopBetIP.getText(), flopRaiseIP.getText());
+        data.IPTurn.setActionData(turnAllinIP.isSelected(), false, turnBetIP.getText(), turnRaiseIP.getText());
+        data.IPRiver.setActionData(riverAllinIP.isSelected(), false, riverBetIP.getText(), riverRaiseIP.getText());
 
-        data.OOPFlop.setActionData(false,  flopCBetOOP.getText(), flopRaiseOOP.getText(), flopDonkOOP.getText());
-        data.OOPTurn.setActionData(false,  turnBetOOP.getText(), turnRaiseOOP.getText(), turnDonkOOP.getText());
-        data.OOPRiver.setActionData(false,  riverBetOOP.getText(), riverRaiseOOP.getText(), riverDonkOOP.getText());
+        data.OOPFlop.setActionData(flopAllinOOP.isSelected(),  flopCBetOOP.getText(), flopRaiseOOP.getText(), flopDonkOOP.getText());
+        data.OOPTurn.setActionData(turnAllinOOP.isSelected(),  turnBetOOP.getText(), turnRaiseOOP.getText(), turnDonkOOP.getText());
+        data.OOPRiver.setActionData(riverAllinOOP.isSelected(),  riverBetOOP.getText(), riverRaiseOOP.getText(), riverDonkOOP.getText());
 
         return data;
     }
@@ -115,6 +119,9 @@ public class BetSettingsController {
         betSettingsModel.saveSubGroupTextField(settingName, "turnRaiseIP", turnRaiseIP.getText());
         betSettingsModel.saveSubGroupTextField(settingName, "riverBetIP", riverBetIP.getText());
         betSettingsModel.saveSubGroupTextField(settingName, "riverRaiseIP", riverRaiseIP.getText());
+        betSettingsModel.saveSubGroupTextField(settingName, "flopAllinIP", Boolean.toString(flopAllinIP.isSelected()));
+        betSettingsModel.saveSubGroupTextField(settingName, "turnAllinIP", Boolean.toString(turnAllinIP.isSelected()));
+        betSettingsModel.saveSubGroupTextField(settingName, "riverAllinIP", Boolean.toString(riverAllinIP.isSelected()));
 
         betSettingsModel.saveSubGroupTextField(settingName, "flopCBetOOP", flopCBetOOP.getText());
         betSettingsModel.saveSubGroupTextField(settingName, "flopDonkOOP", flopDonkOOP.getText());
@@ -125,17 +132,21 @@ public class BetSettingsController {
         betSettingsModel.saveSubGroupTextField(settingName, "riverBetOOP", riverBetOOP.getText());
         betSettingsModel.saveSubGroupTextField(settingName, "riverDonkOOP", riverDonkOOP.getText());
         betSettingsModel.saveSubGroupTextField(settingName, "riverRaiseOOP", riverRaiseOOP.getText());
-
+        betSettingsModel.saveSubGroupTextField(settingName, "flopAllinOOP", Boolean.toString(flopAllinOOP.isSelected()));
+        betSettingsModel.saveSubGroupTextField(settingName, "turnAllinOOP", Boolean.toString(turnAllinOOP.isSelected()));
+        betSettingsModel.saveSubGroupTextField(settingName, "riverAllinOOP", Boolean.toString(riverAllinOOP.isSelected()));
 
         betSettingsModel.saveAllAndPopupOnError();
     }
 
     private void saveToBetSettingsNames(String settingName) {
         String listOfSettingsNames = betSettingsModel.loadTextField("betSettingsNames");
-        if(listOfSettingsNames.isEmpty())
+        if(listOfSettingsNames.isEmpty()) {
             listOfSettingsNames = settingName;
-        else
-            listOfSettingsNames += "," + settingName;
+        } else {
+            if(!Arrays.asList(listOfSettingsNames.split(",")).contains(settingName))
+                listOfSettingsNames += "," + settingName;
+        }
         betSettingsModel.saveTextField("betSettingsNames", listOfSettingsNames);
         callback.accept(Arrays.asList(listOfSettingsNames.split(",")));
     }
@@ -235,6 +246,9 @@ public class BetSettingsController {
         turnRaiseIP.setText(treeData.IPTurn.getRaises().getInitialString());
         riverBetIP.setText(treeData.IPRiver.getBets().getInitialString());
         riverRaiseIP.setText(treeData.IPRiver.getRaises().getInitialString());
+        flopAllinIP.setSelected(treeData.IPFlop.getAddAllIn());
+        turnAllinIP.setSelected(treeData.IPTurn.getAddAllIn());
+        riverAllinIP.setSelected(treeData.IPRiver.getAddAllIn());
 
         flopCBetOOP.setText(treeData.OOPFlop.getBets().getInitialString());
         flopDonkOOP.setText(treeData.OOPFlop.getDonks().getInitialString());
@@ -245,6 +259,9 @@ public class BetSettingsController {
         riverBetOOP.setText(treeData.OOPRiver.getBets().getInitialString());
         riverDonkOOP.setText(treeData.OOPRiver.getDonks().getInitialString());
         riverRaiseOOP.setText(treeData.OOPRiver.getRaises().getInitialString());
+        flopAllinOOP.setSelected(treeData.OOPFlop.getAddAllIn());
+        turnAllinOOP.setSelected(treeData.OOPTurn.getAddAllIn());
+        riverAllinOOP.setSelected(treeData.OOPRiver.getAddAllIn());
     }
 
     private void loadIntoTreeData(BettingOptions treeData, String key, String value) {
@@ -266,6 +283,15 @@ public class BetSettingsController {
                 break;
             case "riverRaiseIP":
                 treeData.IPRiver.setRaises(value);
+                break;
+            case "flopAllinIP":
+                treeData.IPFlop.setAddAllIn(Boolean.parseBoolean(value));
+                break;
+            case "turnAllinIP":
+                treeData.IPTurn.setAddAllIn(Boolean.parseBoolean(value));
+                break;
+            case "riverAllinIP":
+                treeData.IPRiver.setAddAllIn(Boolean.parseBoolean(value));
                 break;
 
             case "flopCBetOOP":
@@ -294,6 +320,15 @@ public class BetSettingsController {
                 break;
             case "riverRaiseOOP":
                 treeData.OOPRiver.setRaises(value);
+                break;
+            case "flopAllinOOP":
+                treeData.OOPFlop.setAddAllIn(Boolean.parseBoolean(value));
+                break;
+            case "turnAllinOOP":
+                treeData.OOPTurn.setAddAllIn(Boolean.parseBoolean(value));
+                break;
+            case "riverAllinOOP":
+                treeData.OOPRiver.setAddAllIn(Boolean.parseBoolean(value));
                 break;
             default:
                 // todo: log error

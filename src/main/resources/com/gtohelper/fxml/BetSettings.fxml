@@ -80,41 +80,6 @@
                                     <TextField prefHeight="25.0" prefWidth="51.0" />
                                  </children>
                               </HBox>
-                              <Label text="Betting Heuristics (work in progress):">
-                                 <font>
-                                    <Font size="14.0" />
-                                 </font>
-                              </Label>
-                              <HBox>
-                                 <children>
-                                    <Label text="Add flop donk only if range nut advantage &gt; ">
-                                       <padding>
-                                          <Insets left="6.0" top="3.0" />
-                                       </padding>
-                                    </Label>
-                                    <TextField prefHeight="25.0" prefWidth="51.0" />
-                                    <Label text=" % of card combos">
-                                       <padding>
-                                          <Insets top="3.0" />
-                                       </padding>
-                                    </Label>
-                                 </children>
-                              </HBox>
-                              <HBox>
-                                 <children>
-                                    <Label text="Add overbets only if range nut advantage &gt; ">
-                                       <padding>
-                                          <Insets left="6.0" top="3.0" />
-                                       </padding>
-                                    </Label>
-                                    <TextField prefHeight="25.0" prefWidth="51.0" />
-                                    <Label text=" % of card combos">
-                                       <padding>
-                                          <Insets top="3.0" />
-                                       </padding>
-                                    </Label>
-                                 </children>
-                              </HBox>
                            </children></VBox>
                         <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.rowIndex="1">
                            <children>
@@ -155,7 +120,7 @@
                                     </Label>
                                  </children>
                               </HBox>
-                              <CheckBox disable="true" mnemonicParsing="false" text="Add all-in">
+                              <CheckBox fx:id="flopAllinIP" mnemonicParsing="false" text="Add all-in">
                                  <padding>
                                     <Insets left="2.0" top="2.0" />
                                  </padding>
@@ -209,7 +174,7 @@
                                     </Label>
                                  </children>
                               </HBox>
-                              <CheckBox disable="true" mnemonicParsing="false" text="Add all-in">
+                              <CheckBox fx:id="turnAllinIP" mnemonicParsing="false" text="Add all-in">
                                  <padding>
                                     <Insets left="2.0" top="2.0" />
                                  </padding>
@@ -263,7 +228,7 @@
                                     </Label>
                                  </children>
                               </HBox>
-                              <CheckBox disable="true" mnemonicParsing="false" text="Add all-in">
+                              <CheckBox fx:id="riverAllinIP" mnemonicParsing="false" text="Add all-in">
                                  <padding>
                                     <Insets left="2.0" top="2.0" />
                                  </padding>
@@ -335,7 +300,7 @@
                                     </Label>
                                  </children>
                               </HBox>
-                              <CheckBox disable="true" mnemonicParsing="false" text="Add all-in">
+                              <CheckBox fx:id="flopAllinOOP" mnemonicParsing="false" text="Add all-in">
                                  <padding>
                                     <Insets left="2.0" top="2.0" />
                                  </padding>
@@ -402,7 +367,7 @@
                                     </Label>
                                  </children>
                               </HBox>
-                              <CheckBox disable="true" mnemonicParsing="false" text="Add all-in">
+                              <CheckBox fx:id="turnAllinOOP" mnemonicParsing="false" text="Add all-in">
                                  <padding>
                                     <Insets left="2.0" top="2.0" />
                                  </padding>
@@ -469,7 +434,7 @@
                                     </Label>
                                  </children>
                               </HBox>
-                              <CheckBox disable="true" mnemonicParsing="false" text="Add all-in">
+                              <CheckBox fx:id="riverAllinOOP" mnemonicParsing="false" text="Add all-in">
                                  <padding>
                                     <Insets left="2.0" top="2.0" />
                                  </padding>

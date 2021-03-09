@@ -170,10 +170,11 @@ public class WorkQueueController {
     }
 
     private void setCompletedSolveStateFields() {
-
+        taskStateHeader.setText("Completed Solve:");
     }
 
     private void setSkippedSolveStateFields() {
+        taskStateHeader.setText("Skipped Solve:");
 
     }
 
@@ -182,6 +183,7 @@ public class WorkQueueController {
     }
 
     private void setErroredSolveStateFields() {
+        taskStateHeader.setText("Completed Solve:");
 
     }
 
