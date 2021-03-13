@@ -125,7 +125,7 @@
                                     <Insets left="2.0" top="2.0" />
                                  </padding>
                               </CheckBox>
-                              <CheckBox disable="true" mnemonicParsing="false" text="Don't 3-bet">
+                              <CheckBox fx:id="flopDont3BetPlus" mnemonicParsing="false" text="Don't 3-bet+">
                                  <padding>
                                     <Insets left="2.0" top="2.0" />
                                  </padding>
@@ -179,7 +179,7 @@
                                     <Insets left="2.0" top="2.0" />
                                  </padding>
                               </CheckBox>
-                              <CheckBox disable="true" mnemonicParsing="false" text="Don't 3-bet">
+                              <CheckBox fx:id="turnDont3BetPlus" mnemonicParsing="false" text="Don't 3-bet+">
                                  <padding>
                                     <Insets left="2.0" top="2.0" />
                                  </padding>
@@ -233,7 +233,7 @@
                                     <Insets left="2.0" top="2.0" />
                                  </padding>
                               </CheckBox>
-                              <CheckBox disable="true" mnemonicParsing="false" text="Don't 3-bet">
+                              <CheckBox fx:id="riverDont3BetPlus" mnemonicParsing="false" text="Don't 3-bet+">
                                  <padding>
                                     <Insets left="2.0" top="2.0" />
                                  </padding>

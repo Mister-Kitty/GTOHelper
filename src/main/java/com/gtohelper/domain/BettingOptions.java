@@ -46,16 +46,16 @@ public class BettingOptions implements Serializable {
 
     public static class IPStreetAction extends StreetAction {
         private static final long serialVersionUID = 1L;
-        boolean can3Bet;
+        boolean dont3BetPlus;
 
-        public boolean getCan3Bet() { return can3Bet; }
-        public void setCan3Bet(boolean canThreeBet) { can3Bet = canThreeBet; }
+        public boolean getDont3BetPlus() { return dont3BetPlus; }
+        public void setDont3BetPlus(boolean dont3BetPlus) { this.dont3BetPlus = dont3BetPlus; }
 
         public IPStreetAction(Street s) { street = s; }
 
-        public void setActionData(boolean addAllIn, boolean can3Bet, String betsString, String raisesString) {
+        public void setActionData(boolean addAllIn, boolean dont3BetPlus, String betsString, String raisesString) {
             this.addAllIn = addAllIn;
-            this.can3Bet = can3Bet;
+            this.dont3BetPlus = dont3BetPlus;
             this.bets = new Bets(betsString);
             this.raises = new Raises(raisesString);
         }

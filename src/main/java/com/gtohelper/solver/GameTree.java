@@ -10,6 +10,7 @@ import com.gtohelper.domain.BettingOptions.Bets;
 import com.gtohelper.domain.BettingOptions.Raises;
 import com.gtohelper.domain.BettingOptions.StreetAction;
 import com.gtohelper.domain.BettingOptions.OOPStreetAction;
+import com.gtohelper.domain.BettingOptions.IPStreetAction;
 import com.gtohelper.domain.Street;
 
 enum Actor {
@@ -33,8 +34,8 @@ public class GameTree {
         root = new Node(data, pot, effectiveStack);
     }
 
-    public ArrayList<String> getAllInLeaves() {
-        ArrayList<String> results = root.getPrintOfAllInLeaves();
+    public ArrayList<String> getAllInLeaves(BettingOptions options) {
+        ArrayList<String> results = root.getPrintOfAllInLeaves(options);
         return results;
     }
 }
@@ -95,17 +96,25 @@ class Node {
 
     }
 
-    public ArrayList<String> getPrintOfAllInLeaves() {
+    public ArrayList<String> getPrintOfAllInLeaves(BettingOptions options) {
+        boolean dontThreeBetRiver = options.IPRiver.getDont3BetPlus();
+
         ArrayList<String> results =
             getArrayListOfFunctionOnAllNodes(
                     (node) -> {
                         if(node.isShowdownNode() && node.nodeData.parentAction == Action.CALL && node.nodeData.effectiveStack == 0)
                             return node.parent.toString();
+                        // the don't 3bet edge case, where we add_lines that are not all in.
+                        // Since we don't generate a raise node from IP, we find the node where IP calls a 2-bet and add that.
+                        // Node curActor == OOP because it alternates on nodes.
+                        else if (dontThreeBetRiver && node.isShowdownNode() && node.nodeData.parentAction == Action.CALL &&
+                                node.parent.nodeData.parentAction == Action.RAISE && node.nodeData.curActor == Actor.OOP && node.nodeData.effectiveStack > 0)
+                            return node.parent.toString();
                         else
                             return "";
             });
 
-        ArrayList<String> nonEmptyResults = new ArrayList<String>();
+        ArrayList<String> nonEmptyResults = new ArrayList<>();
         for(String s : results) {
             if (!s.isEmpty()) {
                 nonEmptyResults.add(s);
@@ -179,7 +188,7 @@ class Node {
     }
 
     private ArrayList<Node> generateBetRaiseNodes(BettingOptions treeData) {
-        ArrayList<Node> betRaiseNodes = new ArrayList<Node>();
+        ArrayList<Node> betRaiseNodes = new ArrayList<>();
         StreetAction actions = getStreetActions(treeData, nodeData.street, nodeData.curActor);
 
         // Are we generating sizes based on donk, bet, or raise values?
@@ -204,6 +213,14 @@ class Node {
 
         } else {
             // We must be raising.
+            // But first, let's check the "don't 3-bet" IP option triggers.
+            if(nodeData.curActor == Actor.IP) {
+                boolean dontThreeBet = ((IPStreetAction) actions).getDont3BetPlus();
+                boolean facingTwoBet = nodeData.parentAction == Action.RAISE; // This is, technically, facing 2 or more bet. But the logic works.
+                if(dontThreeBet && facingTwoBet)
+                    return betRaiseNodes;
+            }
+
             Raises bets = actions.getRaises();
 
             // It's easier to break down a raise as a call + bet.
@@ -261,7 +278,13 @@ class Node {
             newNode.street = Street.nextStreet(newNode.street);
         else
             newNode.street = Street.SHOWDOWN; // we're calling an all in.
-        newNode.curActor = Actor.OOP;
+
+        // Bit of an edge case here. Calls normally reset next actor to OOP as the street changes.
+        // But if it's showdown, we want to alternate the actor for convenience of 'dont 3bet' logic above
+        if(newNode.street == Street.SHOWDOWN)
+            newNode.curActor = Actor.nextActor(newNode.curActor);
+        else
+            newNode.curActor = Actor.OOP;
         newNode.facingBet = 0;
 
         return newNode;

@@ -23,6 +23,9 @@ class PioSolverTest {
         solver.disconnect();
     }
 
+    /*
+        TEST1 - Basic test.
+     */
     void setRange1Test() throws IOException {
         solver.setRange("IP", IPRange1);
         solver.setRange("OOP", OOPRange1);
@@ -100,6 +103,10 @@ class PioSolverTest {
         assert(!calcResults.isEmpty());
     }
 
+    /*
+        TEST2 - 'allin' and 'add all-in' test.
+     */
+
     void initializeOptions2Test() throws IOException {
         int allInThresholdPercent = 100;
         int allInOnlyIfLessThanNPercent = 500;
@@ -157,6 +164,72 @@ class PioSolverTest {
 
         String calc = solver.getCalcResults();
         assert(!calc.isEmpty());
+    }
+
+    @Test
+    void runFullTest2() throws IOException {
+        getAddLines2Test();
+        solver.go();
+        String calcResults = solver.waitForSolve();
+        assert(!calcResults.isEmpty());
+    }
+
+    /*
+        TEST3 - Don't 3-bet and minimum bet size
+     */
+
+    void setBetsizes3Test() {
+        solver.setIPFlop(false, true, "52", "2.5x");
+        solver.setOOPFlop(false, "","2.5x", "52");
+
+        solver.setIPTurn(false, false, "52", "3x");
+        solver.setOOPTurn(false, "52", "3x", "");
+
+        solver.setIPRiver(false, true, "52", "3x");
+        solver.setOOPRiver(false, "52", "3x", "");
+    }
+
+    @Test
+    void getAddLines3Test() throws IOException {
+        setRange1Test();
+        setFlopData1Test();
+        initializeOptions1Test();
+        setBetsizes3Test();
+
+        solver.clearLines();
+        solver.buildTree();
+
+        // Tree is build. Test results.
+        ArrayList<String> test3SolverResults = solver.getAllInLeaves();
+        for(String s : test3SolverResults) {
+            if(!test3Results.contains(s))
+                assert false;
+        }
+
+        for(String s : test3Results) {
+            if(!test3SolverResults.contains(s))
+                assert false;
+        }
+
+        // Results have been validated. Send the tree to Pio and validate the tree size estimate
+        solver.setBuiltTreeAsActive();
+
+        String treeSize = solver.getEstimateSchematicTree();
+        assert(treeSize.equals("estimated tree size: 402 MB"));
+
+        String showMemory = solver.getShowMemory();
+        assert(!showMemory.isEmpty());
+
+        String calc = solver.getCalcResults();
+        assert(!calc.isEmpty());
+    }
+
+    @Test
+    void runFullTest3() throws IOException {
+        getAddLines3Test();
+        solver.go();
+        String calcResults = solver.waitForSolve();
+        assert(!calcResults.isEmpty());
     }
 
     final String test1Board = "Qs Jh 2h";
@@ -320,6 +393,56 @@ class PioSolverTest {
                     "96 96 96 96 96 292 684 910",
                     "96 96 96 96 96 292 910",
                     "96 96 96 96 96 910"));
+
+    final ArrayList<String> test3Results = new ArrayList<String>(
+            Arrays.asList("0 0 0 0 0 96 288",
+                    "0 0 0 0 96 288 672", //"0 0 0 0 96 288 672 910",   4bet is replaced with 2bet result.
+                    "0 0 0 96 288 288 288 684 910",
+                    "0 0 0 96 288 288 684 910",
+                    "0 0 0 96 288 672 672 672 910",
+                    "0 0 0 96 288 672 910",
+                    "0 0 0 96 96 96 292 684",
+                    "0 0 96 288 288 288 684 910",
+                    "0 0 96 288 672 672 672 910",
+                    "0 0 96 288 672 672 910",
+                    "0 0 96 288 672 910",
+                    "0 0 96 96 292 684 910",
+                    "0 0 96 96 96 292 684",
+                    "0 96 240 240 240 240 240 586 910",
+                    "0 96 240 240 240 240 586 910",
+                    "0 96 240 240 240 586 586 586 910",
+                    "0 96 240 240 240 586 910",
+                    "0 96 240 240 586 586 586 910",
+                    "0 96 240 240 586 586 910",
+                    "0 96 240 240 586 910",
+                    "0 96 96 96 292 292 292 692 910",
+                    "0 96 96 96 292 684 684 684 910",
+                    "0 96 96 96 292 684 684 910",
+                    "0 96 96 96 292 684 910",
+                    "0 96 96 96 96 292 684 910",
+                    "0 96 96 96 96 96 292 684",
+                    "96 240 240 240 240 240 586 910",
+                    "96 240 240 240 240 586 910",
+                    "96 240 240 240 586 586 586 910",
+                    "96 240 240 240 586 910",
+                    "96 240 456 456 456 456 456 910",
+                    "96 240 456 456 456 456 910",
+                    "96 240 456 456 456 910",
+                    "96 240 456 456 910",
+                    // "96 240 456 780 780 780 780 780 910", 4bets are removed as per comment above
+                    // "96 240 456 780 780 780 780 910",
+                    // "96 240 456 780 780 780 910",
+                    // "96 240 456 780 910",
+                    "96 96 292 292 292 692 910",
+                    "96 96 292 292 692 910",
+                    "96 96 292 684 684 684 910",
+                    "96 96 292 684 910",
+                    "96 96 96 292 292 292 692 910",
+                    "96 96 96 292 684 684 684 910",
+                    "96 96 96 292 684 684 910",
+                    "96 96 96 292 684 910",
+                    "96 96 96 96 292 684 910",
+                    "96 96 96 96 96 292 684"));
 
     final String OOPRange1 = "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0 0 0 0 0 0.5 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0 0 " +
             "0 0 0 0 0 0.5 0 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0 0.25 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0.25 0.25 0 0 0 " +

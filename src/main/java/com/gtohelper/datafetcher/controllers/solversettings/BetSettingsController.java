@@ -7,7 +7,6 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -25,6 +24,8 @@ public class BetSettingsController {
             turnRaiseIP, riverBetIP, riverRaiseIP;
     @FXML
     CheckBox flopAllinIP, turnAllinIP, riverAllinIP;
+    @FXML
+    CheckBox flopDont3BetPlus, turnDont3BetPlus, riverDont3BetPlus;
 
     @FXML
     TextField flopCBetOOP, flopDonkOOP, flopRaiseOOP,
@@ -45,9 +46,9 @@ public class BetSettingsController {
     private BettingOptions buildGameTreeData() {
         BettingOptions data = new BettingOptions(settingsName.getText());
 
-        data.IPFlop.setActionData(flopAllinIP.isSelected(), false, flopBetIP.getText(), flopRaiseIP.getText());
-        data.IPTurn.setActionData(turnAllinIP.isSelected(), false, turnBetIP.getText(), turnRaiseIP.getText());
-        data.IPRiver.setActionData(riverAllinIP.isSelected(), false, riverBetIP.getText(), riverRaiseIP.getText());
+        data.IPFlop.setActionData(flopAllinIP.isSelected(), flopDont3BetPlus.isSelected(), flopBetIP.getText(), flopRaiseIP.getText());
+        data.IPTurn.setActionData(turnAllinIP.isSelected(), turnDont3BetPlus.isSelected(), turnBetIP.getText(), turnRaiseIP.getText());
+        data.IPRiver.setActionData(riverAllinIP.isSelected(), riverDont3BetPlus.isSelected(), riverBetIP.getText(), riverRaiseIP.getText());
 
         data.OOPFlop.setActionData(flopAllinOOP.isSelected(),  flopCBetOOP.getText(), flopRaiseOOP.getText(), flopDonkOOP.getText());
         data.OOPTurn.setActionData(turnAllinOOP.isSelected(),  turnBetOOP.getText(), turnRaiseOOP.getText(), turnDonkOOP.getText());
@@ -122,6 +123,9 @@ public class BetSettingsController {
         betSettingsModel.saveSubGroupTextField(settingName, "flopAllinIP", Boolean.toString(flopAllinIP.isSelected()));
         betSettingsModel.saveSubGroupTextField(settingName, "turnAllinIP", Boolean.toString(turnAllinIP.isSelected()));
         betSettingsModel.saveSubGroupTextField(settingName, "riverAllinIP", Boolean.toString(riverAllinIP.isSelected()));
+        betSettingsModel.saveSubGroupTextField(settingName, "flopDont3BetPlus", Boolean.toString(flopDont3BetPlus.isSelected()));
+        betSettingsModel.saveSubGroupTextField(settingName, "turnDont3BetPlus", Boolean.toString(turnDont3BetPlus.isSelected()));
+        betSettingsModel.saveSubGroupTextField(settingName, "riverDont3BetPlus", Boolean.toString(riverDont3BetPlus.isSelected()));
 
         betSettingsModel.saveSubGroupTextField(settingName, "flopCBetOOP", flopCBetOOP.getText());
         betSettingsModel.saveSubGroupTextField(settingName, "flopDonkOOP", flopDonkOOP.getText());
@@ -249,6 +253,9 @@ public class BetSettingsController {
         flopAllinIP.setSelected(treeData.IPFlop.getAddAllIn());
         turnAllinIP.setSelected(treeData.IPTurn.getAddAllIn());
         riverAllinIP.setSelected(treeData.IPRiver.getAddAllIn());
+        flopDont3BetPlus.setSelected(treeData.IPFlop.getDont3BetPlus());
+        turnDont3BetPlus.setSelected(treeData.IPTurn.getDont3BetPlus());
+        riverDont3BetPlus.setSelected(treeData.IPRiver.getDont3BetPlus());
 
         flopCBetOOP.setText(treeData.OOPFlop.getBets().getInitialString());
         flopDonkOOP.setText(treeData.OOPFlop.getDonks().getInitialString());
@@ -292,6 +299,15 @@ public class BetSettingsController {
                 break;
             case "riverAllinIP":
                 treeData.IPRiver.setAddAllIn(Boolean.parseBoolean(value));
+                break;
+            case "flopDont3BetPlus":
+                treeData.IPFlop.setDont3BetPlus(Boolean.parseBoolean(value));
+                break;
+            case "turnDont3BetPlus":
+                treeData.IPTurn.setDont3BetPlus(Boolean.parseBoolean(value));
+                break;
+            case "riverDont3BetPlus":
+                treeData.IPRiver.setDont3BetPlus(Boolean.parseBoolean(value));
                 break;
 
             case "flopCBetOOP":

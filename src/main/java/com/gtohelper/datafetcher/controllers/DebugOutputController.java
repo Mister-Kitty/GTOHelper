@@ -19,7 +19,7 @@ public class DebugOutputController {
     StringBuilder hudTextBuilder = new StringBuilder();
 
     public DebugOutputController() {
-        Logger.addChannelListener(Logger.Channel.PIO, this::logPioMessage);
+        Logger.addChannelListener(Logger.Channel.SOLVER, this::logPioMessage);
         Logger.addChannelListener(Logger.Channel.HELPER, this::logHelperMessage);
         Logger.addChannelListener(Logger.Channel.HUD, this::logHudMessage);
     }

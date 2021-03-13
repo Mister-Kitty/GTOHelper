@@ -171,7 +171,7 @@ public class PioSolver implements ISolver {
                 if(count == 12)
                     Popups.showWarning("Warning: Piosolver has refused new work for over a minute. The process may not be responding.");
 
-                Logger.log(Logger.Channel.PIO, "is_ready returned false. Will try again after 5 seconds.");
+                Logger.log(Logger.Channel.SOLVER, "is_ready returned false. Will try again after 5 seconds.");
                 Thread.sleep(5000);
                 count++;
             }
@@ -185,7 +185,7 @@ public class PioSolver implements ISolver {
 
     @Override
     public String setBuiltTreeAsActive() throws IOException {
-        ArrayList<String> leaves = tree.getAllInLeaves();
+        ArrayList<String> leaves = tree.getAllInLeaves(currentGame);
         for(String leaf : leaves) {
             setAddLine(leaf);
         }
@@ -229,7 +229,7 @@ public class PioSolver implements ISolver {
 
     @Override
     public ArrayList<String> getAllInLeaves() {
-        return tree.getAllInLeaves();
+        return tree.getAllInLeaves(currentGame);
     }
 
     @Override

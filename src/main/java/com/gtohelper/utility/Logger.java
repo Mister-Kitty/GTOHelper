@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 public class Logger {
 
     public enum Channel {
-        PIO,
+        SOLVER,
         HUD,
         HELPER
     }

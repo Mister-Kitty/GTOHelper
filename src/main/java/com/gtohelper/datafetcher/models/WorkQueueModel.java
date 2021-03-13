@@ -388,17 +388,17 @@ public class WorkQueueModel extends Saveable {
             final boolean turnIso = false;
             solver.setIsomorphism(flopIso, turnIso);
 
-            solver.setIPFlop(bettingOptions.IPFlop.getAddAllIn(), !bettingOptions.IPFlop.getCan3Bet(),
+            solver.setIPFlop(bettingOptions.IPFlop.getAddAllIn(), !bettingOptions.IPFlop.getDont3BetPlus(),
                     bettingOptions.IPFlop.getBets().getInitialString(), bettingOptions.IPFlop.getRaises().getInitialString());
             solver.setOOPFlop(bettingOptions.OOPFlop.getAddAllIn(), bettingOptions.OOPFlop.getBets().getInitialString(),
                     bettingOptions.OOPFlop.getDonks().getInitialString(), bettingOptions.OOPFlop.getRaises().getInitialString());
 
-            solver.setIPTurn(bettingOptions.IPTurn.getAddAllIn(), !bettingOptions.IPTurn.getCan3Bet(),
+            solver.setIPTurn(bettingOptions.IPTurn.getAddAllIn(), !bettingOptions.IPTurn.getDont3BetPlus(),
                     bettingOptions.IPTurn.getBets().getInitialString(), bettingOptions.IPTurn.getRaises().getInitialString());
             solver.setOOPTurn(bettingOptions.OOPTurn.getAddAllIn(), bettingOptions.OOPTurn.getBets().getInitialString(),
                     bettingOptions.OOPTurn.getDonks().getInitialString(), bettingOptions.OOPTurn.getRaises().getInitialString());
 
-            solver.setIPRiver(bettingOptions.IPRiver.getAddAllIn(), !bettingOptions.IPRiver.getCan3Bet(),
+            solver.setIPRiver(bettingOptions.IPRiver.getAddAllIn(), !bettingOptions.IPRiver.getDont3BetPlus(),
                     bettingOptions.IPRiver.getBets().getInitialString(), bettingOptions.IPRiver.getRaises().getInitialString());
             solver.setOOPRiver(bettingOptions.OOPRiver.getAddAllIn(), bettingOptions.OOPRiver.getBets().getInitialString(),
                     bettingOptions.OOPRiver.getDonks().getInitialString(), bettingOptions.OOPRiver.getRaises().getInitialString());
@@ -409,7 +409,7 @@ public class WorkQueueModel extends Saveable {
             results.setSetBuildTreeAsActive(solver.setBuiltTreeAsActive());
             if(results.getSetBuildTreeAsActive().startsWith("ERROR")) {
                 String error = String.format("Error building tree. Reason: \n  %s", results.getSetBuildTreeAsActive());
-                Logger.log(Logger.Channel.PIO, error);
+                Logger.log(Logger.Channel.SOLVER, error);
                 results.setError(error);
                 return results;
             }
@@ -449,8 +449,8 @@ public class WorkQueueModel extends Saveable {
                 solver.loadTree(solveFile.toString());
             } catch (IOException e) {
                 String error = String.format("Input/output error while loading solve from file %s. It's likely that the file is garbage.");
-                Logger.log(Logger.Channel.PIO, error);
-                Logger.log(Logger.Channel.PIO, e.getMessage());
+                Logger.log(Logger.Channel.SOLVER, error);
+                Logger.log(Logger.Channel.SOLVER, e.getMessage());
                 results.setError(error);
                 return results;
             }
