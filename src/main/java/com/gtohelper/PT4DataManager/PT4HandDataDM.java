@@ -2,12 +2,9 @@ package com.gtohelper.PT4DataManager;
 
 import com.gtohelper.datamanager.DataManagerBase;
 import com.gtohelper.datamanager.IHandDataDM;
-import com.gtohelper.domain.Action;
-import com.gtohelper.domain.HandData;
+import com.gtohelper.domain.*;
 import com.gtohelper.domain.HandData.PlayerHandData;
 import com.gtohelper.domain.HandData.PlayerHandData.LastActionForStreet;
-import com.gtohelper.domain.Seat;
-import com.gtohelper.domain.Street;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -64,6 +61,7 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
                 resolvePostflopActionForPlayersInHand(hand, Street.RIVER, hand.str_aggressors_r, hand.str_actors_r);
             resolveHandResolvability(hand);
             resolveIPandOOPplayer(hand, heroPlayerId);
+            resolvePreflopAggressor(hand);
         }
     }
 
@@ -231,7 +229,6 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
         return getSeatFromChar(nonHeroString.charAt(nonHeroString.length() - 1));
     }
 
-
     private void resolveIPandOOPplayer(HandData hand, int heroPlayerId) {
         // Then resolve the principal players
         PlayerHandData player1;
@@ -252,6 +249,22 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
         hand.ipPlayer = winnerIsOOP ? player2 : player1;
         if(hand.oopPlayer.seat == hand.ipPlayer.seat)
             assert false;
+    }
+
+    private void resolvePreflopAggressor(HandData hand) {
+        // If no aggressors, skip.
+        if(hand.str_aggressors_p.isEmpty())
+            return;
+
+        char lastAggressor = hand.str_aggressors_p.charAt(hand.str_aggressors_p.length() - 1);
+        Seat lastAggressorSeat = getSeatFromChar(lastAggressor);
+        if(hand.ipPlayer.seat == lastAggressorSeat)
+            hand.lastPfAggressor = Actor.IP;
+        else if(hand.oopPlayer.seat == lastAggressorSeat)
+            hand.lastPfAggressor = Actor.OOP;
+        else
+            hand.lastPfAggressor = null; // not needed, but set for readability.
+
     }
 
     private PlayerHandData getVillainForHand(HandData hand, PlayerHandData hero) {

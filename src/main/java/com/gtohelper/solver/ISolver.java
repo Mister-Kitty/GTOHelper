@@ -9,21 +9,13 @@ public interface ISolver {
     void setRange(String position, String range) throws IOException;
     void setBoard(String board) throws IOException;
     void setEffectiveStack(int stack) throws IOException;
-    void setGameTreeOptions(int allInThresholdPercent, int allInOnlyIfLessThanNPercent,
-                            boolean forceOOPBet, boolean forceOOPCheckIPBet);
     void setIsomorphism(boolean flop, boolean turn) throws IOException;
     void setPotAndAccuracy(int oopInvestment, int ipInvestment, int pot, float chips) throws IOException;
-    void setIPFlop(boolean addAllIn, boolean dont3Bet, String betSizesString, String raiseSizesString);
-    void setIPTurn(boolean addAllIn, boolean dont3Bet, String betSizesString, String raiseSizesString);
-    void setIPRiver(boolean addAllIn, boolean dont3Bet, String betSizesString, String raiseSizesString);
-    void setOOPFlop(boolean addAllIn, String cbetSizesString, String raiseSizesString, String donkSizesString);
-    void setOOPTurn(boolean addAllIn, String betSizesString, String raiseSizesString, String donkSizesString);
-    void setOOPRiver(boolean addAllIn, String betSizesString, String raiseSizesString, String donkSizesString);
     void setRake(float percent, float chipCap) throws IOException;
 
     void clearLines() throws IOException;
-    void buildTree();
-    String setBuiltTreeAsActive() throws IOException; // aka add_lines function
+    String addLine(String line) throws IOException;
+    String buildTree() throws IOException;
 
 
     String getEstimateSchematicTree() throws IOException;
@@ -44,6 +36,4 @@ public interface ISolver {
     // debug commands
     String runCustomCommand(String command) throws IOException;
     String runCustomCommandUntilEnd(String command) throws IOException;
-    ArrayList<String> getAllInLeaves();
-
 }

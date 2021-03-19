@@ -1,5 +1,7 @@
 package com.gtohelper.solver;
 
+import com.gtohelper.domain.BettingOptions;
+import com.gtohelper.domain.HandSolveSettings;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -24,66 +26,91 @@ class PioSolverTest {
     }
 
     /*
-        TEST1 - Basic test.
+        Start with some utility functions used throughout
      */
-    void setRange1Test() throws IOException {
+
+    void setRange() throws IOException {
         solver.setRange("IP", IPRange1);
         solver.setRange("OOP", OOPRange1);
     }
 
-    void setFlopData1Test() throws IOException {
-        solver.setBoard(test1Board);
-        solver.setPotAndAccuracy(0, 0, 185, 1.628F);
-        solver.setEffectiveStack(910);
+    void setFlopData(HandSolveSettings handSolveSettings) throws IOException {
+        solver.setBoard(BasicTestBoard);
+        solver.setPotAndAccuracy(0, 0, handSolveSettings.initialPot, 1.628F);
+        solver.setEffectiveStack(handSolveSettings.initialEffectiveStack);
     }
 
-    void initializeOptions1Test() throws IOException {
-        int allInThresholdPercent = 100;
-        int allInOnlyIfLessThanNPercent = 500;
-        final boolean forceOOPBet = false;
-        final boolean forceOOPCheckIPBet = false;
-        solver.setGameTreeOptions(allInThresholdPercent, allInOnlyIfLessThanNPercent, forceOOPBet, forceOOPCheckIPBet);
+    /*
+        And now, test 1 - basic
+     */
 
-        final boolean flopIso = true;
-        final boolean turnIso = false;
-        solver.setIsomorphism(flopIso, turnIso);
+    void fillFlopData(HandSolveSettings handSolveSettings) {
+        handSolveSettings.initialPot = 185;
+        handSolveSettings.initialEffectiveStack = 910;
     }
 
-    void setBetsizes1Test() {
-        solver.setIPFlop(false, false, "52", "2.5x");
-        solver.setOOPFlop(false, "","2.5x", "52");
+    void fillBettingOptionsBasicTest(BettingOptions bettingOptions) {
+        bettingOptions.options.allInThresholdPercent = 100;
+        bettingOptions.options.addAllinOnlyIfPercentage = 500;
+        bettingOptions.options.forceFlopOOPBet = false;
+        bettingOptions.options.forceFlopOOPCheckIPBet = false;
+    }
 
-        solver.setIPTurn(false, false, "52", "3x");
-        solver.setOOPTurn(false, "52", "3x", "");
+    void fillBetsizesBasicTest(BettingOptions bettingOptions) {
+        bettingOptions.IPFlop.setBets("52");
+        bettingOptions.IPFlop.setRaises("2.5x");
+        bettingOptions.OOPFlop.setDonks("52");
+        bettingOptions.OOPFlop.setBets("52");
+        bettingOptions.OOPFlop.setRaises("2.5x");
 
-        solver.setIPRiver(false, false, "52", "3x");
-        solver.setOOPRiver(false, "52", "3x", "");
+        bettingOptions.IPTurn.setBets("52");
+        bettingOptions.IPTurn.setRaises("3x");
+        bettingOptions.OOPTurn.setDonks("");
+        bettingOptions.OOPTurn.setBets("52");
+        bettingOptions.OOPTurn.setRaises("3x");
+
+        bettingOptions.IPRiver.setBets("52");
+        bettingOptions.IPRiver.setRaises("3x");
+        bettingOptions.OOPRiver.setDonks("");
+        bettingOptions.OOPRiver.setBets("52");
+        bettingOptions.OOPRiver.setRaises("3x");
     }
 
     @Test
-    void getAddLines1Test() throws IOException {
-        // This tree has no 'all-in threshold' or 'dont 3bet' options enabled. That's for the next tests.
-        setRange1Test();
-        setFlopData1Test();
-        initializeOptions1Test();
-        setBetsizes1Test();
+    void getAddLinesBasicTest() throws IOException {
+        HandSolveSettings handSolveSettings = new HandSolveSettings();
+        BettingOptions bettingOptions = new BettingOptions("Test");
 
+        fillBettingOptionsBasicTest(bettingOptions);
+        fillBetsizesBasicTest(bettingOptions);
+        fillFlopData(handSolveSettings);
+
+        setFlopData(handSolveSettings);
+        setRange();
+
+        solver.setIsomorphism(true, false);
         solver.clearLines();
-        solver.buildTree();
+
+        GameTree tree = new GameTree();
+        tree.buildGameTree(bettingOptions, handSolveSettings);
 
         // Tree is build. Test results.
-        ArrayList<String> test1SolverResults = solver.getAllInLeaves();
-        for(String s : test1SolverResults) {
-            assert(test1Results.contains(s));
+        ArrayList<String> basicTestSolverResults = tree.getAllInLeaves(bettingOptions);
+        for(String s : basicTestSolverResults) {
+            if(!basicTestResults.contains(s))
+                assert false;
         }
 
-        for(String s : test1Results) {
-            if(!test1SolverResults.contains(s))
+        for(String s : basicTestResults) {
+            if(!basicTestSolverResults.contains(s))
                 assert false;
         }
 
         // Results have been validated. Send the tree to Pio and validate the tree size estimate
-        solver.setBuiltTreeAsActive();
+        for(String leaf : basicTestSolverResults) {
+            solver.addLine(leaf);
+        }
+        solver.buildTree();
 
         String treeSize = solver.getEstimateSchematicTree();
         assert(treeSize.equals("estimated tree size: 457 MB"));
@@ -95,66 +122,153 @@ class PioSolverTest {
         assert(!calc.isEmpty());
     }
 
-    @Test
-    void runFullTest1() throws IOException {
-        getAddLines1Test();
+    void runFullBasicTest() throws IOException {
+        getAddLinesBasicTest();
         solver.go();
         String calcResults = solver.waitForSolve();
         assert(!calcResults.isEmpty());
     }
 
     /*
-        TEST2 - 'allin' and 'add all-in' test.
+        Raise Test
      */
 
-    void initializeOptions2Test() throws IOException {
-        int allInThresholdPercent = 100;
-        int allInOnlyIfLessThanNPercent = 500;
-        final boolean forceOOPBet = false;
-        final boolean forceOOPCheckIPBet = false;
-        solver.setGameTreeOptions(allInThresholdPercent, allInOnlyIfLessThanNPercent, forceOOPBet, forceOOPCheckIPBet);
+    void fillBetsizesRaisesTest(BettingOptions bettingOptions) {
+        bettingOptions.IPFlop.setBets("52");
+        bettingOptions.IPFlop.setRaises("2.5x");
+        bettingOptions.OOPFlop.setDonks("52");
+        bettingOptions.OOPFlop.setBets("52");
+        bettingOptions.OOPFlop.setRaises("2.5x");
 
-        final boolean flopIso = true;
-        final boolean turnIso = false;
-        solver.setIsomorphism(flopIso, turnIso);
-    }
+        bettingOptions.IPTurn.setBets("52");
+        bettingOptions.IPTurn.setRaises("80,3x");
+        bettingOptions.OOPTurn.setDonks("");
+        bettingOptions.OOPTurn.setBets("52");
+        bettingOptions.OOPTurn.setRaises("50,3x");
 
-    void setBetsizes2Test() {
-        solver.setIPFlop(true, false, "52", "2.5x");
-        solver.setOOPFlop(true, "","2.5x", "52");
-
-        solver.setIPTurn(false, false, "52,allin", "3x");
-        solver.setOOPTurn(false, "52", "3x", "");
-
-        solver.setIPRiver(true, false, "52", "3x");
-        solver.setOOPRiver(true, "52", "3x", "");
+        bettingOptions.IPRiver.setBets("52");
+        bettingOptions.IPRiver.setRaises("60,3x");
+        bettingOptions.OOPRiver.setDonks("");
+        bettingOptions.OOPRiver.setBets("52");
+        bettingOptions.OOPRiver.setRaises("50,3x");
     }
 
     @Test
-    void getAddLines2Test() throws IOException {
-        // This tree tests 'all-in threshold' and 'dont 3bet' options.
-        setRange1Test();
-        setFlopData1Test();
-        initializeOptions2Test();
-        setBetsizes2Test();
+    void getAddLinesRaisesTest() throws IOException {
+        HandSolveSettings handSolveSettings = new HandSolveSettings();
+        BettingOptions bettingOptions = new BettingOptions("Test");
 
+        fillBettingOptionsBasicTest(bettingOptions);
+        fillBetsizesRaisesTest(bettingOptions);
+        fillFlopData(handSolveSettings);
+
+        setFlopData(handSolveSettings);
+        setRange();
+
+        solver.setIsomorphism(true, false);
         solver.clearLines();
-        solver.buildTree();
+
+        GameTree tree = new GameTree();
+        tree.buildGameTree(bettingOptions, handSolveSettings);
 
         // Tree is build. Test results.
-        ArrayList<String> test2SolverResults = solver.getAllInLeaves();
-        for(String s : test2SolverResults) {
-            if(!test2Results.contains(s))
+        ArrayList<String> raiseTestSolverResults = tree.getAllInLeaves(bettingOptions);
+        for(String s : raiseTestSolverResults) {
+            if(!raiseTestResults.contains(s))
                 assert false;
         }
 
-        for(String s : test2Results) {
-            if(!test2SolverResults.contains(s))
+        for(String s : raiseTestResults) {
+            if(!raiseTestSolverResults.contains(s))
                 assert false;
         }
 
         // Results have been validated. Send the tree to Pio and validate the tree size estimate
-        solver.setBuiltTreeAsActive();
+        for(String leaf : raiseTestSolverResults) {
+            solver.addLine(leaf);
+        }
+        solver.buildTree();
+
+        String treeSize = solver.getEstimateSchematicTree();
+        assert(treeSize.equals("estimated tree size: 652 MB"));
+
+        String showMemory = solver.getShowMemory();
+        assert(!showMemory.isEmpty());
+
+        String calc = solver.getCalcResults();
+        assert(!calc.isEmpty());
+    }
+
+    void runFullRaisesTest() throws IOException {
+        getAddLinesBasicTest();
+        solver.go();
+        String calcResults = solver.waitForSolve();
+        assert(!calcResults.isEmpty());
+    }
+
+    /*
+        'allin' and 'add all-in' test.
+    */
+
+    void fillBetsizesAllinTest(BettingOptions bettingOptions) {
+        bettingOptions.IPFlop.setBets("52");
+        bettingOptions.IPFlop.setRaises("2.5x");
+        bettingOptions.IPFlop.setAddAllIn(true);
+        bettingOptions.OOPFlop.setDonks("52");
+        bettingOptions.OOPFlop.setBets("52");
+        bettingOptions.OOPFlop.setRaises("2.5x");
+        bettingOptions.OOPFlop.setAddAllIn(true);
+
+        bettingOptions.IPTurn.setBets("52,allin");
+        bettingOptions.IPTurn.setRaises("3x");
+        bettingOptions.OOPTurn.setDonks("");
+        bettingOptions.OOPTurn.setBets("52");
+        bettingOptions.OOPTurn.setRaises("3x");
+
+        bettingOptions.IPRiver.setBets("52");
+        bettingOptions.IPRiver.setRaises("3x");
+        bettingOptions.IPRiver.setAddAllIn(true);
+        bettingOptions.OOPRiver.setDonks("");
+        bettingOptions.OOPRiver.setBets("52");
+        bettingOptions.OOPRiver.setRaises("3x");
+        bettingOptions.OOPRiver.setAddAllIn(true);
+    }
+
+    @Test
+    void getAddLinesAllinTest() throws IOException {
+        HandSolveSettings handSolveSettings = new HandSolveSettings();
+        BettingOptions bettingOptions = new BettingOptions("Test");
+
+        fillBettingOptionsBasicTest(bettingOptions);
+        fillBetsizesAllinTest(bettingOptions);
+        fillFlopData(handSolveSettings);
+
+        setFlopData(handSolveSettings);
+        setRange();
+
+        solver.setIsomorphism(true, false);
+        solver.clearLines();
+
+        GameTree tree = new GameTree();
+        tree.buildGameTree(bettingOptions, handSolveSettings);
+
+        // Tree is build. Test results.
+        ArrayList<String> allinTestSolverResults = tree.getAllInLeaves(bettingOptions);
+        for(String s : allinTestSolverResults) {
+            if(!allinTestResults.contains(s))
+                assert false;
+        }
+
+        for(String s : allinTestResults) {
+            if(!allinTestSolverResults.contains(s))
+                assert false;
+        }
+
+        // Results have been validated. Send the tree to Pio and validate the tree size estimate
+        for(String leaf : allinTestSolverResults) {
+            solver.addLine(leaf);
+        }
+        solver.buildTree();
 
         String treeSize = solver.getEstimateSchematicTree();
         assert(treeSize.equals("estimated tree size: 580 MB"));
@@ -166,53 +280,74 @@ class PioSolverTest {
         assert(!calc.isEmpty());
     }
 
-    @Test
-    void runFullTest2() throws IOException {
-        getAddLines2Test();
+    void runFullAllinTest() throws IOException {
+        getAddLinesAllinTest();
         solver.go();
         String calcResults = solver.waitForSolve();
         assert(!calcResults.isEmpty());
     }
 
     /*
-        TEST3 - Don't 3-bet and minimum bet size
-     */
+        Don't 3-bet+ test
+    */
 
-    void setBetsizes3Test() {
-        solver.setIPFlop(false, true, "52", "2.5x");
-        solver.setOOPFlop(false, "","2.5x", "52");
+    void fillBetsizesDont3BetTest(BettingOptions bettingOptions) {
+        bettingOptions.IPFlop.setBets("52");
+        bettingOptions.IPFlop.setRaises("2.5x");
+        bettingOptions.IPFlop.setDont3BetPlus(true);
+        bettingOptions.OOPFlop.setDonks("52");
+        bettingOptions.OOPFlop.setBets("52");
+        bettingOptions.OOPFlop.setRaises("2.5x");
 
-        solver.setIPTurn(false, false, "52", "3x");
-        solver.setOOPTurn(false, "52", "3x", "");
+        bettingOptions.IPTurn.setBets("52");
+        bettingOptions.IPTurn.setRaises("3x");
+        bettingOptions.OOPTurn.setDonks("");
+        bettingOptions.OOPTurn.setBets("52");
+        bettingOptions.OOPTurn.setRaises("3x");
 
-        solver.setIPRiver(false, true, "52", "3x");
-        solver.setOOPRiver(false, "52", "3x", "");
+        bettingOptions.IPRiver.setBets("52");
+        bettingOptions.IPRiver.setRaises("3x");
+        bettingOptions.IPRiver.setDont3BetPlus(true);
+        bettingOptions.OOPRiver.setDonks("");
+        bettingOptions.OOPRiver.setBets("52");
+        bettingOptions.OOPRiver.setRaises("3x");
     }
 
     @Test
-    void getAddLines3Test() throws IOException {
-        setRange1Test();
-        setFlopData1Test();
-        initializeOptions1Test();
-        setBetsizes3Test();
+    void getAddLinesDont3BetTest() throws IOException {
+        HandSolveSettings handSolveSettings = new HandSolveSettings();
+        BettingOptions bettingOptions = new BettingOptions("Test");
 
+        fillBettingOptionsBasicTest(bettingOptions);
+        fillBetsizesDont3BetTest(bettingOptions);
+        fillFlopData(handSolveSettings);
+
+        setFlopData(handSolveSettings);
+        setRange();
+
+        solver.setIsomorphism(true, false);
         solver.clearLines();
-        solver.buildTree();
+
+        GameTree tree = new GameTree();
+        tree.buildGameTree(bettingOptions, handSolveSettings);
 
         // Tree is build. Test results.
-        ArrayList<String> test3SolverResults = solver.getAllInLeaves();
-        for(String s : test3SolverResults) {
-            if(!test3Results.contains(s))
+        ArrayList<String> dont3BetTestSolverResults = tree.getAllInLeaves(bettingOptions);
+        for(String s : dont3BetTestSolverResults) {
+            if(!dont3BetTestResults.contains(s))
                 assert false;
         }
 
-        for(String s : test3Results) {
-            if(!test3SolverResults.contains(s))
+        for(String s : dont3BetTestResults) {
+            if(!dont3BetTestSolverResults.contains(s))
                 assert false;
         }
 
         // Results have been validated. Send the tree to Pio and validate the tree size estimate
-        solver.setBuiltTreeAsActive();
+        for(String leaf : dont3BetTestResults) {
+            solver.addLine(leaf);
+        }
+        solver.buildTree();
 
         String treeSize = solver.getEstimateSchematicTree();
         assert(treeSize.equals("estimated tree size: 402 MB"));
@@ -224,17 +359,141 @@ class PioSolverTest {
         assert(!calc.isEmpty());
     }
 
-    @Test
-    void runFullTest3() throws IOException {
-        getAddLines3Test();
+
+    void runFullDont3BetTest() throws IOException {
+        getAddLinesDont3BetTest();
         solver.go();
         String calcResults = solver.waitForSolve();
         assert(!calcResults.isEmpty());
     }
 
-    final String test1Board = "Qs Jh 2h";
+    /*
+        Allin threshold and Allin pot percent aka Allin options
+    */
 
-    final ArrayList<String> test1Results = new ArrayList<String>(
+    void fillBettingOptionsAllinOptionsTest(BettingOptions bettingOptions) {
+        bettingOptions.options.allInThresholdPercent = 67;
+        bettingOptions.options.addAllinOnlyIfPercentage = 250;
+        bettingOptions.options.forceFlopOOPBet = false;
+        bettingOptions.options.forceFlopOOPCheckIPBet = false;
+    }
+
+
+    @Test
+    void getAddLinesAllinOptionsTest() throws IOException {
+        HandSolveSettings handSolveSettings = new HandSolveSettings();
+        BettingOptions bettingOptions = new BettingOptions("Test");
+
+        fillBettingOptionsAllinOptionsTest(bettingOptions);
+        fillBetsizesAllinTest(bettingOptions);
+        fillFlopData(handSolveSettings);
+
+        setFlopData(handSolveSettings);
+        setRange();
+
+        solver.setIsomorphism(true, false);
+        solver.clearLines();
+
+        GameTree tree = new GameTree();
+        tree.buildGameTree(bettingOptions, handSolveSettings);
+
+        // Tree is build. Test results.
+        ArrayList<String> allinTestSolverResults = tree.getAllInLeaves(bettingOptions);
+        for(String s : allinTestSolverResults) {
+            if(!allinOptionsTestResults.contains(s))
+                assert false;
+        }
+
+        for(String s : allinOptionsTestResults) {
+            if(!allinTestSolverResults.contains(s))
+                assert false;
+        }
+
+        // Results have been validated. Send the tree to Pio and validate the tree size estimate
+        for(String leaf : dont3BetTestResults) {
+            solver.addLine(leaf);
+        }
+        solver.buildTree();
+
+        String treeSize = solver.getEstimateSchematicTree();
+        assert(treeSize.equals("estimated tree size: 402 MB"));
+
+        String showMemory = solver.getShowMemory();
+        assert(!showMemory.isEmpty());
+
+        String calc = solver.getCalcResults();
+        assert(!calc.isEmpty());
+    }
+
+    /*
+        Force flop bets and checks test.
+
+
+    void initializeOptionsForceOOPBetTest() throws IOException {
+        int allInThresholdPercent = 67;
+        int allInOnlyIfLessThanNPercent = 500;
+        final boolean forceOOPBet = true;
+        final boolean forceOOPCheckIPBet = false;
+        solver.setGameTreeOptions(allInThresholdPercent, allInOnlyIfLessThanNPercent, forceOOPBet, forceOOPCheckIPBet);
+
+        final boolean flopIso = true;
+        final boolean turnIso = false;
+        solver.setIsomorphism(flopIso, turnIso);
+    }
+
+    @Test
+    void getAddLinesForceOOPBetTest() throws IOException {
+        setRangeBasicTest();
+        setFlopDataBasicTest();
+        initializeOptionsForceOOPBetTest();
+        setBetsizesBasicTest();
+
+        solver.clearLines();
+        solver.buildTree();
+
+        // Tree is build. Test results.
+        ArrayList<String> ForceOOPBetTestSolverResults = solver.getAllInLeaves();
+        for(String s : ForceOOPBetTestSolverResults) {
+            if(!ForceOOPBetTestResults.contains(s))
+                assert false;
+        }
+
+        for(String s : ForceOOPBetTestResults) {
+            if(!ForceOOPBetTestSolverResults.contains(s))
+                assert false;
+        }
+
+        // Results have been validated. Send the tree to Pio and validate the tree size estimate
+        solver.setBuiltTreeAsActive();
+
+        String treeSize = solver.getEstimateSchematicTree();
+        assert(treeSize.equals("estimated tree size: 392 MB"));
+
+        String showMemory = solver.getShowMemory();
+        assert(!showMemory.isEmpty());
+
+        String calc = solver.getCalcResults();
+        assert(!calc.isEmpty());
+    }
+
+    void initializeOptionsForceIPBetTest() throws IOException {
+        int allInThresholdPercent = 67;
+        int allInOnlyIfLessThanNPercent = 500;
+        final boolean forceOOPBet = false;
+        final boolean forceOOPCheckIPBet = false;
+        solver.setGameTreeOptions(allInThresholdPercent, allInOnlyIfLessThanNPercent, forceOOPBet, forceOOPCheckIPBet);
+
+        final boolean flopIso = true;
+        final boolean turnIso = false;
+        solver.setIsomorphism(flopIso, turnIso);
+    }
+
+     */
+
+
+    final String BasicTestBoard = "Qs Jh 2h";
+
+    final ArrayList<String> basicTestResults = new ArrayList<>(
             Arrays.asList("0 0 0 0 0 96 288 672 910",
         "0 0 0 0 96 288 672 910",
         "0 0 0 96 288 288 288 684 910",
@@ -292,7 +551,103 @@ class PioSolverTest {
         "96 96 96 96 292 684 910",
         "96 96 96 96 96 292 684 910"));
 
-    final ArrayList<String> test2Results = new ArrayList<String>(
+
+    final ArrayList<String> raiseTestResults = new ArrayList<>(
+            Arrays.asList("0 0 0 0 0 96 284 660 910",
+                    "0 0 0 0 0 96 284 736 910",
+                    "0 0 0 0 0 96 288 672 910",
+                    "0 0 0 0 0 96 288 745 910",
+                    "0 0 0 0 96 288 668 910",
+                    "0 0 0 0 96 288 672 910",
+                    "0 0 0 0 96 322 736 910",
+                    "0 0 0 0 96 322 774 910",
+                    "0 0 0 96 284 284 284 676 910",
+                    "0 0 0 96 284 284 676 910",
+                    "0 0 0 96 284 660 660 660 910",
+                    "0 0 0 96 284 660 910",
+                    "0 0 0 96 284 886 886 886 910",
+                    "0 0 0 96 284 886 910",
+                    "0 0 0 96 288 288 288 684 910",
+                    "0 0 0 96 288 288 684 910",
+                    "0 0 0 96 288 672 672 672 910",
+                    "0 0 0 96 288 672 910",
+                    "0 0 0 96 288 897 897 897 910",
+                    "0 0 0 96 288 897 910",
+                    "0 0 0 96 96 96 292 676 910",
+                    "0 0 0 96 96 96 292 684 910",
+                    "0 0 96 288 288 288 684 910",
+                    "0 0 96 288 668 668 668 910",
+                    "0 0 96 288 668 668 910",
+                    "0 0 96 288 668 910",
+                    "0 0 96 288 672 672 672 910",
+                    "0 0 96 288 672 672 910",
+                    "0 0 96 288 672 910",
+                    "0 0 96 398 398 398 908 910",
+                    "0 0 96 398 888 888 888 910",
+                    "0 0 96 398 888 888 910",
+                    "0 0 96 398 888 910",
+                    "0 0 96 398 910",
+                    "0 0 96 96 292 684 910",
+                    "0 0 96 96 292 753 910",
+                    "0 0 96 96 96 292 676 910",
+                    "0 0 96 96 96 292 684 910",
+                    "0 96 240 240 240 240 240 586 910",
+                    "0 96 240 240 240 240 586 910",
+                    "0 96 240 240 240 586 586 586 910",
+                    "0 96 240 240 240 586 910",
+                    "0 96 240 240 586 586 586 910",
+                    "0 96 240 240 586 586 910",
+                    "0 96 240 240 586 910",
+                    "0 96 240 456 456 456 456 456 910",
+                    "0 96 240 456 456 456 456 910",
+                    "0 96 240 456 456 456 910",
+                    "0 96 240 456 780 780 780 780 780 910",
+                    "0 96 240 456 780 780 780 780 910",
+                    "0 96 240 456 780 780 780 910",
+                    "0 96 240 456 780 780 910",
+                    "0 96 240 456 780 910",
+                    "0 96 96 96 292 292 292 692 910",
+                    "0 96 96 96 292 676 676 676 910",
+                    "0 96 96 96 292 676 676 910",
+                    "0 96 96 96 292 676 910",
+                    "0 96 96 96 292 684 684 684 910",
+                    "0 96 96 96 292 684 684 910",
+                    "0 96 96 96 292 684 910",
+                    "0 96 96 96 96 292 684 910",
+                    "0 96 96 96 96 292 753 910",
+                    "0 96 96 96 96 96 292 676 910",
+                    "0 96 96 96 96 96 292 684 910",
+                    "96 240 240 240 240 240 586 910",
+                    "96 240 240 240 240 586 910",
+                    "96 240 240 240 586 586 586 910",
+                    "96 240 240 240 586 910",
+                    "96 240 456 456 456 456 456 910",
+                    "96 240 456 456 456 456 910",
+                    "96 240 456 456 456 910",
+                    "96 240 456 456 910",
+                    "96 240 456 780 780 780 780 780 910",
+                    "96 240 456 780 780 780 780 910",
+                    "96 240 456 780 780 780 910",
+                    "96 240 456 780 910",
+                    "96 96 292 292 292 692 910",
+                    "96 96 292 292 692 910",
+                    "96 96 292 684 684 684 910",
+                    "96 96 292 684 910",
+                    "96 96 292 907 907 907 910",
+                    "96 96 292 907 910",
+                    "96 96 96 292 292 292 692 910",
+                    "96 96 96 292 676 676 676 910",
+                    "96 96 96 292 676 676 910",
+                    "96 96 96 292 676 910",
+                    "96 96 96 292 684 684 684 910",
+                    "96 96 96 292 684 684 910",
+                    "96 96 96 292 684 910",
+                    "96 96 96 96 292 684 910",
+                    "96 96 96 96 292 753 910",
+                    "96 96 96 96 96 292 676 910",
+                    "96 96 96 96 96 292 684 910"));
+
+    final ArrayList<String> allinTestResults = new ArrayList<>(
             Arrays.asList("0 0 0 0 0 910",
                     "0 0 0 0 0 96 288 672 910",
                     "0 0 0 0 0 96 288 910",
@@ -394,7 +749,7 @@ class PioSolverTest {
                     "96 96 96 96 96 292 910",
                     "96 96 96 96 96 910"));
 
-    final ArrayList<String> test3Results = new ArrayList<String>(
+    final ArrayList<String> dont3BetTestResults = new ArrayList<>(
             Arrays.asList("0 0 0 0 0 96 288",
                     "0 0 0 0 96 288 672", //"0 0 0 0 96 288 672 910",   4bet is replaced with 2bet result.
                     "0 0 0 96 288 288 288 684 910",
@@ -443,6 +798,80 @@ class PioSolverTest {
                     "96 96 96 292 684 910",
                     "96 96 96 96 292 684 910",
                     "96 96 96 96 96 292 684"));
+
+
+    final ArrayList<String> allinOptionsTestResults = new ArrayList<>(
+            Arrays.asList("0 0 0 0 0 96 288 910",
+                    "0 0 0 0 0 96 910",
+                    "0 0 0 0 96 288 910",
+                    "0 0 0 0 96 910",
+                    "0 0 0 910",
+                    "0 0 0 96 288 288 288 910",
+                    "0 0 0 96 288 288 910",
+                    "0 0 0 96 288 910",
+                    "0 0 0 96 96 96 292 910",
+                    "0 0 0 96 96 96 910",
+                    "0 0 96 288 288 288 910",
+                    "0 0 96 288 910",
+                    "0 0 96 96 292 910",
+                    "0 0 96 96 910",
+                    "0 0 96 96 96 292 910",
+                    "0 0 96 96 96 910",
+                    "0 96 240 240 240 240 240 586 910",
+                    "0 96 240 240 240 240 240 910",
+                    "0 96 240 240 240 240 586 910",
+                    "0 96 240 240 240 240 910",
+                    "0 96 240 240 240 586 586 586 910",
+                    "0 96 240 240 240 586 910",
+                    "0 96 240 240 240 910",
+                    "0 96 240 240 586 586 586 910",
+                    "0 96 240 240 586 586 910",
+                    "0 96 240 240 586 910",
+                    "0 96 240 456 456 456 456 456 910",
+                    "0 96 240 456 456 456 456 910",
+                    "0 96 240 456 456 456 910",
+                    "0 96 240 456 910",
+                    "0 96 240 910",
+                    "0 96 910",
+                    "0 96 96 96 292 292 292 910",
+                    "0 96 96 96 292 910",
+                    "0 96 96 96 910",
+                    "0 96 96 96 96 292 910",
+                    "0 96 96 96 96 910",
+                    "0 96 96 96 96 96 292 910",
+                    "0 96 96 96 96 96 910",
+                    "96 240 240 240 240 240 586 910",
+                    "96 240 240 240 240 240 910",
+                    "96 240 240 240 240 586 910",
+                    "96 240 240 240 240 910",
+                    "96 240 240 240 586 586 586 910",
+                    "96 240 240 240 586 910",
+                    "96 240 240 240 910",
+                    "96 240 456 456 456 456 456 910",
+                    "96 240 456 456 456 456 910",
+                    "96 240 456 456 456 910",
+                    "96 240 456 456 910",
+                    "96 240 456 910",
+                    "96 240 910",
+                    "96 910",
+                    "96 96 292 292 292 910",
+                    "96 96 292 292 910",
+                    "96 96 292 910",
+                    "96 96 96 292 292 292 910",
+                    "96 96 96 292 910",
+                    "96 96 96 910",
+                    "96 96 96 96 292 910",
+                    "96 96 96 96 910",
+                    "96 96 96 96 96 292 910",
+                    "96 96 96 96 96 910"));
+
+
+    final ArrayList<String> ForceOOPBetTestResults = new ArrayList<>(
+            Arrays.asList(""));
+
+
+    final ArrayList<String> ForceIPBetTestResults = new ArrayList<>(
+            Arrays.asList(""));
 
     final String OOPRange1 = "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0 0 0 0 0 0.5 0 0 0 0 0 0 0 0 0 0.5 0 0 0 0 0 " +
             "0 0 0 0 0 0.5 0 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0 0.25 0 0 0 0 0 0 0.5 0 0 0 0.75 0 0.25 0.25 0 0 0 " +

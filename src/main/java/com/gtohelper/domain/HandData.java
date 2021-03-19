@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,6 +43,7 @@ public class HandData implements Serializable {
     // Calculated fields
     public PlayerHandData oopPlayer;
     public PlayerHandData ipPlayer;
+    public Actor lastPfAggressor;
     public int highestPreflopBetLevel; // eg, 1bet, 2bet, 3bet
     public SolvabilityLevel solveabilityLevel = SolvabilityLevel.NOT_SET;
 

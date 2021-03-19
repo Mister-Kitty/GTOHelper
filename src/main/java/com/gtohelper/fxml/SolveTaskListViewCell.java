@@ -42,6 +42,7 @@ public class SolveTaskListViewCell extends ListCell<SolveTask> {
     @Override
     public void updateItem(SolveTask task, boolean empty) {
         super.updateItem(task, empty);
+        clearSolveTaskStyleClasses();
 
         if (empty || task == null) {
             setGraphic(null);
@@ -75,6 +76,10 @@ public class SolveTaskListViewCell extends ListCell<SolveTask> {
             setMenuItemEnableStates(task);
             setGraphic(box);
         }
+    }
+
+    private void clearSolveTaskStyleClasses() {
+        getStyleClass().removeIf(style -> style.startsWith("solve-task"));
     }
 
     private void setMenuItemEnableStates(SolveTask task) {

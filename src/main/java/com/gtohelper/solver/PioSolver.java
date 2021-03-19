@@ -13,11 +13,6 @@ public class PioSolver implements ISolver {
     private BufferedReader input;
     private BufferedWriter output;
 
-    private GameTree tree;
-    private BettingOptions currentGame;
-
-    private int pot, effectiveStack;
-
     @Override
     public void connectAndInit(String pioLocation) throws IOException {
         ProcessBuilder pb = new ProcessBuilder(pioLocation);
@@ -38,8 +33,6 @@ public class PioSolver implements ISolver {
 
         writeToOutput("set_recalc_accuracy 0.0025 0.001 0.0005");
         readNLinesFromInput(1);
-
-        currentGame = new BettingOptions("PioSolver");
     }
 
     @Override
@@ -57,51 +50,7 @@ public class PioSolver implements ISolver {
     @Override
     public void setEffectiveStack(int stack) throws IOException {
         writeToOutput("set_eff_stack " + stack);
-        effectiveStack = stack;
         readNLinesFromInput(1);
-    }
-
-    @Override
-    public void setGameTreeOptions(int allInThresholdPercent, int allInOnlyIfLessThanNPercent,
-                                   boolean forceOOPBet, boolean forceOOPCheckIPBet) {
-        currentGame.options.allInThresholdPercent = allInThresholdPercent;
-        currentGame.options.allInOnlyIfLessThanNPercent = allInOnlyIfLessThanNPercent;
-
-        // TODO: Add logging in this instance.
-        if(forceOOPBet && forceOOPCheckIPBet)
-            return;
-        currentGame.options.forceOOPBet = forceOOPBet;
-        currentGame.options.forceOOPCheckIPBet = forceOOPCheckIPBet;
-    }
-
-    @Override
-    public void setIPFlop(boolean addAllIn, boolean dont3Bet, String betSizesString, String raiseSizesString) {
-        currentGame.IPFlop.setActionData(addAllIn, dont3Bet, betSizesString, raiseSizesString);
-    }
-
-    @Override
-    public void setIPTurn(boolean addAllIn, boolean dont3Bet, String betSizesString, String raiseSizesString) {
-        currentGame.IPTurn.setActionData(addAllIn, dont3Bet, betSizesString, raiseSizesString);
-    }
-
-    @Override
-    public void setIPRiver(boolean addAllIn, boolean dont3Bet, String betSizesString, String raiseSizesString) {
-        currentGame.IPRiver.setActionData(addAllIn, dont3Bet, betSizesString, raiseSizesString);
-    }
-
-    @Override
-    public void setOOPFlop(boolean addAllIn, String cbetSizesString, String raiseSizesString, String donkSizesString) {
-        currentGame.OOPFlop.setActionData(addAllIn, cbetSizesString, raiseSizesString, donkSizesString);
-    }
-
-    @Override
-    public void setOOPTurn(boolean addAllIn, String betSizesString, String raiseSizesString, String donkSizesString) {
-        currentGame.OOPTurn.setActionData(addAllIn, betSizesString, raiseSizesString, donkSizesString);
-    }
-
-    @Override
-    public void setOOPRiver(boolean addAllIn, String betSizesString, String raiseSizesString, String donkSizesString) {
-        currentGame.OOPRiver.setActionData(addAllIn, betSizesString, raiseSizesString, donkSizesString);
     }
 
     @Override
@@ -123,7 +72,6 @@ public class PioSolver implements ISolver {
     @Override
     public void setPotAndAccuracy(int oopInvestment, int ipInvestment, int pot, float chips) throws IOException {
         writeToOutput("set_pot " + oopInvestment + " " + ipInvestment + " " + pot);
-        this.pot = pot;
         readNLinesFromInput(1);
 
         writeToOutput("set_accuracy " + chips);
@@ -134,12 +82,6 @@ public class PioSolver implements ISolver {
     public void clearLines() throws IOException {
         writeToOutput("clear_lines");
         readNLinesFromInput(1);
-    }
-
-    @Override
-    public void buildTree() {
-        tree = new GameTree();
-        tree.buildGameTree(currentGame, pot, effectiveStack);
     }
 
     @Override
@@ -184,12 +126,7 @@ public class PioSolver implements ISolver {
     }
 
     @Override
-    public String setBuiltTreeAsActive() throws IOException {
-        ArrayList<String> leaves = tree.getAllInLeaves(currentGame);
-        for(String leaf : leaves) {
-            setAddLine(leaf);
-        }
-
+    public String buildTree() throws IOException {
         writeToOutput("build_tree");
         return readNLinesFromInput(1);
     }
@@ -204,7 +141,8 @@ public class PioSolver implements ISolver {
         return readFromInputUntilEND();
     }
 
-    private String setAddLine(String line) throws IOException {
+    @Override
+    public String addLine(String line) throws IOException {
         writeToOutput("add_line " + line);
         return readNLinesFromInput(1);
     }
@@ -225,11 +163,6 @@ public class PioSolver implements ISolver {
     public String getCalcResults() throws IOException {
         writeToOutput("calc_results");
         return readFromInputUntilEND();
-    }
-
-    @Override
-    public ArrayList<String> getAllInLeaves() {
-        return tree.getAllInLeaves(currentGame);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.gtohelper.datafetcher.models;
 
 import com.gtohelper.domain.*;
+import com.gtohelper.solver.GameTree;
 import com.gtohelper.solver.ISolver;
 import com.gtohelper.solver.PioSolver;
 import com.gtohelper.utility.*;
@@ -247,11 +248,13 @@ public class WorkQueueModel extends Saveable {
                         return;
                     } catch (InterruptedException e) {
                         // stopRequest has already been set.
+                        Logger.log(e); // should be removed. Here for the breakpoint
                     }
 
                     if (stopRequested) {
                         synchronized (pendingQueueLock) {
-                            pendingWorkQueue.add(current);
+                            if(current != null) // seems possible if .take() is inturrupted.
+                                pendingWorkQueue.add(current);
                         }
                         updateWorkGUICallback.run();
 
@@ -362,7 +365,8 @@ public class WorkQueueModel extends Saveable {
 
             HandData handData = solve.getHandData();
             int pot = handData.getValueAsChips(handData.amt_pot_f, settings.getChipsPerBB());
-            float effectiveStack = handData.getIPandOOPEffective();
+            float effectiveStackBlinds = handData.getIPandOOPEffective();
+            int effectiveStackChips = handData.getValueAsChips(effectiveStackBlinds, settings.getChipsPerBB());
 
             float solveAccuracy;
             if(settings.getUsePercentPotOverBBPerHundred()) {
@@ -376,45 +380,32 @@ public class WorkQueueModel extends Saveable {
 
             solver.setBoard(CardResolver.getFlopString(handData));
             solver.setPotAndAccuracy(0, 0, pot, solveAccuracy);
-            solver.setEffectiveStack(handData.getValueAsChips(effectiveStack, settings.getChipsPerBB()));
-
-            int allInThresholdPercent = 100;
-            int allInOnlyIfLessThanNPercent = 500;
-            final boolean forceOOPBet = false;
-            final boolean forceOOPCheckIPBet = false;
-            solver.setGameTreeOptions(allInThresholdPercent, allInOnlyIfLessThanNPercent, forceOOPBet, forceOOPCheckIPBet);
+            solver.setEffectiveStack(effectiveStackChips);
 
             final boolean flopIso = true;
             final boolean turnIso = false;
             solver.setIsomorphism(flopIso, turnIso);
 
-            solver.setIPFlop(bettingOptions.IPFlop.getAddAllIn(), !bettingOptions.IPFlop.getDont3BetPlus(),
-                    bettingOptions.IPFlop.getBets().getInitialString(), bettingOptions.IPFlop.getRaises().getInitialString());
-            solver.setOOPFlop(bettingOptions.OOPFlop.getAddAllIn(), bettingOptions.OOPFlop.getBets().getInitialString(),
-                    bettingOptions.OOPFlop.getDonks().getInitialString(), bettingOptions.OOPFlop.getRaises().getInitialString());
-
-            solver.setIPTurn(bettingOptions.IPTurn.getAddAllIn(), !bettingOptions.IPTurn.getDont3BetPlus(),
-                    bettingOptions.IPTurn.getBets().getInitialString(), bettingOptions.IPTurn.getRaises().getInitialString());
-            solver.setOOPTurn(bettingOptions.OOPTurn.getAddAllIn(), bettingOptions.OOPTurn.getBets().getInitialString(),
-                    bettingOptions.OOPTurn.getDonks().getInitialString(), bettingOptions.OOPTurn.getRaises().getInitialString());
-
-            solver.setIPRiver(bettingOptions.IPRiver.getAddAllIn(), !bettingOptions.IPRiver.getDont3BetPlus(),
-                    bettingOptions.IPRiver.getBets().getInitialString(), bettingOptions.IPRiver.getRaises().getInitialString());
-            solver.setOOPRiver(bettingOptions.OOPRiver.getAddAllIn(), bettingOptions.OOPRiver.getBets().getInitialString(),
-                    bettingOptions.OOPRiver.getDonks().getInitialString(), bettingOptions.OOPRiver.getRaises().getInitialString());
-
             solver.clearLines();
-            solver.buildTree();
 
-            results.setSetBuildTreeAsActive(solver.setBuiltTreeAsActive());
-            if(results.getSetBuildTreeAsActive().startsWith("ERROR")) {
-                String error = String.format("Error building tree. Reason: \n  %s", results.getSetBuildTreeAsActive());
+            // Send add_lines to solver.
+            GameTree tree = new GameTree();
+            HandSolveSettings handSolveSettings = new HandSolveSettings(handData, pot, effectiveStackChips);
+
+            tree.buildGameTree(bettingOptions, handSolveSettings);
+            for(String leaf : tree.getAllInLeaves(bettingOptions)) {
+                solver.addLine(leaf);
+            }
+
+            results.setBuildTree(solver.buildTree());
+            if(results.getBuildTree().startsWith("ERROR")) {
+                String error = String.format("Error building tree. Reason: \n  %s", results.getBuildTree());
                 Logger.log(Logger.Channel.SOLVER, error);
                 results.setError(error);
                 return results;
             }
 
-            // Rake is after tree building for some reason.
+            // Rake is after tree building (in pio) for some reason.
             if(settings.getUseRake() && rakeData != null) {
                 float percent = rakeData.getRakeForBB(handData.cnt_players);
                 float dollarCap = rakeData.getCapForBB(handData.amt_bb, handData.cnt_players);

@@ -75,7 +75,7 @@ public class Work implements Serializable {
             throw new IllegalStateException("No incomplete tasks found. This may be a corrupt work file.");
 
         // We have a nextTask if there exist any non-completed tasks. But we want to return tasks in a ring/loop.
-        for(int nextWorkIndex = nextTasksIndex(currentWorkIndex); ; nextWorkIndex = nextTasksIndex(currentWorkIndex)) {
+        for(int nextWorkIndex = nextTasksIndex(currentWorkIndex); ; nextWorkIndex = nextTasksIndex(nextWorkIndex)) {
 
             if(tasks.get(nextWorkIndex).getSolveState() == SolveTask.SolveTaskState.NEW ||
                     tasks.get(nextWorkIndex).getSolveState() == SolveTask.SolveTaskState.CFG_FOUND) {

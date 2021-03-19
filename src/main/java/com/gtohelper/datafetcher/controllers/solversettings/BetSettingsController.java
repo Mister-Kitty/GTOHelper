@@ -2,10 +2,12 @@ package com.gtohelper.datafetcher.controllers.solversettings;
 
 import com.gtohelper.datafetcher.models.solversettings.BetSettingsModel;
 import com.gtohelper.domain.BettingOptions;
+import com.gtohelper.utility.Popups;
 import com.gtohelper.utility.SaveFileHelper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.stage.Popup;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -35,6 +37,9 @@ public class BetSettingsController {
     CheckBox flopAllinOOP, turnAllinOOP, riverAllinOOP;
 
     @FXML
+    TextField allInThresholdPercent, addAllinOnlyIfPercentage;
+
+    @FXML
     Button saveButton, deleteButton;
 
     boolean saveIsOverwrite = false;
@@ -45,6 +50,20 @@ public class BetSettingsController {
 
     private BettingOptions buildGameTreeData() {
         BettingOptions data = new BettingOptions(settingsName.getText());
+        try {
+            data.options.allInThresholdPercent = Integer.parseInt(allInThresholdPercent.getText());
+        } catch(NumberFormatException e) {
+            String error = "'Allin threshold' value is invalid.";
+            Popups.showError(error);
+            return null;
+        }
+        try {
+            data.options.addAllinOnlyIfPercentage = Integer.parseInt(addAllinOnlyIfPercentage.getText());
+        } catch(NumberFormatException e) {
+            String error = "'Add allin only if' value is invalid.";
+            Popups.showError(error);
+            return null;
+        }
 
         data.IPFlop.setActionData(flopAllinIP.isSelected(), flopDont3BetPlus.isSelected(), flopBetIP.getText(), flopRaiseIP.getText());
         data.IPTurn.setActionData(turnAllinIP.isSelected(), turnDont3BetPlus.isSelected(), turnBetIP.getText(), turnRaiseIP.getText());
@@ -107,12 +126,18 @@ public class BetSettingsController {
 
     @FXML
     private void onSaveButtonPress() {
+        BettingOptions newItem = buildGameTreeData();
+        if(newItem == null)
+            return;
+
         String settingName = settingsName.getText();
         saveToBetSettingsNames(settingName);
 
-        BettingOptions newItem = buildGameTreeData();
         savedBetSettingsTable.getItems().add(newItem);
         savedBetSettingsTable.getSelectionModel().select(newItem);
+
+        betSettingsModel.saveSubGroupTextField(settingName, "allInThresholdPercent", allInThresholdPercent.getText());
+        betSettingsModel.saveSubGroupTextField(settingName, "addAllinOnlyIfPercentage", addAllinOnlyIfPercentage.getText());
 
         betSettingsModel.saveSubGroupTextField(settingName, "flopBetIP", flopBetIP.getText());
         betSettingsModel.saveSubGroupTextField(settingName, "flopRaiseIP", flopRaiseIP.getText());
@@ -243,6 +268,8 @@ public class BetSettingsController {
 
     private void loadTreeDataIntoGUI(BettingOptions treeData) {
         settingsName.setText(treeData.name);
+        addAllinOnlyIfPercentage.setText(String.valueOf(treeData.options.addAllinOnlyIfPercentage));
+        allInThresholdPercent.setText(String.valueOf(treeData.options.allInThresholdPercent));
 
         flopBetIP.setText(treeData.IPFlop.getBets().getInitialString());
         flopRaiseIP.setText(treeData.IPFlop.getRaises().getInitialString());
@@ -273,6 +300,13 @@ public class BetSettingsController {
 
     private void loadIntoTreeData(BettingOptions treeData, String key, String value) {
         switch(key) {
+            case "addAllinOnlyIfPercentage":
+                treeData.options.addAllinOnlyIfPercentage = Integer.parseInt(value);
+                break;
+            case "allInThresholdPercent":
+                treeData.options.allInThresholdPercent = Integer.parseInt(value);
+                break;
+
             case "flopBetIP":
                 treeData.IPFlop.setBets(value);
                 break;

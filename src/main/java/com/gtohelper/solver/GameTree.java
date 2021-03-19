@@ -4,34 +4,18 @@ package com.gtohelper.solver;
 import java.util.ArrayList;
 import java.util.function.Function;
 
-import com.gtohelper.domain.Action;
-import com.gtohelper.domain.BettingOptions;
+import com.gtohelper.domain.*;
 import com.gtohelper.domain.BettingOptions.Bets;
 import com.gtohelper.domain.BettingOptions.Raises;
 import com.gtohelper.domain.BettingOptions.StreetAction;
 import com.gtohelper.domain.BettingOptions.OOPStreetAction;
 import com.gtohelper.domain.BettingOptions.IPStreetAction;
-import com.gtohelper.domain.Street;
-
-enum Actor {
-    IP,
-    OOP;
-
-    public static Actor nextActor(Actor t) {
-        if(t == null)
-            return OOP;
-        else if(t.equals(IP))
-            return OOP;
-        else
-            return IP;
-    }
-}
 
 public class GameTree {
     private Node root;
 
-    public void buildGameTree(BettingOptions data, int pot, int effectiveStack) {
-        root = new Node(data, pot, effectiveStack);
+    public void buildGameTree(BettingOptions data, HandSolveSettings handSolveSettings) {
+        root = new Node(data, handSolveSettings);
     }
 
     public ArrayList<String> getAllInLeaves(BettingOptions options) {
@@ -56,27 +40,30 @@ class Node {
 
     NodeData nodeData;
 
+    Node root;
     Node parent;
     Node foldNode;
     Node checkCallNode;
     ArrayList<Node> betRaiseNodes;
 
     //root node
-    public Node(BettingOptions treeData, int pot, int effectiveStack) {
+    public Node(BettingOptions treeData, HandSolveSettings handSolveSettings) {
         nodeData = new NodeData();
-        nodeData.currentPot = pot;
-        nodeData.effectiveStack = effectiveStack;
+        nodeData.currentPot = handSolveSettings.initialPot;
+        nodeData.effectiveStack = handSolveSettings.initialEffectiveStack;
         nodeData.street = Street.PRE;
         nodeData.curActor = null;
-        nodeData.parentAction = Action.CHECK; // Helps the logic. Could maybe be null and add checks...
+        nodeData.parentAction = Action.CHECK;
 
         // Notice that we start as Preflop on root node, so that our flop checks/donks have a parent street of Preflop.
-        checkCallNode = generateCheckNode(treeData);
+        root = this;
+        checkCallNode = generateCheckNode(treeData, handSolveSettings);
         if(nodeData.effectiveStack > 0)
-            betRaiseNodes = generateBetRaiseNodes(treeData);
+            betRaiseNodes = generateBetRaiseNodes(treeData, handSolveSettings);
     }
 
-    public Node(Node p, BettingOptions treeData, NodeData d) {
+    public Node(Node p, BettingOptions treeData, NodeData d, HandSolveSettings handSolveSettings) {
+        root = p.root;
         parent = p;
         nodeData = d;
 
@@ -85,14 +72,14 @@ class Node {
         }
 
         if(nodeData.parentAction == Action.BET || nodeData.parentAction == Action.RAISE) {
-            foldNode = generateFoldNode(treeData);
-            checkCallNode = generateCallNode(treeData);
+            foldNode = generateFoldNode(treeData, handSolveSettings);
+            checkCallNode = generateCallNode(treeData, handSolveSettings);
         } else if (nodeData.parentAction == Action.CALL || nodeData.parentAction == Action.CHECK) {
-            checkCallNode = generateCheckNode(treeData);
+            checkCallNode = generateCheckNode(treeData, handSolveSettings);
         }
 
         if(nodeData.effectiveStack > 0)
-            betRaiseNodes = generateBetRaiseNodes(treeData);
+            betRaiseNodes = generateBetRaiseNodes(treeData, handSolveSettings);
 
     }
 
@@ -101,17 +88,17 @@ class Node {
 
         ArrayList<String> results =
             getArrayListOfFunctionOnAllNodes(
-                    (node) -> {
-                        if(node.isShowdownNode() && node.nodeData.parentAction == Action.CALL && node.nodeData.effectiveStack == 0)
-                            return node.parent.toString();
-                        // the don't 3bet edge case, where we add_lines that are not all in.
-                        // Since we don't generate a raise node from IP, we find the node where IP calls a 2-bet and add that.
-                        // Node curActor == OOP because it alternates on nodes.
-                        else if (dontThreeBetRiver && node.isShowdownNode() && node.nodeData.parentAction == Action.CALL &&
-                                node.parent.nodeData.parentAction == Action.RAISE && node.nodeData.curActor == Actor.OOP && node.nodeData.effectiveStack > 0)
-                            return node.parent.toString();
-                        else
-                            return "";
+                (node) -> {
+                    if(node.isShowdownNode() && node.nodeData.parentAction == Action.CALL && node.nodeData.effectiveStack == 0)
+                        return node.parent.toString();
+                    // the don't 3bet edge case, where we add_lines that are not all in.
+                    // Since we don't generate a raise node from IP, we find the node where IP calls a 2-bet and add that.
+                    // Node curActor == OOP because it alternates on nodes.
+                    else if (dontThreeBetRiver && node.isShowdownNode() && node.nodeData.parentAction == Action.CALL &&
+                            node.parent.nodeData.parentAction == Action.RAISE && node.nodeData.curActor == Actor.OOP && node.nodeData.effectiveStack > 0)
+                        return node.parent.toString();
+                    else
+                        return "";
             });
 
         ArrayList<String> nonEmptyResults = new ArrayList<>();
@@ -171,23 +158,33 @@ class Node {
 
      */
 
-    private Node generateFoldNode(BettingOptions treeData) {
-        return new Node(this, treeData, getNextFoldNodeData(this, treeData));
+    private Node generateFoldNode(BettingOptions treeData, HandSolveSettings handSolveSettings) {
+        return new Node(this, treeData, getNextFoldNodeData(this, treeData), handSolveSettings);
     }
 
-    private Node generateCheckNode(BettingOptions treeData) {
-         return new Node(this, treeData, getNextCheckNodeData(this, treeData));
+    private Node generateCheckNode(BettingOptions treeData, HandSolveSettings handSolveSettings) {
+         return new Node(this, treeData, getNextCheckNodeData(this, treeData), handSolveSettings);
     }
 
-    private Node generateCallNode(BettingOptions treeData) {
-        return new Node(this, treeData, getNextCallNodeData(this, treeData));
+    private Node generateCallNode(BettingOptions treeData, HandSolveSettings handSolveSettings) {
+        return new Node(this, treeData, getNextCallNodeData(this, treeData), handSolveSettings);
     }
 
-    private Node generateBetNode(BettingOptions treeData, int betSize) {
-        return new Node(this, treeData, getNextBetNodeData(this, treeData, betSize));
+    private int getAllInChipsThreshold(BettingOptions treeData) {
+        int initialEffectiveChips = root.nodeData.effectiveStack;
+        int currentChipsCommitted = initialEffectiveChips - nodeData.effectiveStack;
+
+        float commitmentPercentage = ((float) treeData.options.allInThresholdPercent) / 100;
+        int allInCommitmentThreshold = (int) Math.ceil(commitmentPercentage * initialEffectiveChips);
+
+        // we need to return the minimum number of chips N such that any bet >= N will go overtop our allIn threshold.
+        // AKA currentChipCommitment + N >= allInThreshold  or  N >= allInThreshold - currentChipCommitment
+
+        assert allInCommitmentThreshold - currentChipsCommitted >= 0;
+        return allInCommitmentThreshold - currentChipsCommitted;
     }
 
-    private ArrayList<Node> generateBetRaiseNodes(BettingOptions treeData) {
+    private ArrayList<Node> generateBetRaiseNodes(BettingOptions treeData, HandSolveSettings handSolveSettings) {
         ArrayList<Node> betRaiseNodes = new ArrayList<>();
         StreetAction actions = getStreetActions(treeData, nodeData.street, nodeData.curActor);
 
@@ -198,36 +195,36 @@ class Node {
         if(firstNode || OOPandWeCalledBetLastStreet) {
             // We're donking
             Bets donkBets = ((OOPStreetAction) actions).getDonks();
-            for(Integer betSize : donkBets.getSizeOfAllBets(nodeData.currentPot, nodeData.effectiveStack, 0, actions.getAddAllIn())) {
-                Node donkNode = new Node(this, treeData, getNextBetNodeData(this, treeData, betSize));
+            for(Integer betSize : donkBets.getSizeOfAllBets(nodeData.currentPot, nodeData.effectiveStack, 0,
+                    actions.getAddAllIn(), getAllInChipsThreshold(treeData), treeData.options.addAllinOnlyIfPercentage)) {
+                Node donkNode = new Node(this, treeData, getNextBetNodeData(this, betSize), handSolveSettings);
                 betRaiseNodes.add(donkNode);
             }
 
         } else if (facingCheckOrCall) {
             // We're betting
             Bets bets = actions.getBets();
-            for(Integer betSize : bets.getSizeOfAllBets(nodeData.currentPot, nodeData.effectiveStack, 0, actions.getAddAllIn())) {
-                Node betNode = new Node(this, treeData, getNextBetNodeData(this, treeData, betSize));
+            for(Integer betSize : bets.getSizeOfAllBets(nodeData.currentPot, nodeData.effectiveStack, 0,
+                    actions.getAddAllIn(), getAllInChipsThreshold(treeData), treeData.options.addAllinOnlyIfPercentage)) {
+                Node betNode = new Node(this, treeData, getNextBetNodeData(this, betSize), handSolveSettings);
                 betRaiseNodes.add(betNode);
             }
 
         } else {
             // We must be raising.
-            // But first, let's check the "don't 3-bet" IP option triggers.
+            // But first, let's check if the "don't 3-bet" IP option triggers.
             if(nodeData.curActor == Actor.IP) {
                 boolean dontThreeBet = ((IPStreetAction) actions).getDont3BetPlus();
-                boolean facingTwoBet = nodeData.parentAction == Action.RAISE; // This is, technically, facing 2 or more bet. But the logic works.
+                boolean facingTwoBet = nodeData.parentAction == Action.RAISE;
                 if(dontThreeBet && facingTwoBet)
                     return betRaiseNodes;
             }
 
             Raises bets = actions.getRaises();
 
-            // It's easier to break down a raise as a call + bet.
-            int currentPotAfterCall = nodeData.currentPot + nodeData.facingBet;
-
-            for(Integer raiseSize : bets.getSizeOfRaisesOntop(currentPotAfterCall, nodeData.effectiveStack, nodeData.facingBet, actions.getAddAllIn())) {
-                Node raiseNode = new Node(this, treeData, getNextRaiseNodeData(this, treeData, raiseSize));
+            for(Integer raiseToTotalOfSize : bets.getSizeOfRaisesOntop(nodeData.currentPot, nodeData.effectiveStack, nodeData.facingBet,
+                    actions.getAddAllIn(), getAllInChipsThreshold(treeData), treeData.options.addAllinOnlyIfPercentage)) {
+                Node raiseNode = new Node(this, treeData, getNextRaiseNodeData(this, raiseToTotalOfSize), handSolveSettings);
                 betRaiseNodes.add(raiseNode);
             }
 
@@ -290,7 +287,7 @@ class Node {
         return newNode;
     }
 
-    private NodeData getNextBetNodeData(Node parent, BettingOptions treeData, int betsize) {
+    private NodeData getNextBetNodeData(Node parent, int betsize) {
         NodeData newNode = new NodeData(parent.nodeData);
         newNode.parentAction = Action.BET;
         newNode.maxChipsInvestedByAPlayer += betsize;
@@ -309,7 +306,7 @@ class Node {
         return newNode;
     }
 
-    private NodeData getNextRaiseNodeData(Node parent, BettingOptions treeData, int raiseATotalOf) {
+    private NodeData getNextRaiseNodeData(Node parent, int raiseATotalOf) {
         // We need 'how much more on top' to adjust node stats properly.
         // So if we 3x from 50 to 150, the effective stack only drops by 100.
         int currentRaiseAfterCall = raiseATotalOf - nodeData.facingBet;
