@@ -16,13 +16,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class WorkQueueController {
+    public enum QueueType {
+        FINISHED,
+        CURRENT,
+        PENDING;
+    }
+
     WorkQueueModel workQueueModel;
 
     @FXML
@@ -44,8 +47,15 @@ public class WorkQueueController {
     @FXML
     ScrollPane taskInfoScrollPane;
 
-    @FXML
-    Work selectedItem;
+    private Work selectedItem;
+    private void setSelectedWork(Work newSelectedItem) {
+        selectedItem = newSelectedItem;
+        if(newSelectedItem == null)
+            solveTaskItems.clear();
+    }
+
+    private SolveTask currentlySolvingTask;
+    public SolveTask getCurrentlySolvingTask() { return currentlySolvingTask; }
 
     @FXML
     TextField handID, datePlayed, limit, potInBB, PFBetLevel, BBEffective, solveSuitability;
@@ -74,7 +84,7 @@ public class WorkQueueController {
     }
 
     public void loadModel(SaveFileHelper saveHelper) {
-        workQueueModel = new WorkQueueModel(saveHelper, this::updateSolverStatusCallback, this::workFinishedCallback, this::updateWorkGUICallback, this::updateTaskGUIForWorkCallback);
+        workQueueModel = new WorkQueueModel(saveHelper, this::updateSolverStatusCallback, this::updateStartedOnTaskCallback,  this::workFinishedCallback, this::updateWorkGUICallback, this::updateTaskGUIForWorkCallback);
         loadFieldsFromModel();
     }
 
@@ -90,11 +100,11 @@ public class WorkQueueController {
         solveTaskListView.setCellFactory(listView -> new SolveTaskListViewCell(this));
 
         finishedWork.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) -> changed("finished", oldValue, newValue));
+                (observable, oldValue, newValue) -> changed(QueueType.FINISHED, oldValue, newValue));
         currentWorkItem.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) -> changed("current", oldValue, newValue));
+                (observable, oldValue, newValue) -> changed(QueueType.CURRENT, oldValue, newValue));
         pendingWorkQueue.getSelectionModel().selectedItemProperty().addListener(
-                (observable, oldValue, newValue) -> changed("pending", oldValue, newValue));
+                (observable, oldValue, newValue) -> changed(QueueType.PENDING, oldValue, newValue));
         solveTaskListView.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> updateHandDataFields(newValue));
 
@@ -102,27 +112,26 @@ public class WorkQueueController {
         taskInfoScrollPane.setVisible(false);
     }
 
-    public void changed(String source, Work oldValue, Work newValue) {
+    public void changed(QueueType source, Work oldValue, Work newValue) {
         taskInfoScrollPane.setVisible(true); // don't want scroll bar to render with no work picked, as said above.
 
         if(newValue != null) {
-            selectedItem = newValue;
-            if(source.equals("finished")) {
+            setSelectedWork(newValue);
+            if(source == QueueType.FINISHED) {
                 currentWorkItem.getSelectionModel().clearSelection();
                 pendingWorkQueue.getSelectionModel().clearSelection();
-            } else if(source.equals("current")) {
+            } else if(source == QueueType.CURRENT) {
                 finishedWork.getSelectionModel().clearSelection();
                 pendingWorkQueue.getSelectionModel().clearSelection();
-            } else if(source.equals("pending")) {
+            } else if(source == QueueType.PENDING) {
                 finishedWork.getSelectionModel().clearSelection();
                 currentWorkItem.getSelectionModel().clearSelection();
             }
 
-
             // The hands list GUI needs to know the work's hero ~ which is strictly independant of the solve task.
             // So we get the hero for the work and rebuild the SolveTask GUI
             solveTaskItems.clear();
-            solveTaskListView.setCellFactory(listView -> new SolveTaskListViewCell(this, selectedItem.getWorkSettings().getHero().id_player));
+            solveTaskListView.setCellFactory(listView -> new SolveTaskListViewCell(this, source, selectedItem.getWorkSettings().getHero().id_player));
             solveTaskItems.addAll(selectedItem.getReadonlyTaskList());
         }
     }
@@ -259,6 +268,26 @@ public class WorkQueueController {
         }
     }
 
+    public void updateStartedOnTaskCallback(SolveTask task) {
+        if(task == null && currentlySolvingTask == null)
+            return;
+        // If we have a previous task in progress, we're fine.
+        // Solving state is set in the ViewCell's creation and not the SolveTask state ~ so recreation erases it.
+
+        // But let's check to make sure we actually need the refresh. May as well not do it if we don't need it.
+        boolean refreshNeeded = false;
+        if(selectedItem != null) {
+            if(currentlySolvingTask != null && solveTaskItems.contains(currentlySolvingTask))
+                refreshNeeded = true;
+            else if (task != null && solveTaskItems.contains(task))
+                refreshNeeded = true;
+        }
+
+        currentlySolvingTask = task;
+        if(refreshNeeded)
+            solveTaskListView.refresh();
+    }
+
     /*
         Here are callbacks we receive from after our construction, pulled out and set in GTOHelperController
      */
@@ -274,31 +303,6 @@ public class WorkQueueController {
 
     private GlobalSolverSettings getGlobalSolverSettings() {
         return getGlobalSolverSettingsCallback.get();
-    }
-
-    /*
-
-     */
-
-
-    // Figure out how much is done.
-    private void processCompletedWork(Work work, GlobalSolverSettings solverSettings) {
-        // Find all HandIDs present in our directory.
-        String directory = solverSettings.getSolverResultsFolder() + "\\" + work.getWorkSettings().getName();
-
-        for(String fileName : (new File(directory)).list((dir, name) -> name.endsWith(".cfr"))) {
-            int firstDashIndex = fileName.indexOf("-");
-            if(firstDashIndex == -1)
-                continue;
-
-            String handIdString = fileName.substring(0, firstDashIndex);
-            int handId = Integer.parseInt(handIdString);
-
-
-        }
-
-
-
     }
 
     /*
@@ -377,7 +381,8 @@ public class WorkQueueController {
 
     private boolean removeFromCSVTextFieldAndSave(String fieldName, String value) {
         String field = workQueueModel.loadTextField(fieldName);
-        List<String> resultsList = Arrays.asList(field.split(","));
+        ArrayList<String> resultsList = new ArrayList<>();
+        Collections.addAll(resultsList, field.split(","));
         boolean success = resultsList.remove(value);
         if(success) {
             String newString = String.join(",", resultsList);
@@ -396,14 +401,24 @@ public class WorkQueueController {
 
     public void moveFinishedWorkFileToRecycle(Work work) {
         boolean success = StateManager.recycleElseDeleteWorkFile(work);
-        if(success) finishedWorkItems.remove(work);
-        else Popups.showWarning("A problem occured. Check the logging tab for details.");
+        if(success) {
+            finishedWorkItems.remove(work);
+            if(selectedItem.equals(work))
+                setSelectedWork(null);
+        } else {
+            Popups.showWarning("A problem occured. Check the logging tab for details.");
+        }
     }
 
     public void moveFinishedWorkFolderToRecycle(Work work) {
         boolean success = StateManager.recycleElseDeleteWorkFolder(work);
-        if(success) finishedWorkItems.remove(work);
-        else Popups.showWarning("A problem occured. Check the logging tab for details.");
+        if(success) {
+            finishedWorkItems.remove(work);
+            if(selectedItem.equals(work))
+                setSelectedWork(null);
+        } else {
+            Popups.showWarning("A problem occured. Check the logging tab for details.");
+        }
     }
 
     public void movePendingWorkFileToRecycle(Work work) {
@@ -411,6 +426,8 @@ public class WorkQueueController {
         if(success) {
             removeFromCSVTextFieldAndSave("pendingWorkOrder", work.getName());
             workQueueModel.saveAllAndPopupOnError();
+            if(selectedItem.equals(work))
+                setSelectedWork(null);
         }
     }
 
@@ -419,6 +436,20 @@ public class WorkQueueController {
         if(success) {
             removeFromCSVTextFieldAndSave("pendingWorkOrder", work.getName());
             workQueueModel.saveAllAndPopupOnError();
+            if(selectedItem.equals(work))
+                setSelectedWork(null);
+        }
+    }
+
+    public void skipRemainingTasksAndFinishPendingWork(Work work) {
+        boolean removeSuccess = workQueueModel.removeWorkFromPending(work);
+
+        if(removeSuccess) {
+            work.skipRemainingTasks();
+            finishedWorkItems.add(work);
+            solveTaskListView.refresh();
+            rebuildAndSaveWorkQueueOrder();
+            StateManager.saveExistingWorkObject(selectedItem);
         }
     }
 
@@ -436,14 +467,86 @@ public class WorkQueueController {
         Below are functions for manipulating SolveTask
      */
 
-    public void ignoreSolveTaskFromCurrentWork(SolveTask solve) {
-        workQueueModel.setTaskStateForCurrentWork(selectedItem, solve, SolveTask.SolveTaskState.SKIPPED);
-        // workQueueModel calls updateTaskGUIForWorkCallback, so there is no further work.
+    public void ignoreSolveTask(SolveTask solve, QueueType fromThisQueue) {
+        // State check. User could hold context menu open, or some similar timing issue.
+        if(!selectedItem.getTasks().contains(solve) ||
+                solve.getSolveState() == SolveTask.SolveTaskState.SKIPPED ||
+                solve.getSolveState() == SolveTask.SolveTaskState.COMPLETED) {
+            assert false;
+            return;
+        }
+
+        if(fromThisQueue == QueueType.PENDING) {
+            workQueueModel.setTaskStateForWork(selectedItem, solve, SolveTask.SolveTaskState.SKIPPED);
+            // if we set the last task to ignore, we move over to finished.
+            // This is a special case. In most other instances the user has to move from either Pending or Finished queue.
+            if(!selectedItem.hasNextTask()) {
+                boolean removeSuccess = workQueueModel.removeWorkFromPending(selectedItem);
+                if(removeSuccess) {
+                    finishedWorkItems.add(selectedItem);
+                    rebuildAndSaveWorkQueueOrder();
+                    StateManager.saveExistingWorkObject(selectedItem);
+                }
+                // else we back out. He probably left the context menu open too long.
+            }
+        }
+
+        else if (fromThisQueue == QueueType.FINISHED) {
+            solve.setSolveState(SolveTask.SolveTaskState.SKIPPED);
+            StateManager.saveExistingWorkObject(selectedItem);
+        }
+
+        else if (fromThisQueue == QueueType.CURRENT) {
+            // Again, the user could hold the context menu open on purpose, let's check.
+            if(currentlySolvingTask.equals(solve)) {
+                assert false;
+                return;
+            }
+
+            solve.setSolveState(SolveTask.SolveTaskState.SKIPPED);
+            StateManager.saveExistingWorkObject(selectedItem);
+        }
+
+        selectedItem.refreshWorkItemGUI();
+        solveTaskListView.refresh();
     }
 
-    public void clearErrorIgnoreSolveTaskFromCurrentWork(SolveTask solve) {
-        workQueueModel.setTaskStateForCurrentWork(selectedItem, solve, SolveTask.SolveTaskState.NEW);
-        // workQueueModel calls updateTaskGUIForWorkCallback, so there is no further work.
-    }
+    public void clearErrorIgnoreSolveTask(SolveTask solve, QueueType fromThisQueue) {
+        // State check. User could hold context menu open, or some similar timing issue.
+        if(!selectedItem.getTasks().contains(solve) ||
+                solve.getSolveState() == SolveTask.SolveTaskState.NEW ||
+                solve.getSolveState() == SolveTask.SolveTaskState.COMPLETED ||
+                solve.getSolveState() == SolveTask.SolveTaskState.CFG_FOUND) {
+            assert false;
+            return;
+        }
 
+        if(fromThisQueue == QueueType.PENDING) {
+            workQueueModel.setTaskStateForWork(selectedItem, solve, SolveTask.SolveTaskState.NEW);
+            StateManager.saveExistingWorkObject(selectedItem);
+        }
+
+        else if (fromThisQueue == QueueType.FINISHED) {
+            solve.setSolveState(SolveTask.SolveTaskState.NEW);
+            StateManager.saveExistingWorkObject(selectedItem);
+
+            // Clearing a task here may unlock some of it's context menu commands.
+            // There's no way to get the ListViewCell in order to refresh it. This sucks...
+            finishedWork.refresh();
+        }
+
+        else if (fromThisQueue == QueueType.CURRENT) {
+            // Again, the user could hold the context menu open on purpose, let's check.
+            if(currentlySolvingTask.equals(solve)) {
+                assert false;
+                return;
+            }
+
+            solve.setSolveState(SolveTask.SolveTaskState.NEW);
+            StateManager.saveExistingWorkObject(selectedItem);
+        }
+
+        selectedItem.refreshWorkItemGUI();
+        solveTaskListView.refresh();
+    }
 }

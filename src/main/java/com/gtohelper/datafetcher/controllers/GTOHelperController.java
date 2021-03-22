@@ -156,10 +156,8 @@ public class GTOHelperController  {
             }
         }
 
-        long id = 1L;
         for(HandData hand : hands) {
-            solveList.add(new SolveTask(id, hand));
-            id++;
+            solveList.add(new SolveTask(hand));
         }
 
         return new Work(solveList, settings, workRanges, treeData, rakeData);

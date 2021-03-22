@@ -1,10 +1,9 @@
 package com.gtohelper.fxml;
 
 import com.gtohelper.datafetcher.controllers.WorkQueueController;
+import com.gtohelper.datafetcher.controllers.WorkQueueController.QueueType;
 import com.gtohelper.domain.SolveTask;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.MenuItem;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 
@@ -14,26 +13,31 @@ public class SolveTaskListViewCell extends ListCell<SolveTask> {
     MenuItem clearErrorIgnore = new MenuItem();
 
     WorkQueueController workController;
+    QueueType source;
     SolveTask thisSolveTask;
     int heroId;
 
-    public SolveTaskListViewCell(WorkQueueController controller, int heroPlayerId) {
+    boolean isSolving = false;
+
+    public SolveTaskListViewCell(WorkQueueController controller, QueueType sourceQueue, int heroPlayerId) {
         this(controller);
         heroId = heroPlayerId;
+        source = sourceQueue;
+        initializeContextMenu();
     }
 
+    // I think we can actually just remove the Controller call to this.... whatever.
     public SolveTaskListViewCell(WorkQueueController controller) {
         super();
         workController = controller;
-        initializeContextMenu();
     }
 
     private void initializeContextMenu() {
         ignore.setText("Skip / ignore");
-        ignore.setOnAction(event ->  workController.ignoreSolveTaskFromCurrentWork(thisSolveTask));
+        ignore.setOnAction(event ->  workController.ignoreSolveTask(thisSolveTask, source));
 
         clearErrorIgnore.setText("Clear error / ignore state");
-        clearErrorIgnore.setOnAction(event ->  workController.clearErrorIgnoreSolveTaskFromCurrentWork(thisSolveTask));
+        clearErrorIgnore.setOnAction(event ->  workController.clearErrorIgnoreSolveTask(thisSolveTask, source));
 
         contextMenu.getItems().add(ignore);
         contextMenu.getItems().add(clearErrorIgnore);
@@ -49,7 +53,6 @@ public class SolveTaskListViewCell extends ListCell<SolveTask> {
             setContextMenu(null);
             thisSolveTask = null;
         } else {
-
             if (task.getSolveState() == SolveTask.SolveTaskState.COMPLETED)
                 getStyleClass().add("solve-task-completed");
             else if (task.getSolveState() == SolveTask.SolveTaskState.ERRORED)
@@ -64,12 +67,22 @@ public class SolveTaskListViewCell extends ListCell<SolveTask> {
              */
             HBox box = new HBox();
             Board b = new Board(task.getHandData());
-            Text space = new Text(" - ");
+            Text dash = new Text(" - ");
             Hand h = new Hand(task.getHandData().getHandDataForPlayer(heroId));
 
             box.getChildren().add(h);
-            box.getChildren().add(space);
+            box.getChildren().add(dash);
             box.getChildren().add(b);
+
+            isSolving = workController.getCurrentlySolvingTask() != null && workController.getCurrentlySolvingTask().equals(task);
+            if(isSolving) {
+                ProgressIndicator p = new ProgressIndicator();
+                p.setProgress(ProgressBar.INDETERMINATE_PROGRESS);
+                p.setMaxSize(16, 16); // Should be setScale(), but that function isn't behaving well
+
+                box.getChildren().add(new Text("  "));
+                box.getChildren().add(p);
+            }
 
             thisSolveTask = task;
             setContextMenu(contextMenu);
@@ -86,23 +99,20 @@ public class SolveTaskListViewCell extends ListCell<SolveTask> {
         ignore.disableProperty().set(true);
         clearErrorIgnore.disableProperty().set(true);
 
-        switch (task.getSolveState()) {
-            case NEW:
-            case CFG_FOUND:
-                ignore.disableProperty().set(false);
-                break;
-            case SKIPPED:
-                clearErrorIgnore.disableProperty().set(false);
-                break;
-            case COMPLETED:
+        SolveTask.SolveTaskState solveState = task.getSolveState();
+        if(isSolving) {
+            return;
+        } else if (solveState == SolveTask.SolveTaskState.NEW) {
+            ignore.disableProperty().set(false);
+        } else if (solveState == SolveTask.SolveTaskState.CFG_FOUND) {
+            ignore.disableProperty().set(false);
+        } else if (solveState == SolveTask.SolveTaskState.SKIPPED) {
+            clearErrorIgnore.disableProperty().set(false);
+        } else if (solveState == SolveTask.SolveTaskState.COMPLETED) {
 
-                break;
-            case ERRORED:
-                ignore.disableProperty().set(false);
-                clearErrorIgnore.disableProperty().set(false);
-                break;
+        } else if (solveState == SolveTask.SolveTaskState.ERRORED) {
+            ignore.disableProperty().set(false);
+            clearErrorIgnore.disableProperty().set(false);
         }
-
-
     }
 }

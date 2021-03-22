@@ -48,7 +48,7 @@ public class FinishedWorkListViewCell extends WorkListViewCellBase {
     }
 
     @Override
-    protected void setMenuItemEnableStates(Work work) {
+    public void refreshMenuItemEnableStates(Work work) {
         if(thisWork.hasNextTask())
             moveToPendingWorkQueue.disableProperty().set(false);
         else

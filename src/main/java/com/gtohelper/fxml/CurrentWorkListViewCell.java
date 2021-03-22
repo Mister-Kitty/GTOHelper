@@ -37,7 +37,7 @@ public class CurrentWorkListViewCell extends WorkListViewCellBase {
     }
 
     @Override
-    protected void setMenuItemEnableStates(Work work) {
+    public void refreshMenuItemEnableStates(Work work) {
 
 
     }

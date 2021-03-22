@@ -10,6 +10,7 @@ import javafx.scene.control.SeparatorMenuItem;
 public class PendingWorkListViewCell extends WorkListViewCellBase {
     MenuItem moveUp = new MenuItem();
     MenuItem moveDown = new MenuItem();
+    MenuItem skipRemainingAndFinish = new MenuItem();
     SeparatorMenuItem separator = new SeparatorMenuItem();
     MenuItem delete = new MenuItem();
     MenuItem deleteAndClean = new MenuItem();
@@ -27,6 +28,9 @@ public class PendingWorkListViewCell extends WorkListViewCellBase {
         moveDown.setText("Move down");
         moveDown.setOnAction(event -> workController.moveWorkDown(thisWork));
 
+        skipRemainingAndFinish.setText("Skip remaining tasks and finish");
+        skipRemainingAndFinish.setOnAction(event -> workController.skipRemainingTasksAndFinishPendingWork(thisWork));
+
         delete.setText("Delete");
         delete.setOnAction(event -> {
             boolean choice = Popups.showConfirmation(String.format("Move work item %s's .gto file to the Recycle Bin? Solve CFG files will remain.", thisWork.toString()));
@@ -43,13 +47,14 @@ public class PendingWorkListViewCell extends WorkListViewCellBase {
 
         contextMenu.getItems().add(moveUp);
         contextMenu.getItems().add(moveDown);
+        contextMenu.getItems().add(skipRemainingAndFinish);
         contextMenu.getItems().add(separator);
         contextMenu.getItems().add(delete);
         contextMenu.getItems().add(deleteAndClean);
     }
 
     @Override
-    protected void setMenuItemEnableStates(Work work) {
+    public void refreshMenuItemEnableStates(Work work) {
         if(getIndex() > 0)
             moveUp.disableProperty().set(false);
         else

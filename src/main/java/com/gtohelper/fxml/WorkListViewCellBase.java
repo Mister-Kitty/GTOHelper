@@ -28,10 +28,10 @@ public abstract class WorkListViewCellBase extends ListCell<Work> {
             WorkItem data = new WorkItem(work);
             thisWork = work;
             setContextMenu(contextMenu);
-            setMenuItemEnableStates(work);
+            refreshMenuItemEnableStates(work);
             setGraphic(data.getRootGridPane());
         }
     }
 
-    protected abstract void setMenuItemEnableStates(Work work);
+    public abstract void refreshMenuItemEnableStates(Work work);
 }

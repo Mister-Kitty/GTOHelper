@@ -17,7 +17,7 @@ public class Work implements Serializable {
 
     private String error;
     private transient Path saveFileLocation;
-    private transient int currentWorkIndex = -1;
+    private transient int currentTaskIndex = -1;
 
     // To be clear, the first updates the work GUI and the second updates the task GUI.
     private transient Consumer<Work> progressCallbackToWorkItemGUI;
@@ -75,21 +75,25 @@ public class Work implements Serializable {
             throw new IllegalStateException("No incomplete tasks found. This may be a corrupt work file.");
 
         // We have a nextTask if there exist any non-completed tasks. But we want to return tasks in a ring/loop.
-        for(int nextWorkIndex = nextTasksIndex(currentWorkIndex); ; nextWorkIndex = nextTasksIndex(nextWorkIndex)) {
+        for(int nextTaskIndex = nextTasksIndex(currentTaskIndex); ; nextTaskIndex = nextTasksIndex(nextTaskIndex)) {
 
-            if(tasks.get(nextWorkIndex).getSolveState() == SolveTask.SolveTaskState.NEW ||
-                    tasks.get(nextWorkIndex).getSolveState() == SolveTask.SolveTaskState.CFG_FOUND) {
-                currentWorkIndex = nextWorkIndex;
-                return tasks.get(nextWorkIndex);
+            if(tasks.get(nextTaskIndex).getSolveState() == SolveTask.SolveTaskState.NEW ||
+                    tasks.get(nextTaskIndex).getSolveState() == SolveTask.SolveTaskState.CFG_FOUND) {
+                currentTaskIndex = nextTaskIndex;
+                return tasks.get(nextTaskIndex);
             }
         }
+    }
+
+    public void resetTaskIndex() {
+        currentTaskIndex = -1;
     }
 
     private int nextTasksIndex(int index) {
         return (index + 1) % tasks.size();
     }
     private SolveTask getCurrentTask() {
-        return tasks.get(currentWorkIndex);
+        return tasks.get(currentTaskIndex);
     }
 
     /*
@@ -132,6 +136,13 @@ public class Work implements Serializable {
         return (int) tasks.stream().filter(t -> t.getSolveState() == SolveTask.SolveTaskState.NEW).count();
     }
 
+    public void skipRemainingTasks() {
+        tasks.forEach(t -> {
+            if(t.getSolveState() == SolveTask.SolveTaskState.NEW || t.getSolveState() == SolveTask.SolveTaskState.CFG_FOUND)
+                t.setSolveState(SolveTask.SolveTaskState.SKIPPED);
+        });
+    }
+
     /*
         Data/Object field accessors
      */
@@ -167,6 +178,10 @@ public class Work implements Serializable {
     public void setProgressCallbackToWorkItemGUI(Consumer<Work> callback) {
         progressCallbackToWorkItemGUI = callback;
     }
+    public void refreshWorkItemGUI() {
+        if(progressCallbackToWorkItemGUI != null)
+            progressCallbackToWorkItemGUI.accept(this);
+    }
 
     public Work(List<SolveTask> w, WorkSettings settings, Ranges r, BettingOptions b) {
         this(w, settings, r, b, null);
@@ -192,8 +207,7 @@ public class Work implements Serializable {
 
     // Awkward name... just call this after workSuccess() etc.
     private void afterTaskAttemptedReported(SolveTask currentTask) {
-        if(progressCallbackToWorkItemGUI != null)
-            progressCallbackToWorkItemGUI.accept(this);
+        refreshWorkItemGUI();
     }
 
     public String getFileNameForSolve(SolveTask solve) {

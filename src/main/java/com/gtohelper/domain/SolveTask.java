@@ -1,10 +1,11 @@
 package com.gtohelper.domain;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 public class SolveTask implements Serializable {
     private static final long serialVersionUID = 1L;
-    private final long id;
+    private final UUID id = UUID.randomUUID();
 
     /*
         The existence of SolveResults isn't sufficient to say that the work is completed, as these
@@ -24,8 +25,7 @@ public class SolveTask implements Serializable {
     private SolverOutput solverOutput;
     private HandSolverAnalysis handSolverAnalysis;
 
-    public SolveTask(long solveId, HandData h) {
-        id = solveId;
+    public SolveTask(HandData h) {
         handData = h;
     }
 
@@ -57,6 +57,6 @@ public class SolveTask implements Serializable {
             return false;
         }
 
-        return ((SolveTask) obj).id == (this.id);
+        return ((SolveTask) obj).id.equals(this.id);
     }
 }

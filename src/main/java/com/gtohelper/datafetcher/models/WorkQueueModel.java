@@ -22,7 +22,8 @@ import java.util.function.Consumer;
 public class WorkQueueModel extends Saveable {
     private QueueWorker worker;
     Consumer<Boolean> updateSolverStatusCallback;
-    Consumer<Work> deliverFinishedWorkCallback;
+    Consumer<SolveTask> updateStartedOnTaskCallback;
+    Consumer<Work> updateWorkAsFinishedCallback;
     Runnable updateWorkGUICallback;
     Consumer<Work> updateTaskGUIForWorkCallback;
 
@@ -31,12 +32,13 @@ public class WorkQueueModel extends Saveable {
     private Object pendingQueueLock = new Object();
     private LinkedBlockingQueue<Work> pendingWorkQueue;
 
-    public WorkQueueModel(SaveFileHelper saveHelper, Consumer<Boolean> solverStatusCallback, Consumer<Work> deliverFinishedWork,
-                          Runnable updateWorkGUI, Consumer<Work> updateTaskGUIForWork) {
+    public WorkQueueModel(SaveFileHelper saveHelper, Consumer<Boolean> solverStatusCallback, Consumer<SolveTask> startedOnTaskCallback,
+                          Consumer<Work> deliverFinishedWork, Runnable updateWorkGUI, Consumer<Work> updateTaskGUIForWork) {
         super(saveHelper, "WorkQueue");
         pendingWorkQueue = new LinkedBlockingQueue<>();
         updateSolverStatusCallback = solverStatusCallback;
-        deliverFinishedWorkCallback = deliverFinishedWork;
+        updateStartedOnTaskCallback = startedOnTaskCallback;
+        updateWorkAsFinishedCallback = deliverFinishedWork;
         updateWorkGUICallback = updateWorkGUI;
         updateTaskGUIForWorkCallback = updateTaskGUIForWork;
     }
@@ -109,6 +111,14 @@ public class WorkQueueModel extends Saveable {
 
      */
 
+    public boolean removeWorkFromPending(Work work) {
+        synchronized (pendingQueueLock) {
+        boolean success = pendingWorkQueue.remove(work);
+            updateWorkGUICallback.run();
+            return success;
+        }
+    }
+
     public boolean movePendingWorkFileToRecycle(Work work) {
         synchronized (pendingQueueLock) {
             // Race condition of someone clicking the context menu and the work moving up the queue...
@@ -124,6 +134,7 @@ public class WorkQueueModel extends Saveable {
             else
                 Popups.showWarning("A problem occured. Check the logging tab for details.");
 
+            updateWorkGUICallback.run();
             return success;
         }
     }
@@ -141,11 +152,12 @@ public class WorkQueueModel extends Saveable {
             else
                 Popups.showWarning("A problem occured. Check the logging tab for details.");
 
+            updateWorkGUICallback.run();
             return success;
         }
     }
 
-    public void setTaskStateForCurrentWork(Work work, SolveTask task, SolveTask.SolveTaskState state) {
+    public void setTaskStateForWork(Work work, SolveTask task, SolveTask.SolveTaskState state) {
         /*
             This is trivial because we share object references to the underlying SolveTask instance.
             This function is being built out for the sake of modularity and the easy of future separation into separate programs.
@@ -162,6 +174,7 @@ public class WorkQueueModel extends Saveable {
         }
 
         updateTaskGUIForWorkCallback.accept(work);
+        updateWorkGUICallback.run();
     }
 
     /*
@@ -251,6 +264,7 @@ public class WorkQueueModel extends Saveable {
                         Logger.log(e); // should be removed. Here for the breakpoint
                     }
 
+                    updateStartedOnTaskCallback.accept(null);
                     if (stopRequested) {
                         synchronized (pendingQueueLock) {
                             if(current != null) // seems possible if .take() is inturrupted.
@@ -268,7 +282,7 @@ public class WorkQueueModel extends Saveable {
 
                         return;
                     } else {
-                        deliverFinishedWorkCallback.accept(current);
+                        updateWorkAsFinishedCallback.accept(current);
                         current = null;
                         updateWorkGUICallback.run();
                     }
@@ -298,6 +312,7 @@ public class WorkQueueModel extends Saveable {
                  */
                 SolverOutput results;
                 boolean solveFileFound;
+                updateStartedOnTaskCallback.accept(currentTask);
                 if(currentTask.getSolveState() == SolveTask.SolveTaskState.CFG_FOUND) {
                     // Note that we allow any cfg file name as long as it starts with the handid. So we use the file name found
                     // (and stored) in the SolveState rather than the generated filename.
@@ -316,8 +331,11 @@ public class WorkQueueModel extends Saveable {
                 /*
                     Back out of saving state early if we are told to stop
                  */
-                if(stopRequested)
+                if(stopRequested) {
+                    // Stopping the task should reset it's work index
+                    work.resetTaskIndex();
                     return;
+                }
 
                 /*
                     Save state and dump results. workSuccess() and workFailed() will increment internal work.CurrentTask.

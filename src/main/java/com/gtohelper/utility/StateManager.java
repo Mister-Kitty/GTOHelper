@@ -171,6 +171,7 @@ public class StateManager {
             if(!success)
                 return null;
 
+            work.resetTaskIndex(); // task index is defined as transient, which aparently will ignore the = -1 default value.
             return work;
         } catch (IOException e) {
             Logger.log("File read error trying to get Work data from \"" + file.toString() + "\" .");

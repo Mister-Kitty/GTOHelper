@@ -33,6 +33,9 @@ public class PioSolver implements ISolver {
 
         writeToOutput("set_recalc_accuracy 0.0025 0.001 0.0005");
         readNLinesFromInput(1);
+
+        writeToOutput("set_info_freq 2");
+        readNLinesFromInput(1);
     }
 
     @Override
