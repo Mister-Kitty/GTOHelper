@@ -250,8 +250,8 @@ public class StateManager {
                 Optional<Path> result = Files.find(workFile.getParent(), 1, (path, basicFileAttributes) ->
                         path.toFile().getName().matches(String.format("%d -.*.cfr", handId))).findFirst();
 
-                if(result.isPresent() && solve.getSolveResults() != null) {
-                    solve.getSolveResults().solveFile = result.get();
+                if(result.isPresent() && solve.getSolverOutput() != null) {
+                    solve.getSolverOutput().solveFile = result.get();
                 } else if (result.isPresent()) {
                     // Solve Results is null.
                     // Maybe we've copied in existing results for the work?
@@ -259,12 +259,12 @@ public class StateManager {
                     SolverOutput results = new SolverOutput();
                     results.solveFile = result.get();
 
-                    solve.saveSolveResults(results);
+                    solve.saveSolverOutput(results);
                     solve.setSolveState(SolveTask.SolveTaskState.CFG_FOUND);
 
                     Logger.log(String.format("Found solve file %s which matches a hand to be solved by work %s.\n" +
                             "However, solve metadata/statistics were not found in work. Process work through queue to load and resolve hand stats.",
-                            solve.getSolveResults().solveFile, work.toString()));
+                            solve.getSolverOutput().solveFile, work.toString()));
 
                 }
 

@@ -1,10 +1,11 @@
 package com.gtohelper.solver;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 public interface ISolver {
-    void connectAndInit(String pioLocation) throws IOException;
+    void connectAndInitToSolver(String solverLocation) throws IOException;
 
     void setRange(String position, String range) throws IOException;
     void setBoard(String board) throws IOException;
@@ -16,7 +17,6 @@ public interface ISolver {
     void clearLines() throws IOException;
     String addLine(String line) throws IOException;
     String buildTree() throws IOException;
-
 
     String getEstimateSchematicTree() throws IOException;
     String getShowMemory() throws IOException;

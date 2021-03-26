@@ -32,12 +32,13 @@ public class SolveTask implements Serializable {
     public SolveTaskState getSolveState() { return solveState; }
     public void setSolveState(SolveTaskState state) { solveState = state; }
     public boolean hasError() { return solverOutput.hasError(); }
+    public String getError() { return solverOutput.getError(); }
     public HandData getHandData() { return handData; }
-    public SolverOutput getSolveResults() {
+    public SolverOutput getSolverOutput() {
         return solverOutput;
     }
 
-    public void saveSolveResults(SolverOutput results) {
+    public void saveSolverOutput(SolverOutput results) {
         assert results.success != results.hasError();
         solverOutput = results;
 

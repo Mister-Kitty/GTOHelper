@@ -23,6 +23,7 @@ public class SolverOutput implements Serializable {
 
     public boolean hasError() { return error != null && !error.isEmpty(); }
     public void setError(String error) { this.error = error; }
+    public String getError() { return error;}
     public void setBuildTree(String output) { buildTree = output; }
     public String getBuildTree() { return buildTree; }
     public void setEstimateSchematicTree(String output) { estimateSchematicTree = output; }

@@ -3,6 +3,9 @@ package com.gtohelper.datafetcher.controllers;
 import com.gtohelper.datafetcher.models.WorkQueueModel;
 import com.gtohelper.domain.*;
 import com.gtohelper.fxml.*;
+import com.gtohelper.solver.ISolver;
+import com.gtohelper.solver.PioSolver;
+import com.gtohelper.solver.PioViewer;
 import com.gtohelper.utility.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -11,7 +14,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.text.Text;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -137,13 +139,12 @@ public class WorkQueueController {
     }
 
     private void updateHandDataFields(SolveTask task) {
+        setSolveStateFieldsVisibility(false);
         if(task == null) {
             handID.setText(""); datePlayed.setText(""); limit.setText(""); potInBB.setText(""); PFBetLevel.setText("");
             BBEffective.setText(""); solveSuitability.setText("");
             OOPName.setText(""); OOPSeat.setText(""); OOPHand.setText(""); OOPAction.setText("");
             IPName.setText(""); IPSeat.setText(""); IPHand.setText(""); IPAction.setText("");
-
-            setSolveStateFieldsVisibility(false);
         } else {
             HandData handData = task.getHandData();
             handID.setText(""+handData.id_hand);
@@ -163,27 +164,47 @@ public class WorkQueueController {
             IPAction.setText(handData.ipPlayer.getCompactedActionStrings("  |  "));
 
             if(task.getSolveState() == SolveTask.SolveTaskState.COMPLETED)
-                setCompletedSolveStateFields();
+                setCompletedSolveStateFields(task);
+            else if(task.getSolveState() == SolveTask.SolveTaskState.CFG_FOUND)
+                setCfgFoundSolveStateFields();
             else if(task.getSolveState() == SolveTask.SolveTaskState.SKIPPED)
                 setSkippedSolveStateFields();
             else if(task.getSolveState() == SolveTask.SolveTaskState.NEW)
                 setNewSolveStateFields();
             else if(task.getSolveState() == SolveTask.SolveTaskState.ERRORED)
-                setErroredSolveStateFields();
+                setErroredSolveStateFields(task);
         }
     }
 
     private void setSolveStateFieldsVisibility(boolean visibility) {
-        taskStateText1.setVisible(visibility); taskStateText2.setVisible(visibility); taskStateText3.setVisible(visibility); taskStateText4.setVisible(visibility);
-        taskStateField1.setVisible(visibility); taskStateField2.setVisible(visibility); taskStateField3.setVisible(visibility); taskStateField4.setVisible(visibility);
+        taskStateText1.setVisible(visibility); taskStateText2.setVisible(visibility);
+        taskStateText3.setVisible(visibility); taskStateText4.setVisible(visibility);
+        taskStateField1.setVisible(visibility); taskStateField2.setVisible(visibility);
+        taskStateField3.setVisible(visibility); taskStateField4.setVisible(visibility);
+
+        viewInPioViewer.disableProperty().set(true);
     }
 
-    private void setCompletedSolveStateFields() {
-        taskStateHeader.setText("Completed Solve:");
+    private void setCompletedSolveStateFields(SolveTask task) {
+        taskStateHeader.setText("Completed Solve");
+
+        if(getGlobalSolverSettings().getViewerLocation() != null && !getGlobalSolverSettings().getViewerLocation().toString().isEmpty()) {
+            viewInPioViewer.setOnAction(e -> {
+                displayHand(task.getSolverOutput().solveFile);
+            });
+            viewInPioViewer.disableProperty().set(false);
+        }
+
+    }
+
+    private void setCfgFoundSolveStateFields() {
+        taskStateHeader.setText("CFG Found");
+        taskStateText1.setVisible(true);
+        taskStateText1.setText("Run this task to compute results from CFG file.");
     }
 
     private void setSkippedSolveStateFields() {
-        taskStateHeader.setText("Skipped Solve:");
+        taskStateHeader.setText("Skipped Solve");
 
     }
 
@@ -191,9 +212,48 @@ public class WorkQueueController {
 
     }
 
-    private void setErroredSolveStateFields() {
-        taskStateHeader.setText("Completed Solve:");
+    private void setErroredSolveStateFields(SolveTask task) {
+        taskStateHeader.setText("Errored Solve");
 
+        boolean hasWorkError = selectedItem.hasError();
+        boolean hasTaskError = task.hasError();
+
+        if(hasWorkError && hasTaskError) {
+            taskStateText1.setVisible(true);
+            taskStateText1.setText("Work error: ");
+            taskStateField1.setVisible(true);
+            taskStateField1.setText(selectedItem.getError());
+
+            taskStateText2.setVisible(true);
+            taskStateText2.setText("Task error: ");
+            taskStateField2.setVisible(true);
+            taskStateField2.setText(task.getSolverOutput().getError());
+        } else if (hasWorkError) {
+            taskStateText1.setVisible(true);
+            taskStateText1.setText("Work error: ");
+            taskStateField1.setVisible(true);
+            taskStateField1.setText(selectedItem.getError());
+        } else if (hasTaskError) {
+            taskStateText1.setVisible(true);
+            taskStateText1.setText("Task error: ");
+            taskStateField1.setVisible(true);
+            taskStateField1.setText(task.getSolverOutput().getError());
+        } else {
+            assert false;
+        }
+
+    }
+
+    // I may wanna build out a utility class for stuff like this...
+    private void displayHand(Path cfgPath) {
+        try {
+            PioViewer.launchViewerForCFG(getGlobalSolverSettings().getViewerLocation(), cfgPath);
+        } catch (IOException e) {
+            String error = String.format("Error launching PioViewer for CFG hand at %s.", cfgPath.toAbsolutePath().toString());
+            Popups.showError(error);
+            Logger.log(error);
+            Logger.log(e);
+        }
     }
 
     @FXML

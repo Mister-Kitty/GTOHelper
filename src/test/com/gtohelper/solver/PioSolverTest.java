@@ -17,7 +17,7 @@ class PioSolverTest {
 
     @BeforeAll
     public static void setup() throws IOException {
-        solver.connectAndInit(pioLocation);
+        solver.connectAndInitToSolver(pioLocation);
     }
 
     @AfterAll

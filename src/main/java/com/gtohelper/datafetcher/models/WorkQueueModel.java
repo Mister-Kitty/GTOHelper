@@ -216,7 +216,7 @@ public class WorkQueueModel extends Saveable {
             solverSettings = solveSettings;
             try {
                 solver = new PioSolver();
-                solver.connectAndInit(solverSettings.getSolverLocation().toString());
+                solver.connectAndInitToSolver(solverSettings.getSolverLocation().toString());
             } catch (IOException e) {
                 String error = "Error occured launching Pio. Perhaps the executable address changed or we do not have read permission? See log for error details.";
                 Logger.log(e);
@@ -317,7 +317,7 @@ public class WorkQueueModel extends Saveable {
                     // Note that we allow any cfg file name as long as it starts with the handid. So we use the file name found
                     // (and stored) in the SolveState rather than the generated filename.
                     solveFileFound = true;
-                    results = loadSolve(currentTask.getSolveResults().solveFile);
+                    results = loadSolve(currentTask.getSolverOutput().solveFile);
                 } else if(Files.exists(fullFilePath)) {
                     // Given our file check on startup, we should only this this if someone pastes a file in during runtime.
                     Logger.log(String.format("For work %s the solve results file %s already exists. Loading & computing results.", work.toString(), cfgFileName));
@@ -340,7 +340,7 @@ public class WorkQueueModel extends Saveable {
                 /*
                     Save state and dump results. workSuccess() and workFailed() will increment internal work.CurrentTask.
                  */
-                currentTask.saveSolveResults(results);
+                currentTask.saveSolverOutput(results);
                 if(results.success) {
                     if(!solveFileFound)
                         solver.dumpTree("\"" + fullFilePath.toAbsolutePath() + "\"", "no_rivers");

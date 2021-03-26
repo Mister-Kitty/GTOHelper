@@ -171,6 +171,7 @@ public class Work implements Serializable {
     public boolean hasError() { return error != null && !error.isEmpty(); }
     public void clearError() { error = null; }
     public void setError(String error) { this.error = error; }
+    public String getError() { return error; }
 
     public void setSaveFileLocation(Path saveFileLocation) { this.saveFileLocation = saveFileLocation; }
     public Path getSaveFileLocation() { return saveFileLocation; }

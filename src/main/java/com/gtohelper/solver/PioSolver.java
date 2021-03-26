@@ -5,6 +5,7 @@ import com.gtohelper.utility.Logger;
 import com.gtohelper.utility.Popups;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 public class PioSolver implements ISolver {
@@ -14,10 +15,10 @@ public class PioSolver implements ISolver {
     private BufferedWriter output;
 
     @Override
-    public void connectAndInit(String pioLocation) throws IOException {
-        ProcessBuilder pb = new ProcessBuilder(pioLocation);
+    public void connectAndInitToSolver(String solverLocation) throws IOException {
+        ProcessBuilder pb = new ProcessBuilder(solverLocation);
         pb.redirectErrorStream(true);
-        String directory = pioLocation.substring(0, pioLocation.lastIndexOf("\\") + 1);
+        String directory = solverLocation.substring(0, solverLocation.lastIndexOf("\\") + 1);
         pb.directory(new File(directory));
         process = pb.start();
 
