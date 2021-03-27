@@ -13,9 +13,8 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
-import java.io.IOException;
 import java.sql.SQLException;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 public class DBConnectionController {
 
@@ -69,14 +68,14 @@ public class DBConnectionController {
             results.setText("PT4's default user/pass/name has failed. Please enter the correct info to continue");
     }
 
-    private Consumer<Player> playerSelectionConfirmedCallback;
-    public void savePlayerSelectionConfirmedCallback(Consumer<Player> callback) {
-        playerSelectionConfirmedCallback = callback;
+    private BiConsumer<Site, Player> connectionSuccessfulCallback;
+    public void connectionSuccessfulCallback(BiConsumer<Site, Player> callback) {
+        connectionSuccessfulCallback = callback;
     }
 
     @FXML
     private void playerSelectionConfirmed() {
-        playerSelectionConfirmedCallback.accept(player.getValue());
+        connectionSuccessfulCallback.accept(site.getValue(), player.getValue());
     }
 
     public void initialize() {

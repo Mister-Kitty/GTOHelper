@@ -1,9 +1,7 @@
 package com.gtohelper.datafetcher.models;
 
-import com.gtohelper.PT4DataManager.PT4GeneralDM;
-import com.gtohelper.PT4DataManager.PT4LookupDM;
+import com.gtohelper.pt4datamanager.PT4LookupDM;
 import com.gtohelper.database.Database;
-import com.gtohelper.datamanager.IGeneralDM;
 import com.gtohelper.datamanager.ILookupDM;
 import com.gtohelper.domain.Player;
 import com.gtohelper.domain.Site;
@@ -23,7 +21,7 @@ public class DBConnectionModel extends Saveable {
 
     public boolean testConnection(String url, String user, String password) throws SQLException {
         try (Connection con = DriverManager.getConnection(url, user, password);) {
-            IGeneralDM generalDM = new PT4GeneralDM(con);
+            ILookupDM generalDM = new PT4LookupDM(con);
             generalDM.getDBVersion();
             Database.initialize(url, user, password);
             return true;

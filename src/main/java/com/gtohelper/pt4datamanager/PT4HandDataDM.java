@@ -1,4 +1,4 @@
-package com.gtohelper.PT4DataManager;
+package com.gtohelper.pt4datamanager;
 
 import com.gtohelper.datamanager.DataManagerBase;
 import com.gtohelper.datamanager.IHandDataDM;
@@ -12,19 +12,54 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
     public PT4HandDataDM(Connection connection) {
         super(connection);
     }
 
+    @Override
     public ArrayList<HandData> getHandDataByTag(int tagId, int playerId) throws SQLException {
         String handIdSelectSQL = String.format("select id_x from tags where tags.id_tag = %d", tagId);
 
         ArrayList<HandData> hands = getHandSummaryData(handIdSelectSQL);
         ArrayList<PlayerHandData> playerHands = getPlayerHandData(handIdSelectSQL);
 
+        bundlePlayerHandsIntoHandData(hands, playerHands);
+        computeCalculatedFieldsForHandData(hands, playerId);
+
+        return hands;
+    }
+
+    @Override
+    public ArrayList<HandData> getHandDataByTaggedHandsInSessions(ArrayList<SessionBundle> sessions, int tagId, int playerId) throws SQLException {
+        List<String> flattenedSessionIds = sessions.stream().flatMap(s -> s.getSessions().stream().map(t -> String.valueOf(t.id_session))).collect(Collectors.toList());
+
+        // We need an inner query to select all handIDs for the flattened session
+        String handIdSelectSQL = String.format("select id_x\n" +
+                "from tags \n" +
+                "\n" +
+                "inner join cash_hand_player_statistics as stats\n" +
+                "on stats.id_hand = tags.id_x\n" +
+                "\n" +
+                "inner join cash_table_session_summary as session_summary\n" +
+                "on session_summary.id_session = stats.id_session\n" +
+                "\n" +
+                "where tags.id_tag = %d and stats.id_session in (%s)", tagId, String.join(",", flattenedSessionIds));
+
+        ArrayList<HandData> hands = getHandSummaryData(handIdSelectSQL);
+        ArrayList<PlayerHandData> playerHands = getPlayerHandData(handIdSelectSQL);
+
+        bundlePlayerHandsIntoHandData(hands, playerHands);
+        computeCalculatedFieldsForHandData(hands, playerId);
+
+        return hands;
+    }
+
+    private void bundlePlayerHandsIntoHandData(ArrayList<HandData> hands, ArrayList<PlayerHandData> playerHands) {
         // Both are ordered by id_hand descending. Let's bundle them up
         int handsIndex = 0;
         int playerIndex = 0;
@@ -40,13 +75,11 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
                 handsIndex++;
             }
         }
-
-        assert handsIndex == hands.size() - 1;
-
-        computeCalculatedFieldsForHandData(hands, playerId);
-
-        return hands;
     }
+
+    /*
+        Private helpers below
+     */
 
     private void computeCalculatedFieldsForHandData(ArrayList<HandData> hands, int heroPlayerId) {
         for(HandData hand : hands) {

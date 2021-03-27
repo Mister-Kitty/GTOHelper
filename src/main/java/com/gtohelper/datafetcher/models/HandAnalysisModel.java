@@ -1,14 +1,15 @@
 package com.gtohelper.datafetcher.models;
 
-import com.gtohelper.PT4DataManager.PT4HandDataDM;
-import com.gtohelper.PT4DataManager.PT4HandSummaryDM;
-import com.gtohelper.PT4DataManager.PT4LookupDM;
+import com.gtohelper.datamanager.ISessionDM;
+import com.gtohelper.domain.SessionBundle;
+import com.gtohelper.pt4datamanager.PT4HandDataDM;
+import com.gtohelper.pt4datamanager.PT4LookupDM;
 import com.gtohelper.database.Database;
 import com.gtohelper.datamanager.IHandDataDM;
-import com.gtohelper.datamanager.IHandSummaryDM;
 import com.gtohelper.datamanager.ILookupDM;
 import com.gtohelper.domain.HandData;
 import com.gtohelper.domain.Tag;
+import com.gtohelper.pt4datamanager.PT4SessionDM;
 import com.gtohelper.utility.SaveFileHelper;
 import com.gtohelper.utility.Saveable;
 
@@ -23,18 +24,34 @@ public class HandAnalysisModel extends Saveable {
     }
 
     public ArrayList<Tag> getHandTags() throws SQLException {
-        try (Connection con = Database.getConnection();) {
+        try (Connection con = Database.getConnection()) {
 
             ILookupDM lookupDM = new PT4LookupDM(con);
             return lookupDM.getsTagsByType('H');
         }
     }
 
-    public ArrayList<HandData> getHandSummariesByTag(int tagId, int playerId) throws SQLException {
-        try (Connection con = Database.getConnection();) {
+    public ArrayList<HandData> getHandDataByTag(int tagId, int playerId) throws SQLException {
+        try (Connection con = Database.getConnection()) {
 
             IHandDataDM handSummaryDM = new PT4HandDataDM(con);
             return handSummaryDM.getHandDataByTag(tagId, playerId);
+        }
+    }
+
+    public ArrayList<HandData> getHandDataByTaggedHandsInSessions(ArrayList<SessionBundle> sessions, int tagId, int playerId) throws SQLException {
+        try (Connection con = Database.getConnection()) {
+
+            IHandDataDM handSummaryDM = new PT4HandDataDM(con);
+            return handSummaryDM.getHandDataByTaggedHandsInSessions(sessions, tagId, playerId);
+        }
+    }
+
+    public ArrayList<SessionBundle> getAllSessionBundles(int siteId, int playerId) throws SQLException {
+        try (Connection con = Database.getConnection()) {
+
+            ISessionDM sessionDM = new PT4SessionDM(con);
+            return sessionDM.getAllSessionBundles(siteId, playerId);
         }
     }
 

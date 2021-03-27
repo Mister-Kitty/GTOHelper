@@ -1,4 +1,4 @@
-package com.gtohelper.PT4DataManager;
+package com.gtohelper.pt4datamanager;
 
 import com.gtohelper.datamanager.DataManagerBase;
 import com.gtohelper.datamanager.ILookupDM;
@@ -81,6 +81,20 @@ public class PT4LookupDM  extends DataManagerBase implements ILookupDM {
         }
 
         return players;
+    }
+
+    @Override
+    public String getDBVersion() throws SQLException {
+        try (Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery("SELECT VERSION()")) {
+
+            if (rs.next()) {
+                return rs.getString(1);
+            }
+
+            throw new SQLException("SELECT VERSION() returned no results, even though a connection appeared to be successful.\n" +
+                    "Are you sure you're connecting to a postgres database?");
+        }
     }
 
     private Tag mapTag(ResultSet rs) throws SQLException {

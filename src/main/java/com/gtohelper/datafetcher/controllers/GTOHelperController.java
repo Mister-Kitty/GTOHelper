@@ -66,7 +66,7 @@ public class GTOHelperController  {
 
     private void initializeControllers() {
         // Save the callbacks before loading models. Some models use these.
-        dbConnectionController.savePlayerSelectionConfirmedCallback(this::playerSelectedDataPropagation);
+        dbConnectionController.connectionSuccessfulCallback(this::connectionSuccessfulDataPropagation);
         solverSettingsController.saveDisplayFolderChooserCallback(this::displayFolderChooser);
         solverSettingsController.saveDisplayFileChooserCallback(this::displayFileChooser);
         solverSettingsController.saveBetSettingsChangedCallback(this::betSettingsUpdatedDataPropogation);
@@ -98,8 +98,8 @@ public class GTOHelperController  {
         return chooser.showOpenDialog(stage);
     }
 
-    public void playerSelectedDataPropagation(Player player) {
-        handAnalysisController.refreshTags(dbConnectionController.getPlayer());
+    public void connectionSuccessfulDataPropagation(Site site, Player player) {
+        handAnalysisController.onConnectionSuccessStateReceive(site, player);
         mainTabPain.getSelectionModel().select(handAnalysisTab);
     }
 

@@ -6,177 +6,219 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<SplitPane fx:id="rootSplitPane" dividerPositions="0.4" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gtohelper.datafetcher.controllers.HandAnalysisController">
-    <items>
-        <TabPane minWidth="100.0" tabClosingPolicy="UNAVAILABLE">
-            <tabs>
-                <Tab text="Tag">
-                    <content>
-                        <TableView fx:id="tagTable">
-                            <columns>
-                                <TableColumn fx:id="tagTableIdColumn" maxWidth="80.0" minWidth="80.0" text="Id#" />
-                                <TableColumn fx:id="tagTableTagColumn" minWidth="70.0" text="Tag" />
-                            </columns>
-                            <columnResizePolicy>
-                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                            </columnResizePolicy>
-                        </TableView>
-                    </content>
-                </Tab>
-                <Tab text="Session">
-                    <content>
-                        <TableView>
-                            <columns>
-                                <TableColumn prefWidth="75.0" text="Date" />
-                                <TableColumn prefWidth="75.0" text="Hands" />
-                                <TableColumn prefWidth="75.0" text="Our Hands" />
-                            </columns>
-                            <columnResizePolicy>
-                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                            </columnResizePolicy>
-                        </TableView>
-                    </content>
-                </Tab>
-                <Tab text="Position v Position">
-                    <content>
-                        <AnchorPane prefHeight="200.0" prefWidth="200.0">
-                            <children>
-                                <VBox disable="true" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                                    <children>
-                                        <Label text="Hero Seat:" />
-                                        <ChoiceBox prefWidth="150.0" />
-                                        <Label text="Villain Seat:" />
-                                        <ChoiceBox prefWidth="150.0" />
-                                        <Label text="2, 3, or 4 bet:" />
-                                        <ChoiceBox prefWidth="150.0" />
-                                    </children>
-                                </VBox>
-                            </children>
-                        </AnchorPane>
-                    </content>
-                </Tab>
-                <Tab text="Board Type">
-                    <content>
-                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-                    </content>
-                </Tab>
-            </tabs>
-        </TabPane>
-        <AnchorPane>
-            <children>
-                <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                    <children>
-                        <AnchorPane VBox.vgrow="ALWAYS">
-                            <children>
-                                <TableView fx:id="handsTable" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="ALWAYS">
-                                    <columns>
-                                        <TableColumn fx:id="handsTableDateColumn" maxWidth="120.0" minWidth="120.0" prefWidth="120.0" resizable="false" text="Date" />
-                                        <TableColumn fx:id="handsTableHandColumn" maxWidth="50.0" minWidth="50.0" prefWidth="50.0" resizable="false" text="Cards" />
-                                        <TableColumn fx:id="handsTableBoardColumn" maxWidth="100.0" minWidth="100.0" prefWidth="100.0" resizable="false" text="Runout" />
-                                        <TableColumn fx:id="handsTableCWonColumn" minWidth="80.0" prefWidth="200.0" text="\$ Pot" />
-                                    </columns>
-                                    <columnResizePolicy>
-                                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-                                    </columnResizePolicy>
-                                </TableView>
-                            </children>
-                        </AnchorPane>
-                        <AnchorPane VBox.vgrow="NEVER">
-                            <children>
-                                <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
-                                    <children>
-                                        <Button fx:id="selectAllButton" mnemonicParsing="false" onAction="#selectAll" prefHeight="25.0" text="Select all from table" GridPane.columnIndex="3" GridPane.rowIndex="2" />
-                                        <Button fx:id="solveButton" disable="true" mnemonicParsing="false" onAction="#solveSelected" prefHeight="25.0" text="Solve highlighted hands" GridPane.columnIndex="3" GridPane.rowIndex="3" />
-                              <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="3">
+<AnchorPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gtohelper.datafetcher.controllers.HandAnalysisController">
+   <children>
+      <SplitPane fx:id="rootSplitPane" dividerPositions="0.4" prefHeight="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+          <items>
+              <TabPane minWidth="100.0" tabClosingPolicy="UNAVAILABLE">
+                  <tabs>
+                      <Tab text="Sessions &amp; Tags">
+                          <content>
+                        <AnchorPane>
+                           <children>
+                              <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                  <children>
-                                              <ChoiceBox fx:id="betSizingsChoiceBox" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="2" GridPane.rowIndex="3">
-                                                  <GridPane.margin>
-                                                      <Insets left="4.0" right="4.0" />
-                                                  </GridPane.margin>
-                                              </ChoiceBox>
-                                 </children>
-                                 <GridPane.margin>
-                                    <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
-                                 </GridPane.margin>
-                              </AnchorPane>
-                                        <Label text="Bet Sizings: " GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                              <Label text="Work Name:" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                              <TextField fx:id="workName" GridPane.columnIndex="2" GridPane.rowIndex="1">
-                                 <GridPane.margin>
-                                    <Insets left="4.0" right="4.0" />
-                                 </GridPane.margin>
-                              </TextField>
-                              <CheckBox fx:id="rakeHands" maxHeight="8.0" mnemonicParsing="false" prefHeight="4.0" prefWidth="90.0" selected="true" text="Rake hands" textOverrun="CLIP" GridPane.columnIndex="3" GridPane.rowIndex="1">
-                                 <padding>
-                                    <Insets left="4.0" right="4.0" />
-                                 </padding>
-                                 <opaqueInsets>
-                                    <Insets />
-                                 </opaqueInsets>
-                                 <GridPane.margin>
-                                    <Insets bottom="6.0" />
-                                 </GridPane.margin>
-                              </CheckBox>
-                              <Label text="Solve Accuracy:" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                              <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="2">
-                                 <children>
-                                    <HBox layoutX="14.0" layoutY="-37.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                    <SplitPane dividerPositions="0.7" orientation="VERTICAL" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                      <items>
+                                        <AnchorPane minHeight="0.0" minWidth="0.0">
+                                             <children>
+                                                      <TableView fx:id="sessionTable" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                          <columns>
+                                                              <TableColumn fx:id="sessionTableDateColumn" maxWidth="120.0" minWidth="120.0" prefWidth="120.0" text="Date" />
+                                                      <TableColumn fx:id="sessionTableLengthColumn" maxWidth="60.0" minWidth="60.0" prefWidth="60.0" text="Length" />
+                                                              <TableColumn fx:id="sessionTableHandsColumn" maxWidth="120.0" minWidth="40.0" text="Hands" />
+                                                              <TableColumn fx:id="sessionTableMoneyColumn" maxWidth="120.0" minWidth="40.0" prefWidth="75.0" text="\$ Won" />
+                                                          </columns>
+                                                          <columnResizePolicy>
+                                                              <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                                          </columnResizePolicy>
+                                                      </TableView>
+                                             </children>
+                                          </AnchorPane>
+                                        <AnchorPane minHeight="0.0" minWidth="0.0">
+                                             <children>
+                                                      <TableView fx:id="tagTable" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                          <columns>
+                                                              <TableColumn fx:id="tagTableIdColumn" maxWidth="50.0" minWidth="50.0" prefWidth="50.0" text="Id#" />
+                                                              <TableColumn fx:id="tagTableTagColumn" minWidth="70.0" text="Tag" />
+                                                          </columns>
+                                                          <columnResizePolicy>
+                                                              <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                                          </columnResizePolicy>
+                                                      </TableView>
+                                             </children>
+                                          </AnchorPane>
+                                      </items>
+                                    </SplitPane>
+                                    <VBox>
                                        <children>
-                                          <RadioButton fx:id="percentPotRadio" mnemonicParsing="false" HBox.hgrow="NEVER">
-                                             <HBox.margin>
-                                                <Insets top="4.0" />
-                                             </HBox.margin>
-                                          </RadioButton>
-                                          <TextField fx:id="percentPotField" prefWidth="50.0" promptText="\% of pot" HBox.hgrow="ALWAYS">
-                                             <HBox.margin>
-                                                <Insets />
-                                             </HBox.margin>
-                                          </TextField>
-                                          <RadioButton fx:id="bbOneHundredRadio" mnemonicParsing="false" HBox.hgrow="NEVER">
-                                             <padding>
-                                                <Insets left="4.0" top="4.0" />
-                                             </padding>
-                                          </RadioButton>
-                                          <TextField fx:id="bbOneHundredField" prefWidth="77.0" promptText="bb / 100 hands" HBox.hgrow="ALWAYS">
-                                             <HBox.margin>
-                                                <Insets />
-                                             </HBox.margin>
-                                          </TextField>
+                                          <GridPane>
+                                             <columnConstraints>
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="60.0" />
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+                                             </columnConstraints>
+                                             <rowConstraints>
+                                                <RowConstraints minHeight="8.0" vgrow="SOMETIMES" />
+                                                <RowConstraints minHeight="14.0" vgrow="SOMETIMES" />
+                                                <RowConstraints minHeight="14.0" vgrow="SOMETIMES" />
+                                                <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                                             </rowConstraints>
+                                             <children>
+                                                <Label text="Right click on the grids for more selection options" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                                <Label text="Picking a tag allows the selection of multiple sessions" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                             </children>
+                                          </GridPane>
                                        </children>
+                                    </VBox>
+                                 </children>
+                              </VBox>
+                           </children>
+                        </AnchorPane>
+                          </content>
+                      </Tab>
+                      <Tab text="Position v Position">
+                          <content>
+                              <AnchorPane>
+                                  <children>
+                                      <VBox disable="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                          <children>
+                                              <Label text="Hero Seat:" />
+                                              <ChoiceBox prefWidth="150.0" />
+                                              <Label text="Villain Seat:" />
+                                              <ChoiceBox prefWidth="150.0" />
+                                              <Label text="2, 3, or 4 bet:" />
+                                              <ChoiceBox prefWidth="150.0" />
+                                          </children>
+                                      </VBox>
+                                  </children>
+                              </AnchorPane>
+                          </content>
+                      </Tab>
+                      <Tab text="Board Type">
+                          <content>
+                              <AnchorPane minHeight="0.0" minWidth="0.0" />
+                          </content>
+                      </Tab>
+                  </tabs>
+              </TabPane>
+              <AnchorPane>
+                  <children>
+                      <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                          <children>
+                              <AnchorPane VBox.vgrow="ALWAYS">
+                                  <children>
+                                      <TableView fx:id="handsTable" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="ALWAYS">
+                                          <columns>
+                                              <TableColumn fx:id="handsTableDateColumn" maxWidth="120.0" minWidth="120.0" prefWidth="120.0" resizable="false" text="Date" />
+                                              <TableColumn fx:id="handsTableHandColumn" maxWidth="50.0" minWidth="50.0" prefWidth="50.0" resizable="false" text="Cards" />
+                                              <TableColumn fx:id="handsTableBoardColumn" maxWidth="100.0" minWidth="100.0" prefWidth="100.0" resizable="false" text="Runout" />
+                                              <TableColumn fx:id="handsTableCWonColumn" minWidth="80.0" prefWidth="200.0" text="\$ Pot" />
+                                          </columns>
+                                          <columnResizePolicy>
+                                              <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                          </columnResizePolicy>
+                                      </TableView>
+                                  </children>
+                              </AnchorPane>
+                              <AnchorPane VBox.vgrow="NEVER">
+                                  <children>
+                                      <GridPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                                          <children>
+                                              <Button fx:id="selectAllButton" mnemonicParsing="false" onAction="#selectAll" prefHeight="25.0" text="Select all from table" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+                                              <Button fx:id="solveButton" disable="true" mnemonicParsing="false" onAction="#solveSelected" prefHeight="25.0" text="Solve highlighted hands" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+                                    <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="3">
+                                       <children>
+                                                    <ChoiceBox fx:id="betSizingsChoiceBox" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="2" GridPane.rowIndex="3">
+                                                        <GridPane.margin>
+                                                            <Insets left="4.0" right="4.0" />
+                                                        </GridPane.margin>
+                                                    </ChoiceBox>
+                                       </children>
+                                       <GridPane.margin>
+                                          <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                                       </GridPane.margin>
+                                    </AnchorPane>
+                                              <Label text="Bet Sizings: " GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                    <Label text="Work Name:" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                    <TextField fx:id="workName" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                                       <GridPane.margin>
+                                          <Insets left="4.0" right="4.0" />
+                                       </GridPane.margin>
+                                    </TextField>
+                                    <CheckBox fx:id="rakeHands" maxHeight="8.0" mnemonicParsing="false" prefHeight="4.0" prefWidth="90.0" selected="true" text="Rake hands" textOverrun="CLIP" GridPane.columnIndex="3" GridPane.rowIndex="1">
+                                       <padding>
+                                          <Insets left="4.0" right="4.0" />
+                                       </padding>
                                        <opaqueInsets>
                                           <Insets />
                                        </opaqueInsets>
-                                       <padding>
-                                          <Insets left="4.0" right="4.0" top="4.0" />
-                                       </padding>
-                                    </HBox>
-                                 </children>
+                                       <GridPane.margin>
+                                          <Insets bottom="6.0" />
+                                       </GridPane.margin>
+                                    </CheckBox>
+                                    <Label text="Solve Accuracy:" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="2">
+                                       <children>
+                                          <HBox layoutX="14.0" layoutY="-37.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                             <children>
+                                                <RadioButton fx:id="percentPotRadio" mnemonicParsing="false" HBox.hgrow="NEVER">
+                                                   <HBox.margin>
+                                                      <Insets top="4.0" />
+                                                   </HBox.margin>
+                                                </RadioButton>
+                                                <TextField fx:id="percentPotField" prefWidth="50.0" promptText="\% of pot" HBox.hgrow="ALWAYS">
+                                                   <HBox.margin>
+                                                      <Insets />
+                                                   </HBox.margin>
+                                                </TextField>
+                                                <RadioButton fx:id="bbOneHundredRadio" mnemonicParsing="false" HBox.hgrow="NEVER">
+                                                   <padding>
+                                                      <Insets left="4.0" top="4.0" />
+                                                   </padding>
+                                                </RadioButton>
+                                                <TextField fx:id="bbOneHundredField" prefWidth="77.0" promptText="bb / 100 hands" HBox.hgrow="ALWAYS">
+                                                   <HBox.margin>
+                                                      <Insets />
+                                                   </HBox.margin>
+                                                </TextField>
+                                             </children>
+                                             <opaqueInsets>
+                                                <Insets />
+                                             </opaqueInsets>
+                                             <padding>
+                                                <Insets left="4.0" right="4.0" top="4.0" />
+                                             </padding>
+                                          </HBox>
+                                       </children>
+                                    </AnchorPane>
+                                          </children>
+                                          <columnConstraints>
+                                              <ColumnConstraints />
+                                              <ColumnConstraints hgrow="NEVER" minWidth="10.0" />
+                                              <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" />
+                                              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+                                          </columnConstraints>
+                                          <rowConstraints>
+                                              <RowConstraints />
+                                    <RowConstraints fillHeight="false" minHeight="10.0" vgrow="NEVER" />
+                                              <RowConstraints minHeight="10.0" vgrow="NEVER" />
+                                              <RowConstraints minHeight="10.0" vgrow="NEVER" />
+                                          </rowConstraints>
+                                          <VBox.margin>
+                                              <Insets left="4.0" right="4.0" />
+                                          </VBox.margin>
+                                 <padding>
+                                    <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+                                 </padding>
+                                      </GridPane>
+                                  </children>
                               </AnchorPane>
-                                    </children>
-                                    <columnConstraints>
-                                        <ColumnConstraints />
-                                        <ColumnConstraints hgrow="NEVER" minWidth="10.0" />
-                                        <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" />
-                                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
-                                    </columnConstraints>
-                                    <rowConstraints>
-                                        <RowConstraints />
-                              <RowConstraints fillHeight="false" minHeight="10.0" vgrow="NEVER" />
-                                        <RowConstraints minHeight="10.0" vgrow="NEVER" />
-                                        <RowConstraints minHeight="10.0" vgrow="NEVER" />
-                                    </rowConstraints>
-                                    <VBox.margin>
-                                        <Insets left="4.0" right="4.0" />
-                                    </VBox.margin>
-                           <padding>
-                              <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
-                           </padding>
-                                </GridPane>
-                            </children>
-                        </AnchorPane>
-                    </children>
-                </VBox>
-            </children>
-        </AnchorPane>
-    </items>
-</SplitPane>
+                          </children>
+                      </VBox>
+                  </children>
+              </AnchorPane>
+          </items>
+      </SplitPane>
+   </children>
+</AnchorPane>
