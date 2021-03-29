@@ -35,7 +35,29 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
     }
 
     @Override
-    public ArrayList<HandData> getHandDataByTaggedHandsInSessions(ArrayList<SessionBundle> sessions, int tagId, int playerId) throws SQLException {
+    public ArrayList<HandData> getHandDataBySessionBundle(SessionBundle session, int tagId, int playerId) throws SQLException {
+        List<String> sessionIds = session.getSessions().stream().map(t -> String.valueOf(t.id_session)).collect(Collectors.toList());
+
+        // We need an inner query to select all handIDs for the flattened session
+        String handIdSelectSQL = String.format(
+                "select stats.id_hand\n" +
+                "from cash_hand_player_statistics as stats\n" +
+                "inner join cash_table_session_summary as session_summary\n" +
+                "    on session_summary.id_session = stats.id_session\n" +
+                "where" +
+                "    stats.id_session in (%s)", String.join(",", sessionIds));
+
+        ArrayList<HandData> hands = getHandSummaryData(handIdSelectSQL);
+        ArrayList<PlayerHandData> playerHands = getPlayerHandData(handIdSelectSQL);
+
+        bundlePlayerHandsIntoHandData(hands, playerHands);
+        computeCalculatedFieldsForHandData(hands, playerId);
+
+        return hands;
+    }
+
+    @Override
+    public ArrayList<HandData> getHandDataByTaggedHandsInSessions(List<SessionBundle> sessions, int tagId, int playerId) throws SQLException {
         List<String> flattenedSessionIds = sessions.stream().flatMap(s -> s.getSessions().stream().map(t -> String.valueOf(t.id_session))).collect(Collectors.toList());
 
         // We need an inner query to select all handIDs for the flattened session
@@ -78,7 +100,7 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
     }
 
     /*
-        Private helpers below
+        HandData construction helpers below
      */
 
     private void computeCalculatedFieldsForHandData(ArrayList<HandData> hands, int heroPlayerId) {
@@ -343,7 +365,7 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
                 "FROM cash_hand_summary as summary\n" +
                 "INNER JOIN cash_limit as table_limit\n" +
                 "  on summary.id_limit = table_limit.id_limit\n" +
-                "WHERE summary.cnt_players_f > 1 AND\n" +
+                "WHERE summary.cnt_players_f > 1 AND\n" +  // We only ever get hands with 2 or more flop players. Ever!
                 "summary.id_hand in\n" +
                 "(\n" +
                 "       %s\n" +
@@ -380,8 +402,11 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
                         "  on stats.id_action_r = r_actions.id_action\n" +
                         "INNER JOIN player\n" +
                         "  on stats.id_player = player.id_player\n" +
+                        "INNER JOIN cash_hand_summary as summary\n" + // Inner join to ensure our only extra-ordinary condition of
+                        "  on stats.id_hand = summary.id_hand\n" +    // requiring at least 2 players to see flop.
                         "\n" +
                         "WHERE p_actions.action != 'F' AND \n" +
+                        "summary.cnt_players_f > 1 AND\n" +
                         "stats.id_hand in\n" +
                         "(\n" +
                         "  %s\n" +

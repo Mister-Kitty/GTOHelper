@@ -309,7 +309,7 @@ public class HandData implements Serializable {
         int largestWinningsIndex = 0;
         for(; currentIndex < playerHandData.size(); currentIndex++) {
             PlayerHandData data = playerHandData.get(currentIndex);
-            if(data.amt_won >= largestWinnings) {
+            if(currentIndex == 0 || data.amt_won >= largestWinnings) {
                 largestWinnings = data.amt_won;
                 largestWinningsIndex = currentIndex;
             }
@@ -326,7 +326,7 @@ public class HandData implements Serializable {
         int largestLosingsIndex = currentIndex;
         for(; currentIndex >= 0 ; currentIndex--) {
             PlayerHandData data = playerHandData.get(currentIndex);
-            if(data.amt_won <= largestLosings) {
+            if(currentIndex == (playerHandData.size() - 1) || data.amt_won <= largestLosings) {
                 largestLosings = data.amt_won;
                 largestLosingsIndex = currentIndex;
             }

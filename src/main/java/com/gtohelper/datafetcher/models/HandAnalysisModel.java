@@ -17,12 +17,16 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class HandAnalysisModel extends Saveable {
     public HandAnalysisModel(SaveFileHelper saveHelper) {
         super(saveHelper, "HandAnalysis");
     }
 
+    /*
+        Get our Tag and Session objects
+     */
     public ArrayList<Tag> getHandTags() throws SQLException {
         try (Connection con = Database.getConnection()) {
 
@@ -30,6 +34,20 @@ public class HandAnalysisModel extends Saveable {
             return lookupDM.getsTagsByType('H');
         }
     }
+
+    public ArrayList<SessionBundle> getSessionBundles(int siteId, int playerId) throws SQLException {
+        try (Connection con = Database.getConnection()) {
+
+            ISessionDM sessionDM = new PT4SessionDM(con);
+            return sessionDM.getAllSessionBundles(siteId, playerId);
+        }
+    }
+
+    /*
+        When we have a tag or session query, we use these 3 functions.
+        These could be rolled up into one function.... I'm not sure what's a better choice...
+        Maybe you're supposed to just pick either and stick with it? Whatever...
+     */
 
     public ArrayList<HandData> getHandDataByTag(int tagId, int playerId) throws SQLException {
         try (Connection con = Database.getConnection()) {
@@ -39,7 +57,15 @@ public class HandAnalysisModel extends Saveable {
         }
     }
 
-    public ArrayList<HandData> getHandDataByTaggedHandsInSessions(ArrayList<SessionBundle> sessions, int tagId, int playerId) throws SQLException {
+    public ArrayList<HandData> getHandDataBySessionBundle(SessionBundle session, int tagId, int playerId) throws SQLException {
+        try (Connection con = Database.getConnection()) {
+
+            IHandDataDM handSummaryDM = new PT4HandDataDM(con);
+            return handSummaryDM.getHandDataBySessionBundle(session, tagId, playerId);
+        }
+    }
+
+    public ArrayList<HandData> getHandDataByTaggedHandsInSessions(List<SessionBundle> sessions, int tagId, int playerId) throws SQLException {
         try (Connection con = Database.getConnection()) {
 
             IHandDataDM handSummaryDM = new PT4HandDataDM(con);
@@ -47,13 +73,7 @@ public class HandAnalysisModel extends Saveable {
         }
     }
 
-    public ArrayList<SessionBundle> getAllSessionBundles(int siteId, int playerId) throws SQLException {
-        try (Connection con = Database.getConnection()) {
 
-            ISessionDM sessionDM = new PT4SessionDM(con);
-            return sessionDM.getAllSessionBundles(siteId, playerId);
-        }
-    }
 
     @Override
     public HashMap<String, String> getDefaultValues() {

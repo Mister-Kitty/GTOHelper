@@ -4,9 +4,13 @@ import com.gtohelper.datafetcher.models.HandAnalysisModel;
 import com.gtohelper.domain.*;
 import com.gtohelper.fxml.Board;
 import com.gtohelper.fxml.Hand;
+import com.gtohelper.utility.Logger;
+import com.gtohelper.utility.Popups;
 import com.gtohelper.utility.SaveFileHelper;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -17,7 +21,6 @@ import javafx.util.Callback;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.SQLException;
-import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -79,7 +82,7 @@ public class HandAnalysisController {
             tagTableItems.addAll(handAnalysisModel.getHandTags());
 
             sessionTableItems.clear();
-            sessionTableItems.addAll(handAnalysisModel.getAllSessionBundles(site.id_site, player.id_player));
+            sessionTableItems.addAll(handAnalysisModel.getSessionBundles(site.id_site, player.id_player));
         }  catch (SQLException ex) {
         }
     }
@@ -120,6 +123,38 @@ public class HandAnalysisController {
         Controls & GUI interaction functions below
      */
 
+    private void getHands() {
+        ObservableList<SessionBundle> sessions = sessionTable.getSelectionModel().getSelectedItems();
+        Tag tag = tagTable.getSelectionModel().getSelectedItem();
+
+        ArrayList<HandData> results;
+        try {
+            if(tag == null && sessions.isEmpty()) {
+                return;
+            } else if (tag == null) {
+                // Without tag, we allow single selection.
+                if (sessions.size() > 1)
+                    return;
+
+                results = handAnalysisModel.getHandDataBySessionBundle(sessions.get(0), site.id_site, player.id_player);
+            } else if (sessions.isEmpty()) {
+                // with no sessions, we just bulk select by tag.
+                results = handAnalysisModel.getHandDataByTag(tag.id_tag, player.id_player);
+            } else {
+                // And finally, when we have an at least one of both selected.
+                results = handAnalysisModel.getHandDataByTaggedHandsInSessions(sessions, tag.id_tag, player.id_player);
+            }
+        } catch(SQLException e) {
+            Popups.showError("Database exception while trying to fetch hands. See logger for more info.");
+            Logger.log(Logger.Channel.HUD, "Database exception while trying to fetch hands.\n");
+            Logger.log(e);
+            return;
+        }
+
+        handsTableItems.clear();
+        handsTableItems.addAll(results);
+    }
+
     private void initializeControls() {
         /*
             Settings controls start here.
@@ -142,7 +177,15 @@ public class HandAnalysisController {
          */
         tagTableIdColumn.setCellValueFactory(p -> new SimpleStringProperty("" + p.getValue().id_tag));
         tagTableTagColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().tag));
+        tagTable.getSelectionModel().selectedItemProperty().addListener((observableValue, oldTag, newTag) -> {
+            if(newTag == null) {
+                sessionTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+            } else {
+                sessionTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+            }
+        });
         tagTable.setItems(tagTableItems);
+        tagTable.setPlaceholder(new Label(""));
         tagTable.setRowFactory(tv -> {
             TableRow<Tag> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
@@ -150,20 +193,7 @@ public class HandAnalysisController {
                     handsTable.getItems().clear();
                     tagTable.getSelectionModel().clearSelection();
                 } else if (event.getButton()== MouseButton.PRIMARY && event.getClickCount() == 1) {
-
-                    Tag clickedRow = row.getItem();
-                    try {
-                        ArrayList<HandData> handSummaries = handAnalysisModel.getHandDataByTag(clickedRow.id_tag, player.id_player);
-                        handsTableItems.clear();
-                        handsTableItems.addAll(handSummaries);
-
-                        ArrayList<SessionBundle> allSessionBundles = handAnalysisModel.getAllSessionBundles(site.id_site, player.id_player);
-                        ArrayList<HandData> getHandDataByTaggedHandsInSessions = handAnalysisModel.getHandDataByTaggedHandsInSessions(allSessionBundles, 100, 7);
-
-                    } catch (SQLException throwables) {
-                        // todo: log and popup error.
-                        throwables.printStackTrace();
-                    }
+                    getHands();
                 }
             });
             return row;
@@ -173,6 +203,7 @@ public class HandAnalysisController {
             Session table
          */
         sessionTable.setItems(sessionTableItems);
+        sessionTable.setPlaceholder(new Label(""));
         sessionTableDateColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getMinSessionStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
         sessionTableHandsColumn.setCellValueFactory(p -> new SimpleStringProperty(String.valueOf(p.getValue().getHandCount())));
         sessionTableMoneyColumn.setCellValueFactory(p -> new SimpleStringProperty(new BigDecimal(p.getValue().getAmountWon()).setScale(2, RoundingMode.HALF_UP).toString()));
@@ -182,12 +213,16 @@ public class HandAnalysisController {
                         p.getValue().getDuration().getSeconds()/3600,
                         (p.getValue().getDuration().getSeconds()%3600)/60)
         ));
+        sessionTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            getHands();
+        });
 
 
         /*
             Hands table
          */
         handsTable.setItems(handsTableItems);
+        handsTable.setPlaceholder(new Label(""));
         handsTable.setFixedCellSize(24.0); // This is a bypass around how the TableView seems to blow up the height of Board objects
         handsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         handsTable.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> updateSolveButtonDisabledState());
@@ -218,13 +253,13 @@ public class HandAnalysisController {
                 return new TableCell<HandData, Board>() {
                     @Override
                     public void updateItem(Board board, boolean empty) {
-                        super.updateItem(board, empty);
+                    super.updateItem(board, empty);
 
-                        if (empty || board == null) {
-                            setGraphic(null);
-                        } else {
-                            setGraphic(board);
-                        }
+                    if (empty || board == null) {
+                        setGraphic(null);
+                    } else {
+                        setGraphic(board);
+                    }
                     }
                 };
             }

@@ -18,7 +18,7 @@
                            <children>
                               <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                  <children>
-                                    <SplitPane dividerPositions="0.7" orientation="VERTICAL" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                    <SplitPane dividerPositions="0.74" orientation="VERTICAL" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                       <items>
                                         <AnchorPane minHeight="0.0" minWidth="0.0">
                                              <children>
@@ -65,8 +65,16 @@
                                                 <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
                                              </rowConstraints>
                                              <children>
-                                                <Label text="Right click on the grids for more selection options" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                                                <Label text="Picking a tag allows the selection of multiple sessions" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                                   <children>
+                                                      <Label alignment="CENTER" text="Additionally, click here to clear session and tag selection." textAlignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                                   </children>
+                                                </AnchorPane>
+                                                <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                                   <children>
+                                                      <Label alignment="CENTER" text="Picking a tag allows the selection of multiple sessions." textAlignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                   </children>
+                                                </AnchorPane>
                                              </children>
                                           </GridPane>
                                        </children>
