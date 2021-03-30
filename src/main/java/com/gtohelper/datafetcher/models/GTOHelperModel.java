@@ -25,16 +25,7 @@ public class GTOHelperModel extends Application {
         primaryStage.show();
     }
 
-    public static void main(String[] args) {
-
-        try {
-            launch(args);
-        } catch(Exception e) {
-            assert false;
-        }
-
-
-    }
+    public static void main(String[] args) { launch(args); }
 
 
 }

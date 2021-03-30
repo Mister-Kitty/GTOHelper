@@ -20,6 +20,10 @@ public class SessionBundle {
         return sessions.stream().mapToInt(s -> s.cnt_hands).sum();
     }
 
+    public int getFlopsCount() {
+        return sessions.stream().mapToInt(s -> s.cnt_hands_flopped).sum();
+    }
+
     public double getAmountWon() {
         return sessions.stream().mapToDouble(s -> s.amt_won).sum();
     }

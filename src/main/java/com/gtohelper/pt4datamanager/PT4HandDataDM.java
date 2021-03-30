@@ -44,8 +44,16 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
                 "from cash_hand_player_statistics as stats\n" +
                 "inner join cash_table_session_summary as session_summary\n" +
                 "    on session_summary.id_session = stats.id_session\n" +
-                "where" +
-                "    stats.id_session in (%s)", String.join(",", sessionIds));
+                "where\n" +
+                "    stats.id_session in (%s) and\n" +
+                // Okay, so here only we want to additionally only produce stats.id_hands where playerId saw flop aka stats.flg_f_saw
+                // To do this we could do a self inner join, but I think it'll be easier to write in an exists. No idea which is more efficient.
+                "exists(select * from cash_hand_player_statistics as s \n" +
+                        "\t   where s.id_hand = stats.id_hand and \n" +
+                        "\t   s.flg_f_saw = true and \n" +
+                        "\t   s.id_player = %d)"
+                , String.join(",", sessionIds), playerId);
+
 
         ArrayList<HandData> hands = getHandSummaryData(handIdSelectSQL);
         ArrayList<PlayerHandData> playerHands = getPlayerHandData(handIdSelectSQL);

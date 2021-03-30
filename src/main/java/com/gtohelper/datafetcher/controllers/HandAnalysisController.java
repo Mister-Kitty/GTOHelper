@@ -7,6 +7,7 @@ import com.gtohelper.fxml.Hand;
 import com.gtohelper.utility.Logger;
 import com.gtohelper.utility.Popups;
 import com.gtohelper.utility.SaveFileHelper;
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
@@ -16,6 +17,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
 
 import java.math.BigDecimal;
@@ -40,6 +42,7 @@ public class HandAnalysisController {
     @FXML TableColumn<SessionBundle, String> sessionTableDateColumn;
     @FXML TableColumn<SessionBundle, String> sessionTableLengthColumn;
     @FXML TableColumn<SessionBundle, String> sessionTableHandsColumn;
+    @FXML TableColumn<SessionBundle, String> sessionTableFlopsColumn;
     @FXML TableColumn<SessionBundle, String> sessionTableMoneyColumn;
 
     @FXML
@@ -83,6 +86,9 @@ public class HandAnalysisController {
 
             sessionTableItems.clear();
             sessionTableItems.addAll(handAnalysisModel.getSessionBundles(site.id_site, player.id_player));
+            sessionTable.sort();
+            Platform.runLater(() -> sessionTable.refresh()); // workaround for column header alignment bug in javafx
+
         }  catch (SQLException ex) {
         }
     }
@@ -112,6 +118,13 @@ public class HandAnalysisController {
     private BiConsumer<List<HandData>, Work.WorkSettings> solveHandsCallback;
     public void saveSolveHandsCallback(BiConsumer<List<HandData>, Work.WorkSettings> callback) {
         solveHandsCallback = callback;
+    }
+
+    @FXML
+    private void onClearSelectionGridClicked(MouseEvent event) {
+        tagTable.getSelectionModel().clearSelection();
+        sessionTable.getSelectionModel().clearSelection();
+        handsTableItems.clear();
     }
 
     void loadFieldsFromModel() {
@@ -204,8 +217,11 @@ public class HandAnalysisController {
          */
         sessionTable.setItems(sessionTableItems);
         sessionTable.setPlaceholder(new Label(""));
+        sessionTable.getSortOrder().add(sessionTableDateColumn);
         sessionTableDateColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getMinSessionStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+        sessionTableDateColumn.setSortType(TableColumn.SortType.DESCENDING);
         sessionTableHandsColumn.setCellValueFactory(p -> new SimpleStringProperty(String.valueOf(p.getValue().getHandCount())));
+        sessionTableFlopsColumn.setCellValueFactory(p -> new SimpleStringProperty(String.valueOf(p.getValue().getFlopsCount())));
         sessionTableMoneyColumn.setCellValueFactory(p -> new SimpleStringProperty(new BigDecimal(p.getValue().getAmountWon()).setScale(2, RoundingMode.HALF_UP).toString()));
         sessionTableLengthColumn.setCellValueFactory(p -> new SimpleStringProperty(
                 // No elegant way to display this apparently. Use this weird Stack Overflow suggestion.
@@ -222,7 +238,7 @@ public class HandAnalysisController {
             Hands table
          */
         handsTable.setItems(handsTableItems);
-        handsTable.setPlaceholder(new Label(""));
+        handsTable.setPlaceholder(new Label("No hands"));
         handsTable.setFixedCellSize(24.0); // This is a bypass around how the TableView seems to blow up the height of Board objects
         handsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         handsTable.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> updateSolveButtonDisabledState());
