@@ -15,8 +15,8 @@ public enum Seat implements Serializable {
     public static final Seat preflopPositionsDESC[] = { BB, SB, BTN, CO, HJ, LJ, UTG2, UTG1, UTG, TthSeat };
     public static final Seat postflopPositionsASC[] = { SB, BB, UTG, TthSeat, UTG1, UTG2, LJ, HJ, CO, BTN };
     public static final Seat postflopPositionsDESC[] = { BTN, CO, HJ, LJ, UTG2, UTG1, UTG, TthSeat, SB, BB };
-    public String name;
-    public int preflopPosition, postflopPosition, trackerPosition;
+    public final String name;
+    public final int preflopPosition, postflopPosition, trackerPosition;
     Seat(String name, int preflopPosition, int postflopPosition) {
         this.name = name;
         this.preflopPosition = preflopPosition;

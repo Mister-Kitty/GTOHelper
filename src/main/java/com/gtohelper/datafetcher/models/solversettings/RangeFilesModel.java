@@ -1,5 +1,6 @@
 package com.gtohelper.datafetcher.models.solversettings;
 
+import com.gtohelper.domain.PreflopState;
 import com.gtohelper.domain.RangeData;
 import com.gtohelper.domain.Ranges;
 import com.gtohelper.utility.SaveFileHelper;
@@ -24,7 +25,7 @@ public class RangeFilesModel extends Saveable {
         Ranges ranges = new Ranges();
 
         actionToRangeFileMap.forEach((k, v) -> {
-            Ranges.ActionAndSeat action = new Ranges.ActionAndSeat(k);
+            PreflopState action = new PreflopState(k);
             RangeData data;
 
             try {

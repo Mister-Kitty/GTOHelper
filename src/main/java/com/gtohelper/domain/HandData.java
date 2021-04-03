@@ -45,16 +45,15 @@ public class HandData implements Serializable {
     public PlayerHandData ipPlayer;
     public Actor lastPfAggressor;
     public int highestPreflopBetLevel; // eg, 1bet, 2bet, 3bet
-    public SolvabilityLevel solveabilityLevel = SolvabilityLevel.NOT_SET;
+    public SolvabilityLevel solveabilityLevel;
 
-    public enum SolvabilityLevel implements Serializable{
+    public enum SolvabilityLevel implements Serializable {
         HU_PRE(0),
         MULTI_PRE_HU_FLOP(1),
         MULTI_FLOP_HU_FLOP_VPIP(2),
         MULTI_FLOP_MULTI_VPIP(3),
         HU_SHOWDOWN(4),
-        MULTI_SHOWDOWN(5),
-        NOT_SET(6);
+        MULTI_SHOWDOWN(5);
 
         private static final long serialVersionUID = 1L;
 
@@ -62,13 +61,18 @@ public class HandData implements Serializable {
         SolvabilityLevel(int level) {
             ambiguityLevel = level;
         }
+
+        public boolean lessThanOrEqualTo(SolvabilityLevel other) {
+            return ambiguityLevel <= other.ambiguityLevel;
+        }
+
         @Override
         public String toString() {
             switch(this) {
                 case HU_PRE:
                     return "HU Preflop";
                 case MULTI_PRE_HU_FLOP:
-                    return "HU on Flop";
+                    return "HU to Flop";
                 case MULTI_FLOP_HU_FLOP_VPIP:
                     return "Multi to Flop, HU VPIP on Flop";
                 case MULTI_FLOP_MULTI_VPIP:

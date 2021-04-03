@@ -6,7 +6,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gtohelper.datafetcher.controllers.HandAnalysisController">
+<AnchorPane prefHeight="600.0" prefWidth="960.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gtohelper.datafetcher.controllers.HandAnalysisController">
    <children>
       <SplitPane fx:id="rootSplitPane" dividerPositions="0.4" prefHeight="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
           <items>
@@ -86,20 +86,159 @@
                         </AnchorPane>
                           </content>
                       </Tab>
-                      <Tab text="Position v Position">
+                      <Tab text="Position vs Position">
                           <content>
                               <AnchorPane>
                                   <children>
-                                      <VBox disable="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                      <GridPane layoutY="-6.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                           <children>
-                                              <Label text="Hero Seat:" />
-                                              <ChoiceBox prefWidth="150.0" />
-                                              <Label text="Villain Seat:" />
-                                              <ChoiceBox prefWidth="150.0" />
-                                              <Label text="2, 3, or 4 bet:" />
-                                              <ChoiceBox prefWidth="150.0" />
+                                    <HBox GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
+                                       <children>
+                                           <Label text="Hero Seat(s):" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                             <padding>
+                                                <Insets top="3.0" />
+                                             </padding>
+                                          </Label>
+                                           <ChoiceBox fx:id="heroSeatChoiceBox" onAction="#heroSeatSelected" prefWidth="220.0">
+                                             <HBox.margin>
+                                                <Insets left="10.0" />
+                                             </HBox.margin>
+                                          </ChoiceBox>
+                                       </children>
+                                       <GridPane.margin>
+                                          <Insets left="16.0" />
+                                       </GridPane.margin>
+                                    </HBox>
+                                    <TextFlow prefWidth="100.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Select the hero position(s) first. This will constrain the other available options and allow their selection." />
+                                       </children>
+                                       <padding>
+                                          <Insets bottom="6.0" left="10.0" right="10.0" top="6.0" />
+                                       </padding>
+                                    </TextFlow>
+                                    <TextFlow prefWidth="100.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="4">
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Only one villain position(s) per work item." />
+                                       </children>
+                                       <padding>
+                                          <Insets bottom="6.0" left="10.0" right="10.0" top="6.0" />
+                                       </padding>
+                                    </TextFlow>
+                                    <HBox GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="5">
+                                       <children>
+                                          <Label text="Villain Seat(s):" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                             <padding>
+                                                <Insets top="3.0" />
+                                             </padding>
+                                          </Label>
+                                          <ComboBox fx:id="villainSeatComboBox" disable="true" onAction="#villainSeatSelected" prefWidth="222.0" stylesheets="/com/gtohelper/style/handAnalysis.css">
+                                             <HBox.margin>
+                                                <Insets left="3.0" />
+                                             </HBox.margin>
+                                          </ComboBox>
+                                       </children>
+                                       <GridPane.margin>
+                                          <Insets left="16.0" />
+                                       </GridPane.margin>
+                                    </HBox>
+                                    <TextFlow prefWidth="100.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="7">
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Options in this box change depending on hero's position to villain." />
+                                       </children>
+                                       <padding>
+                                          <Insets bottom="6.0" left="10.0" right="10.0" top="6.0" />
+                                       </padding>
+                                    </TextFlow>
+                                    <HBox GridPane.columnIndex="1" GridPane.rowIndex="8">
+                                       <children>
+                                          <Label text="Situation:" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                             <padding>
+                                                <Insets top="3.0" />
+                                             </padding>
+                                             <HBox.margin>
+                                                <Insets left="16.0" />
+                                             </HBox.margin>
+                                          </Label>
+                                          <ChoiceBox fx:id="situationChoiceBox" disable="true" onAction="#situationSelected" prefWidth="222.0">
+                                             <HBox.margin>
+                                                <Insets left="25.0" />
+                                             </HBox.margin>
+                                          </ChoiceBox>
+                                       </children>
+                                    </HBox>
+                                    <TextFlow prefWidth="100.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="13">
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Additional options:" />
+                                       </children>
+                                       <padding>
+                                          <Insets bottom="6.0" left="10.0" right="10.0" top="6.0" />
+                                       </padding>
+                                    </TextFlow>
+                                    <HBox GridPane.columnIndex="1" GridPane.rowIndex="14">
+                                       <children>
+                                          <CheckBox disable="true" mnemonicParsing="false" text="Only find hands vs regulars (recommended)">
+                                             <HBox.margin>
+                                                <Insets bottom="2.0" left="16.0" />
+                                             </HBox.margin>
+                                          </CheckBox>
+                                       </children>
+                                    </HBox>
+                                    <TextFlow prefWidth="100.0" GridPane.columnIndex="1" GridPane.columnSpan="2147483647" GridPane.rowIndex="10">
+                                       <children>
+                                          <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Solves are run head-up on the flop. Many poker hands are not. By restricting on 'how multiway' a pot is, we ignore hand histories forced to deviate too far from 'heads-up gto'. " />
+                                       </children>
+                                       <padding>
+                                          <Insets bottom="6.0" left="10.0" right="10.0" top="6.0" />
+                                       </padding>
+                                    </TextFlow>
+                                    <HBox GridPane.columnIndex="1" GridPane.rowIndex="11">
+                                       <children>
+                                          <Label text="Min Solveability:" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                             <padding>
+                                                <Insets top="3.0" />
+                                             </padding>
+                                             <HBox.margin>
+                                                <Insets left="16.0" />
+                                             </HBox.margin>
+                                          </Label>
+                                          <ChoiceBox fx:id="solveabilityChoiceBox" onAction="#solvabilitySelected" prefWidth="200.0">
+                                             <HBox.margin>
+                                                <Insets left="10.0" />
+                                             </HBox.margin>
+                                          </ChoiceBox>
+                                       </children>
+                                    </HBox>
                                           </children>
-                                      </VBox>
+                                 <columnConstraints>
+                                    <ColumnConstraints />
+                                    <ColumnConstraints hgrow="NEVER" minWidth="40.0" />
+                                    <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" />
+                                 </columnConstraints>
+                                 <rowConstraints>
+                                    <RowConstraints />
+                                    <RowConstraints minHeight="20.0" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" />
+                                    <RowConstraints minHeight="10.0" prefHeight="20.0" />
+                                    <RowConstraints minHeight="20.0" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" />
+                                    <RowConstraints minHeight="10.0" prefHeight="20.0" />
+                                    <RowConstraints minHeight="10.0" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" />
+                                    <RowConstraints minHeight="10.0" prefHeight="20.0" />
+                                    <RowConstraints minHeight="10.0" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" />
+                                    <RowConstraints minHeight="10.0" />
+                                    <RowConstraints minHeight="10.0" />
+                                    <RowConstraints minHeight="10.0" vgrow="ALWAYS" />
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="ALWAYS" />
+                                 </rowConstraints>
+                                 <padding>
+                                    <Insets bottom="4.0" left="4.0" right="4.0" top="10.0" />
+                                 </padding>
+                                      </GridPane>
                                   </children>
                               </AnchorPane>
                           </content>

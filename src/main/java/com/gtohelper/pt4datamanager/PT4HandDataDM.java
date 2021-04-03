@@ -89,6 +89,45 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
         return hands;
     }
 
+    @Override
+    public ArrayList<HandData> getHandDataByPositionVsPosition(SeatGroup heroSeatGroup, SeatGroup villainSeatGroup,
+                                    Situation situation, LastAction lastAction, HandData.SolvabilityLevel solvability, int playerId) throws SQLException {
+
+        int betLevel = PreflopState.getBetLevelFromSituationAndLastAction(situation, lastAction);
+
+        String lastActionRestrictionSQL;
+        if(lastAction == LastAction.CALL)
+            lastActionRestrictionSQL = "  hero_p_actions.action like '%C'";
+        else // == LastAction.Raise
+            lastActionRestrictionSQL = "  hero_p_actions.action not like '%C'";
+        String handIdSelectSQL = String.format(
+            "select summary.id_hand\n" +
+                    "from cash_hand_summary as summary\n" +
+                    "\n" +
+                    "inner join cash_hand_player_statistics as hero_stats\n" +
+                    "  on hero_stats.id_hand = summary.id_hand\n" +
+                    "\n" +
+                    "inner join cash_hand_player_statistics as villain_stats\n" +
+                    "  on villain_stats.id_hand = summary.id_hand\n" +
+                    "\n" +
+                    "inner join lookup_actions as hero_p_actions\n" +
+                    "  on hero_stats.id_action_p = hero_p_actions.id_action\n" +
+                    "\n" +
+                    "WHERE hero_stats.id_player = %d and hero_stats.position in (%s) and hero_stats.flg_f_saw = true and\n" +
+                    "  villain_stats.id_player <> %d and villain_stats.position in (%s) and villain_stats.flg_f_saw = true and\n" +
+                    "  LENGTH(summary.str_aggressors_p) = %d and\n" +
+                    "  %s",
+                playerId, heroSeatGroup.getCommaSeparatedSeats(), playerId, villainSeatGroup.getCommaSeparatedSeats(), betLevel, lastActionRestrictionSQL);
+
+        ArrayList<HandData> hands = getHandSummaryData(handIdSelectSQL);
+        ArrayList<PlayerHandData> playerHands = getPlayerHandData(handIdSelectSQL);
+
+        bundlePlayerHandsIntoHandData(hands, playerHands);
+        computeCalculatedFieldsForHandData(hands, playerId);
+
+        return hands.stream().filter(h -> h.solveabilityLevel.lessThanOrEqualTo(solvability)).collect(Collectors.toCollection(ArrayList::new));
+    }
+
     private void bundlePlayerHandsIntoHandData(ArrayList<HandData> hands, ArrayList<PlayerHandData> playerHands) {
         // Both are ordered by id_hand descending. Let's bundle them up
         int handsIndex = 0;

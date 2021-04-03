@@ -10,8 +10,6 @@ import com.gtohelper.utility.SaveFileHelper;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -30,6 +28,9 @@ import java.util.function.BiConsumer;
 
 public class HandAnalysisController {
 
+    /*
+        Session & Tag tab controls.
+     */
     @FXML
     TableView<Tag> tagTable;
     ObservableList<Tag> tagTableItems = FXCollections.observableArrayList();
@@ -45,6 +46,14 @@ public class HandAnalysisController {
     @FXML TableColumn<SessionBundle, String> sessionTableFlopsColumn;
     @FXML TableColumn<SessionBundle, String> sessionTableMoneyColumn;
 
+    /*
+        Position v position tab controls.
+     */
+    @FXML ChoiceBox<SeatGroup> heroSeatChoiceBox;
+    @FXML ComboBox<SeatGroup> villainSeatComboBox;
+    @FXML ChoiceBox<String> situationChoiceBox;
+    @FXML ChoiceBox<HandData.SolvabilityLevel> solveabilityChoiceBox;
+
     @FXML
     TableView<HandData> handsTable;
     ObservableList<HandData> handsTableItems = FXCollections.observableArrayList();
@@ -52,6 +61,12 @@ public class HandAnalysisController {
     @FXML TableColumn<HandData, String> handsTableCWonColumn;
     @FXML TableColumn<HandData, Hand> handsTableHandColumn;
     @FXML TableColumn<HandData, Board> handsTableBoardColumn;
+
+
+
+    /*
+        Hand table controls
+     */
 
     @FXML TextField workName;
     @FXML ChoiceBox<String> betSizingsChoiceBox;
@@ -68,6 +83,7 @@ public class HandAnalysisController {
 
     @FXML
     private void initialize() {
+        initializeSituationMaps();
         initializeControls();
     }
 
@@ -132,11 +148,130 @@ public class HandAnalysisController {
 
     }
 
+    private void initializeControls() {
+        /*
+            Settings controls start here.
+         */
+        workName.textProperty().addListener((observableValue, oldValue, newValue) -> updateSolveButtonDisabledState());
+        percentPotRadio.setToggleGroup(toggleGroup);
+        percentPotField.textProperty().addListener((observableValue, oldValue, newValue) -> {
+            percentPotRadio.setSelected(true);
+            updateSolveButtonDisabledState();
+        });
+        bbOneHundredRadio.setToggleGroup(toggleGroup);
+        bbOneHundredField.textProperty().addListener((observableValue, oldValue, newValue) -> {
+            bbOneHundredRadio.setSelected(true);
+            updateSolveButtonDisabledState();
+        });
+        toggleGroup.selectedToggleProperty().addListener((observableValue, oldValue, newValue) -> updateSolveButtonDisabledState());
+
+        initializeSessionAndTagControls();
+        initializePositionVPositionControls();
+
+        /*
+            Hands table
+         */
+        handsTable.setItems(handsTableItems);
+        handsTable.setPlaceholder(new Label("No hands"));
+        handsTable.setFixedCellSize(24.0); // This is a bypass around how the TableView seems to blow up the height of Board objects
+        handsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        handsTable.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> updateSolveButtonDisabledState());
+        handsTableDateColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().date_played.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+        handsTableCWonColumn.setCellValueFactory(p -> new SimpleStringProperty("" + p.getValue().amt_pot));
+        handsTableHandColumn.setCellValueFactory(p -> new ReadOnlyObjectWrapper(new Hand(p.getValue().getHandDataForPlayer(player.id_player))));
+        handsTableHandColumn.setCellFactory(new Callback<>() {
+            @Override
+            public TableCell<HandData, Hand> call(TableColumn<HandData, Hand> param) {
+                return new TableCell<>() {
+                    @Override
+                    public void updateItem(Hand hand, boolean empty) {
+                        super.updateItem(hand, empty);
+
+                        if (empty || hand == null) {
+                            setGraphic(null);
+                        } else {
+                            setGraphic(hand);
+                        }
+                    }
+                };
+            }
+        });
+        handsTableBoardColumn.setCellValueFactory(p -> new ReadOnlyObjectWrapper(new Board(p.getValue())));
+        handsTableBoardColumn.setCellFactory(new Callback<>() {
+            @Override
+            public TableCell<HandData, Board> call(TableColumn<HandData, Board> param) {
+                return new TableCell<>() {
+                    @Override
+                    public void updateItem(Board board, boolean empty) {
+                        super.updateItem(board, empty);
+
+                        if (empty || board == null) {
+                            setGraphic(null);
+                        } else {
+                            setGraphic(board);
+                        }
+                    }
+                };
+            }
+        });
+
+    }
+
     /*
-        Controls & GUI interaction functions below
+        Session and Tag code should be gathered below.
      */
 
-    private void getHands() {
+    private void initializeSessionAndTagControls() {
+        /*
+            Then we'll start with Tag table
+         */
+        tagTableIdColumn.setCellValueFactory(p -> new SimpleStringProperty("" + p.getValue().id_tag));
+        tagTableTagColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().tag));
+        tagTable.getSelectionModel().selectedItemProperty().addListener((observableValue, oldTag, newTag) -> {
+            if(newTag == null) {
+                sessionTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+            } else {
+                sessionTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+            }
+        });
+        tagTable.setItems(tagTableItems);
+        tagTable.setPlaceholder(new Label(""));
+        tagTable.setRowFactory(tv -> {
+            TableRow<Tag> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if(row.isEmpty() && event.getButton()== MouseButton.PRIMARY) {
+                    handsTable.getItems().clear();
+                    tagTable.getSelectionModel().clearSelection();
+                } else if (event.getButton()== MouseButton.PRIMARY && event.getClickCount() == 1) {
+                    getSessionAndTagHands();
+                }
+            });
+            return row;
+        });
+
+        /*
+            Session table
+         */
+        sessionTable.setItems(sessionTableItems);
+        sessionTable.setPlaceholder(new Label(""));
+        sessionTable.getSortOrder().add(sessionTableDateColumn);
+        sessionTableDateColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getMinSessionStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+        sessionTableDateColumn.setSortType(TableColumn.SortType.DESCENDING);
+        sessionTableHandsColumn.setCellValueFactory(p -> new SimpleStringProperty(String.valueOf(p.getValue().getHandCount())));
+        sessionTableFlopsColumn.setCellValueFactory(p -> new SimpleStringProperty(String.valueOf(p.getValue().getFlopsCount())));
+        sessionTableMoneyColumn.setCellValueFactory(p -> new SimpleStringProperty(new BigDecimal(p.getValue().getAmountWon()).setScale(2, RoundingMode.HALF_UP).toString()));
+        sessionTableLengthColumn.setCellValueFactory(p -> new SimpleStringProperty(
+                // No elegant way to display this apparently. Use this weird Stack Overflow suggestion.
+                String.format("%d:%02d",
+                        p.getValue().getDuration().getSeconds()/3600,
+                        (p.getValue().getDuration().getSeconds()%3600)/60)
+        ));
+        sessionTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            getSessionAndTagHands();
+        });
+    }
+
+    private void getSessionAndTagHands() {
         ObservableList<SessionBundle> sessions = sessionTable.getSelectionModel().getSelectedItems();
         Tag tag = tagTable.getSelectionModel().getSelectedItem();
 
@@ -168,120 +303,156 @@ public class HandAnalysisController {
         handsTableItems.addAll(results);
     }
 
-    private void initializeControls() {
-        /*
-            Settings controls start here.
-         */
-        workName.textProperty().addListener((observableValue, oldValue, newValue) -> updateSolveButtonDisabledState());
-        percentPotRadio.setToggleGroup(toggleGroup);
-        percentPotField.textProperty().addListener((observableValue, oldValue, newValue) -> {
-            percentPotRadio.setSelected(true);
-            updateSolveButtonDisabledState();
-        });
-        bbOneHundredRadio.setToggleGroup(toggleGroup);
-        bbOneHundredField.textProperty().addListener((observableValue, oldValue, newValue) -> {
-            bbOneHundredRadio.setSelected(true);
-            updateSolveButtonDisabledState();
-        });
-        toggleGroup.selectedToggleProperty().addListener((observableValue, oldValue, newValue) -> updateSolveButtonDisabledState());
+    /*
+        Position vs Position code should be gathered below.
+     */
 
-        /*
-            Then we'll start with Tag table
-         */
-        tagTableIdColumn.setCellValueFactory(p -> new SimpleStringProperty("" + p.getValue().id_tag));
-        tagTableTagColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().tag));
-        tagTable.getSelectionModel().selectedItemProperty().addListener((observableValue, oldTag, newTag) -> {
-            if(newTag == null) {
-                sessionTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-            } else {
-                sessionTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-            }
-        });
-        tagTable.setItems(tagTableItems);
-        tagTable.setPlaceholder(new Label(""));
-        tagTable.setRowFactory(tv -> {
-            TableRow<Tag> row = new TableRow<>();
-            row.setOnMouseClicked(event -> {
-                if(row.isEmpty() && event.getButton()== MouseButton.PRIMARY) {
-                    handsTable.getItems().clear();
-                    tagTable.getSelectionModel().clearSelection();
-                } else if (event.getButton()== MouseButton.PRIMARY && event.getClickCount() == 1) {
-                    getHands();
-                }
-            });
-            return row;
-        });
+    private void initializePositionVPositionControls() {
+        heroSeatChoiceBox.getItems().addAll(SeatGroup.allByPreflopPosition);
+        heroSeatChoiceBox.setConverter(SeatGroup.indentFormattedSeatGroupConverter);
 
-        /*
-            Session table
-         */
-        sessionTable.setItems(sessionTableItems);
-        sessionTable.setPlaceholder(new Label(""));
-        sessionTable.getSortOrder().add(sessionTableDateColumn);
-        sessionTableDateColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getMinSessionStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
-        sessionTableDateColumn.setSortType(TableColumn.SortType.DESCENDING);
-        sessionTableHandsColumn.setCellValueFactory(p -> new SimpleStringProperty(String.valueOf(p.getValue().getHandCount())));
-        sessionTableFlopsColumn.setCellValueFactory(p -> new SimpleStringProperty(String.valueOf(p.getValue().getFlopsCount())));
-        sessionTableMoneyColumn.setCellValueFactory(p -> new SimpleStringProperty(new BigDecimal(p.getValue().getAmountWon()).setScale(2, RoundingMode.HALF_UP).toString()));
-        sessionTableLengthColumn.setCellValueFactory(p -> new SimpleStringProperty(
-                // No elegant way to display this apparently. Use this weird Stack Overflow suggestion.
-                String.format("%d:%02d",
-                        p.getValue().getDuration().getSeconds()/3600,
-                        (p.getValue().getDuration().getSeconds()%3600)/60)
-        ));
-        sessionTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            getHands();
-        });
-
-
-        /*
-            Hands table
-         */
-        handsTable.setItems(handsTableItems);
-        handsTable.setPlaceholder(new Label("No hands"));
-        handsTable.setFixedCellSize(24.0); // This is a bypass around how the TableView seems to blow up the height of Board objects
-        handsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        handsTable.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> updateSolveButtonDisabledState());
-        handsTableDateColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().date_played.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
-        handsTableCWonColumn.setCellValueFactory(p -> new SimpleStringProperty("" + p.getValue().amt_pot));
-        handsTableHandColumn.setCellValueFactory(p -> new ReadOnlyObjectWrapper(new Hand(p.getValue().getHandDataForPlayer(player.id_player))));
-        handsTableHandColumn.setCellFactory(new Callback<>() {
+        villainSeatComboBox.getItems().addAll(SeatGroup.allByPreflopPosition);
+        villainSeatComboBox.setCellFactory(new Callback<>() {
             @Override
-            public TableCell<HandData, Hand> call(TableColumn<HandData, Hand> param) {
-                return new TableCell<HandData, Hand>() {
+            public ListCell<SeatGroup> call(ListView<SeatGroup> param) {
+                return new ListCell<>() {
                     @Override
-                    public void updateItem(Hand hand, boolean empty) {
-                        super.updateItem(hand, empty);
+                    protected void updateItem(SeatGroup item, boolean empty) {
+                        super.updateItem(item, empty);
 
-                        if (empty || hand == null) {
-                            setGraphic(null);
-                        } else {
-                            setGraphic(hand);
+                        if (item != null || !empty) {
+                            // converter doesn't seem to trigger naturally when setConverter() is used.
+                            setText(SeatGroup.indentFormattedSeatGroupConverter.toString(item));
+
+                            SeatGroup heroSeatGroup = heroSeatChoiceBox.getSelectionModel().getSelectedItem();
+                            if(heroSeatGroup == item)
+                                this.setDisable(true);
+                            else if(item == SeatGroup.MP && (heroSeatGroup == SeatGroup.HJ || heroSeatGroup == SeatGroup.LJ))
+                                this.setDisable(true);
+                            else if(item == SeatGroup.EP && (heroSeatGroup == SeatGroup.Tth_Seat || heroSeatGroup == SeatGroup.UTG ||
+                                                                heroSeatGroup == SeatGroup.UTG1 || heroSeatGroup == SeatGroup.UTG2))
+                                this.setDisable(true);
+                            else
+                                this.setDisable(false);
                         }
                     }
                 };
             }
         });
-        handsTableBoardColumn.setCellValueFactory(p -> new ReadOnlyObjectWrapper(new Board(p.getValue())));
-        handsTableBoardColumn.setCellFactory(new Callback<>() {
-            @Override
-            public TableCell<HandData, Board> call(TableColumn<HandData, Board> param) {
-                return new TableCell<HandData, Board>() {
-                    @Override
-                    public void updateItem(Board board, boolean empty) {
-                    super.updateItem(board, empty);
 
-                    if (empty || board == null) {
-                        setGraphic(null);
-                    } else {
-                        setGraphic(board);
-                    }
-                    }
-                };
-            }
-        });
+        solveabilityChoiceBox.getItems().addAll(HandData.SolvabilityLevel.values());
+        solveabilityChoiceBox.getSelectionModel().select(HandData.SolvabilityLevel.MULTI_PRE_HU_FLOP);
+    }
+
+    @FXML
+    private void heroSeatSelected() {
+        villainSeatComboBox.setDisable(false);
+
+        // This is gross ... But AFAIK there's actually no refresh() or equivilent for this. Only this works.
+        List<SeatGroup> items = List.copyOf(villainSeatComboBox.getItems());
+        villainSeatComboBox.getItems().clear();
+        villainSeatComboBox.getItems().addAll(items);
+    }
+
+    @FXML
+    private void villainSeatSelected() {
+        SeatGroup heroSeatGroup = heroSeatChoiceBox.getSelectionModel().getSelectedItem();
+        SeatGroup villainSeatGroup = villainSeatComboBox.getSelectionModel().getSelectedItem();
+
+        // this function triggers when heroSeat changes, even though I don't think it should.
+        if(heroSeatGroup == null || villainSeatGroup == null)
+            return;
+
+        situationChoiceBox.setDisable(false);
+        situationChoiceBox.getItems().clear();
+        boolean heroIsIP = heroSeatGroup.areWeIPPreflop(villainSeatGroup);
+        if(heroIsIP)
+            heroIPSituationList.forEach(k -> situationChoiceBox.getItems().add(k.situationName));
+        else
+            heroOOPSituationList.forEach(k -> situationChoiceBox.getItems().add(k.situationName));
 
     }
+
+    @FXML
+    private void situationSelected() {
+        String situationString = situationChoiceBox.getSelectionModel().getSelectedItem();
+        if(situationString == null)
+            return;
+
+        getPositionVsPositionHands();
+    }
+
+    @FXML
+    private void solvabilitySelected() {
+        getPositionVsPositionHands();
+    }
+
+    private class SituationComboBoxMapping {
+        final String situationName;
+        final Situation mappedSituation;
+        final LastAction mappedAction;
+        public SituationComboBoxMapping(String name, Situation situation, LastAction action) {
+            situationName = name; mappedSituation = situation; mappedAction = action;
+        }
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) return true;
+            if (!(obj instanceof SituationComboBoxMapping)) { return false; }
+            return situationName.equals(((SituationComboBoxMapping)obj).situationName);
+        }
+    }
+
+    // These class members are down here to keep them obscure. They're really only used in the above 3 functions and shouldn't be edited.
+    private ArrayList<SituationComboBoxMapping> heroIPSituationList = new ArrayList<>() ;
+    private ArrayList<SituationComboBoxMapping> heroOOPSituationList = new ArrayList<>();
+    private void initializeSituationMaps() {
+        heroIPSituationList.add(new SituationComboBoxMapping("Limp - Hero calls vs Villain", Situation.LIMP, LastAction.CALL));
+        heroIPSituationList.add(new SituationComboBoxMapping("2Bet - Hero calls vs Villain", Situation.VRFI, LastAction.CALL));
+        heroIPSituationList.add(new SituationComboBoxMapping("3Bet - Villain calls vs Hero", Situation.VRFI, LastAction.RAISE));
+        heroIPSituationList.add(new SituationComboBoxMapping("4Bet - Hero calls vs Villain", Situation.V4BET, LastAction.CALL));
+        heroIPSituationList.add(new SituationComboBoxMapping("5Bet - Villain calls vs Hero", Situation.V4BET, LastAction.RAISE));
+
+        heroOOPSituationList.add(new SituationComboBoxMapping("Limp - Villain calls vs Hero", Situation.LIMP, LastAction.CALL));
+        heroOOPSituationList.add(new SituationComboBoxMapping("2Bet - Villain calls vs Hero", Situation.RFI, LastAction.RAISE));
+        heroOOPSituationList.add(new SituationComboBoxMapping("3Bet - Hero calls vs Villain", Situation.V3BET, LastAction.CALL));
+        heroOOPSituationList.add(new SituationComboBoxMapping("4Bet - Villain calls vs Hero", Situation.V3BET, LastAction.RAISE));
+        heroOOPSituationList.add(new SituationComboBoxMapping("5Bet - Hero calls vs Villain", Situation.CALL5BET, LastAction.CALL));
+    }
+
+    private void getPositionVsPositionHands() {
+        SeatGroup heroSeatGroup = heroSeatChoiceBox.getSelectionModel().getSelectedItem();
+        SeatGroup villainSeatGroup = villainSeatComboBox.getSelectionModel().getSelectedItem();
+        String situationString = situationChoiceBox.getSelectionModel().getSelectedItem();
+        HandData.SolvabilityLevel solvability = solveabilityChoiceBox.getSelectionModel().getSelectedItem();
+
+        if(heroSeatGroup == null || villainSeatGroup == null || solvability == null || situationString == null || situationString.isEmpty())
+            return;
+
+        SituationComboBoxMapping mapping;
+        boolean heroIsIP = heroSeatGroup.areWeIPPreflop(villainSeatGroup);
+        if(heroIsIP)
+            mapping = heroIPSituationList.stream().filter(s -> s.situationName.equals(situationString)).findFirst().get();
+        else
+            mapping = heroOOPSituationList.stream().filter(s -> s.situationName.equals(situationString)).findFirst().get();
+
+        ArrayList<HandData> results;
+        try {
+            results = handAnalysisModel.getHandDataByPositionVsPosition(heroSeatGroup, villainSeatGroup,
+                                    mapping.mappedSituation, mapping.mappedAction, solvability, player.id_player);
+        } catch(SQLException e) {
+            Popups.showError("Database exception while trying to fetch hands. See logger for more info.");
+            Logger.log(Logger.Channel.HUD, "Database exception while trying to fetch hands.\n");
+            Logger.log(e);
+            return;
+        }
+
+        handsTableItems.clear();
+        handsTableItems.addAll(results);
+    }
+
+    /*
+        Hand table and associated buttons/field code should be gathered below.
+     */
 
     @FXML
     private void selectAll() {

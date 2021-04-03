@@ -21,7 +21,6 @@ public class GTOHelperModel extends Application {
         primaryStage.setTitle("GTOHelper v 0.0");
         primaryStage.setScene(scene);
         primaryStage.setMinWidth(960);
-        primaryStage.setMinWidth(600);
         primaryStage.show();
     }
 

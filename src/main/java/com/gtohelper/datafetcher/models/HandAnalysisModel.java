@@ -1,14 +1,12 @@
 package com.gtohelper.datafetcher.models;
 
 import com.gtohelper.datamanager.ISessionDM;
-import com.gtohelper.domain.SessionBundle;
+import com.gtohelper.domain.*;
 import com.gtohelper.pt4datamanager.PT4HandDataDM;
 import com.gtohelper.pt4datamanager.PT4LookupDM;
 import com.gtohelper.database.Database;
 import com.gtohelper.datamanager.IHandDataDM;
 import com.gtohelper.datamanager.ILookupDM;
-import com.gtohelper.domain.HandData;
-import com.gtohelper.domain.Tag;
 import com.gtohelper.pt4datamanager.PT4SessionDM;
 import com.gtohelper.utility.SaveFileHelper;
 import com.gtohelper.utility.Saveable;
@@ -73,7 +71,14 @@ public class HandAnalysisModel extends Saveable {
         }
     }
 
+    public ArrayList<HandData> getHandDataByPositionVsPosition(SeatGroup heroSeatGroup, SeatGroup villainSeatGroup,
+                                        Situation sit, LastAction lastAction, HandData.SolvabilityLevel solvability, int playerId) throws SQLException {
+        try (Connection con = Database.getConnection()) {
 
+            IHandDataDM handSummaryDM = new PT4HandDataDM(con);
+            return handSummaryDM.getHandDataByPositionVsPosition(heroSeatGroup, villainSeatGroup, sit, lastAction, solvability, playerId);
+        }
+    }
 
     @Override
     public HashMap<String, String> getDefaultValues() {
