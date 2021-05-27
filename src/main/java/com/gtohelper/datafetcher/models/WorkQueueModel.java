@@ -1,6 +1,9 @@
 package com.gtohelper.datafetcher.models;
 
+import com.gtohelper.database.Database;
+import com.gtohelper.datamanager.ILookupDM;
 import com.gtohelper.domain.*;
+import com.gtohelper.pt4datamanager.PT4LookupDM;
 import com.gtohelper.solver.GameTree;
 import com.gtohelper.solver.ISolver;
 import com.gtohelper.solver.PioSolver;
@@ -9,6 +12,8 @@ import com.gtohelper.utility.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -105,6 +110,14 @@ public class WorkQueueModel extends Saveable {
             pendingWorkQueue.addAll(newQueue);
         }
         updateWorkGUICallback.run();
+    }
+
+    public String getHandHistory(int handId) throws SQLException {
+        try (Connection con = Database.getConnection()) {
+
+            ILookupDM lookupDM = new PT4LookupDM(con);
+            return lookupDM.getsHandHistory(handId);
+        }
     }
 
     /*

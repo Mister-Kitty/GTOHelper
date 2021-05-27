@@ -3,20 +3,23 @@ package com.gtohelper.datafetcher.controllers;
 import com.gtohelper.datafetcher.models.WorkQueueModel;
 import com.gtohelper.domain.*;
 import com.gtohelper.fxml.*;
-import com.gtohelper.solver.ISolver;
-import com.gtohelper.solver.PioSolver;
 import com.gtohelper.solver.PioViewer;
 import com.gtohelper.utility.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.text.Text;
+import javafx.scene.web.WebView;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Supplier;
@@ -170,7 +173,7 @@ public class WorkQueueController {
             else if(task.getSolveState() == SolveTask.SolveTaskState.SKIPPED)
                 setSkippedSolveStateFields();
             else if(task.getSolveState() == SolveTask.SolveTaskState.NEW)
-                setNewSolveStateFields();
+                setNewSolveStateFields(task);
             else if(task.getSolveState() == SolveTask.SolveTaskState.ERRORED)
                 setErroredSolveStateFields(task);
         }
@@ -190,10 +193,11 @@ public class WorkQueueController {
 
         if(getGlobalSolverSettings().getViewerLocation() != null && !getGlobalSolverSettings().getViewerLocation().toString().isEmpty()) {
             viewInPioViewer.setOnAction(e -> {
-                displayHand(task.getSolverOutput().solveFile);
+                viewHandSolve(task.getSolverOutput().solveFile);
             });
             viewInPioViewer.disableProperty().set(false);
         }
+
 
     }
 
@@ -208,7 +212,15 @@ public class WorkQueueController {
 
     }
 
-    private void setNewSolveStateFields() {
+    private void setNewSolveStateFields(SolveTask task) {
+
+        viewInBrowser.setOnAction(e -> {
+
+            viewHandReplay(task.getHandData().id_hand);
+        });
+        viewInBrowser.disableProperty().set(false);
+
+        //viewHandReplay
 
     }
 
@@ -244,8 +256,31 @@ public class WorkQueueController {
 
     }
 
+    private void viewHandReplay(int handId) {
+        String history;
+        try {
+            history = workQueueModel.getHandHistory(handId);
+        } catch (SQLException e) {
+            String error = String.format("Database error while fetching history for hand %d", handId);
+            Popups.showError(error);
+            Logger.log(error);
+            Logger.log(e);
+            return;
+        }
+
+        Stage stage = new Stage(StageStyle.DECORATED);
+        WebView wv2 = new WebView();
+
+
+        wv2.getEngine().load("https://www.cardschat.com/replayer/824DApHrz");
+
+        stage.setScene(new Scene(wv2));
+        stage.show();
+
+    }
+
     // I may wanna build out a utility class for stuff like this...
-    private void displayHand(Path cfgPath) {
+    private void viewHandSolve(Path cfgPath) {
         try {
             PioViewer.launchViewerForCFG(getGlobalSolverSettings().getViewerLocation(), cfgPath);
         } catch (IOException e) {

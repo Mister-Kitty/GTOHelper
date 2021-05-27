@@ -36,6 +36,20 @@ public class PT4LookupDM  extends DataManagerBase implements ILookupDM {
     }
 
     @Override
+    public String getsHandHistory(int handId) throws SQLException {
+        String sql = String.format("select history from cash_hand_histories where id_hand = %d", handId);
+
+        try (Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                return rs.getString("history");
+            }
+        }
+
+        throw new SQLException(String.format("No history for handId %d found", handId));
+    }
+
+    @Override
     public ArrayList<Site> getSites() throws SQLException {
         String sql = "select * from lookup_sites";
 
