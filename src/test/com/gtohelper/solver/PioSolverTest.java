@@ -2,9 +2,7 @@ package com.gtohelper.solver;
 
 import com.gtohelper.domain.BettingOptions;
 import com.gtohelper.domain.HandSolveSettings;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,12 +13,10 @@ class PioSolverTest {
     static ISolver solver = new PioSolver();
     final static String pioLocation = "C:\\PioSolver Edge\\PioSOLVER-edge.exe";
 
-    @BeforeAll
     public static void setup() throws IOException {
         solver.connectAndInitToSolver(pioLocation);
     }
 
-    @AfterAll
     public static void tearDown() {
         solver.disconnect();
     }

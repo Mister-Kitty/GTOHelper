@@ -1,6 +1,6 @@
 package com.gtohelper.domain;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import java.util.Arrays;
 
 class RangeDataTest {

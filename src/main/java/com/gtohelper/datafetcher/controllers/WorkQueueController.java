@@ -9,12 +9,8 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.text.Text;
-import javafx.scene.web.WebView;
-import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -267,15 +263,6 @@ public class WorkQueueController {
             Logger.log(e);
             return;
         }
-
-        Stage stage = new Stage(StageStyle.DECORATED);
-        WebView wv2 = new WebView();
-
-
-        wv2.getEngine().load("https://www.cardschat.com/replayer/824DApHrz");
-
-        stage.setScene(new Scene(wv2));
-        stage.show();
 
     }
 

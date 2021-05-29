@@ -25,7 +25,7 @@ public class Logger {
     }
 
     public static void log(String message){
-        log(Channel.HELPER, message);
+        log(Logger.Channel.HELPER, message);
     }
 
     public static void log(Channel channel, String message){
@@ -34,7 +34,7 @@ public class Logger {
             listener.accept(message);
     }
 
-    public static void addChannelListener(Channel channel, Consumer<String> listener) {
+    public static void addChannelListener(Logger.Channel channel, Consumer<String> listener) {
         getInstance().consumerMap.put(channel, listener);
     }
 }
