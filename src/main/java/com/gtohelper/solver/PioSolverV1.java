@@ -1,34 +1,25 @@
 package com.gtohelper.solver;
 
-import com.gtohelper.domain.BettingOptions;
 import com.gtohelper.utility.Logger;
 import com.gtohelper.utility.Popups;
 
 import java.io.*;
-import java.nio.file.Path;
-import java.util.ArrayList;
 
-public class PioSolver implements ISolver {
-
-    private Process process;
-    private BufferedReader input;
-    private BufferedWriter output;
+/*
+      This inheritance tree with v1 and v2 really could be better...
+      Maybe move most of this into a SolverBase.java?
+      That way they could easily have their own matching test files
+ */
+public class PioSolverV1 extends PioSolverBase implements ISolver {
 
     @Override
     public void connectAndInitToSolver(String solverLocation) throws IOException {
-        ProcessBuilder pb = new ProcessBuilder(solverLocation);
-        pb.redirectErrorStream(true);
-        String directory = solverLocation.substring(0, solverLocation.lastIndexOf("\\") + 1);
-        pb.directory(new File(directory));
-        process = pb.start();
-
-        output = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-        input = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        connect(solverLocation);
 
         // Eat and log the banner.
         readNLinesFromInput(4);
 
-        // Default init commands that Pio wants
+        // Default init commands that Pio wants for V1
         writeToOutput("set_threads 0");
         readNLinesFromInput(1);
 
@@ -100,29 +91,6 @@ public class PioSolver implements ISolver {
         readFromInputUntil("stop ok!");
     }
 
-    @Override
-    public void shutdown() throws IOException {
-        writeToOutput("exit");
-    }
-
-    @Override
-    public void waitForReady() throws IOException, InterruptedException {
-        int count = 0;
-        while(true) {
-            writeToOutput("is_ready");
-            String result = readNLinesFromInput(1);
-            if(result.trim().equals("is_ready ok!"))
-                return;
-            else {
-                if(count == 12)
-                    Popups.showWarning("Warning: Piosolver has refused new work for over a minute. The process may not be responding.");
-
-                Logger.log(Logger.Channel.SOLVER, "is_ready returned false. Will try again after 5 seconds.");
-                Thread.sleep(5000);
-                count++;
-            }
-        }
-    }
 
     @Override
     public String waitForSolve() throws IOException {
@@ -181,47 +149,4 @@ public class PioSolver implements ISolver {
         readNLinesFromInput(1);
     }
 
-    @Override
-    public void disconnect() {
-        try { input.close(); } catch (IOException e) {}
-        try { output.close(); } catch (IOException e) {}
-        process.destroy();
-    }
-
-    private void writeToOutput(String command) throws IOException {
-        output.write(command);
-        output.newLine();
-        output.flush();
-  //      Logger.log(Logger.Channel.PIO, command);
-        System.out.println(command);
-    }
-
-    private String readNLinesFromInput(int numLines) throws IOException {
-        String results = "";
-        String currentLine;
-        while ((numLines > 0) && (currentLine = input.readLine()) != null) {
-            results += currentLine + "\n";
-            numLines--;
-        }
- //       Logger.log(Logger.Channel.PIO, results.trim());
-        System.out.println(results.trim());
-        return results.trim();
-    }
-
-    private String readFromInputUntilEND() throws IOException {
-        return readFromInputUntil("END");
-    }
-
-    private String readFromInputUntil(String terminalPrefix) throws IOException {
-        String results = "";
-        String currentLine;
-        while ((currentLine = input.readLine()) != null) {
-            System.out.println(currentLine.trim());
- //           Logger.log(Logger.Channel.PIO, currentLine.trim());
-            if(currentLine.trim().startsWith(terminalPrefix))
-                break;
-            results += currentLine  + "\n";
-        }
-        return results.trim();
-    }
 }

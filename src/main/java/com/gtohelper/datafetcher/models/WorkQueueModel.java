@@ -6,7 +6,8 @@ import com.gtohelper.domain.*;
 import com.gtohelper.pt4datamanager.PT4LookupDM;
 import com.gtohelper.solver.GameTree;
 import com.gtohelper.solver.ISolver;
-import com.gtohelper.solver.PioSolver;
+import com.gtohelper.solver.PioSolverV1;
+import com.gtohelper.solver.PioSolverV2;
 import com.gtohelper.utility.*;
 
 import java.io.IOException;
@@ -228,7 +229,11 @@ public class WorkQueueModel extends Saveable {
         public QueueWorker(GlobalSolverSettings solveSettings) {
             solverSettings = solveSettings;
             try {
-                solver = new PioSolver();
+                if(solverSettings.getIsV2())
+                    solver = new PioSolverV2();
+                else
+                    solver = new PioSolverV1();
+
                 solver.connectAndInitToSolver(solverSettings.getSolverLocation().toString());
             } catch (IOException e) {
                 String error = "Error occured launching Pio. Perhaps the executable address changed or we do not have read permission? See log for error details.";

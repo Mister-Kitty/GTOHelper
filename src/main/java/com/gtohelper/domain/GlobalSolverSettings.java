@@ -3,7 +3,16 @@ package com.gtohelper.domain;
 import java.nio.file.Path;
 
 public class GlobalSolverSettings {
+    Boolean isV2 = false;
     Path solverLocation, viewerLocation, rakeLocation, solverResultsFolder, solverResultsArchiveFolder;
+
+    public Boolean getIsV2() {
+        return isV2;
+    }
+
+    public void setIsV2(Boolean v2) {
+        isV2 = v2;
+    }
 
     /*
         File locations below

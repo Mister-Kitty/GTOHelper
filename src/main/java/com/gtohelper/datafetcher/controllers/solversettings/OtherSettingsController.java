@@ -6,8 +6,13 @@ import com.gtohelper.domain.RakeData;
 import com.gtohelper.utility.Logger;
 import com.gtohelper.utility.Popups;
 import com.gtohelper.utility.SaveFileHelper;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleGroup;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 
@@ -34,8 +39,13 @@ public class OtherSettingsController {
     @FXML
     TextField solveResultsBackupFolder;
 
+    // These should really enumerate versions... so, hold an INT containing version number.
+    @FXML
+    RadioButton solverV1Radio, solverV2Radio;
+
     DirectoryChooser folderChooser = new DirectoryChooser();
     FileChooser fileChooser = new FileChooser();
+    ToggleGroup solverVersionToggleGroup = new ToggleGroup();
 
     OtherSettingsModel otherSettingsModel;
 
@@ -53,6 +63,14 @@ public class OtherSettingsController {
         folderChooser.setTitle("Select Save Folder");
         otherSettingsModel = new OtherSettingsModel(saveHelper);
         loadFieldsFromModel();
+
+        solverV1Radio.setToggleGroup(solverVersionToggleGroup);
+        solverV2Radio.setToggleGroup(solverVersionToggleGroup);
+
+        solverVersionToggleGroup.selectedToggleProperty().addListener((observableValue, oldValue, newValue) -> {
+            if(oldValue != newValue)
+                selectSolverVersion();
+        });
     }
 
     void loadFieldsFromModel() {
@@ -70,6 +88,13 @@ public class OtherSettingsController {
 
         String resultsBackupFolder = otherSettingsModel.loadTextField("solveResultsBackupFolder");
         solveResultsBackupFolder.setText(resultsBackupFolder);
+
+        String isV2 = otherSettingsModel.loadTextField("isV2");
+        Boolean isV2Boolean = Boolean.parseBoolean(isV2);
+        if(isV2Boolean)
+            solverV2Radio.setSelected(true);
+        else
+            solverV1Radio.setSelected(true);
     }
 
     private void selectSolverFile(File file) throws IOException {
@@ -100,6 +125,21 @@ public class OtherSettingsController {
         solveResultsBackupFolder.setText(folder.getCanonicalPath());
         otherSettingsModel.saveTextField("solveResultsBackupFolder", folder.getAbsolutePath());
         otherSettingsModel.saveAll();
+    }
+
+    // passing in the newly selected version isn't really needed, although version INT could be passed in if the aforemeantioned refactor takes place
+    private void selectSolverVersion() {
+        boolean isV2 = solverV2Radio.isSelected();
+        if(isV2)
+            otherSettingsModel.saveTextField("isV2", "true");
+        else
+            otherSettingsModel.saveTextField("isV2", "false");
+
+        try {
+            otherSettingsModel.saveAll();
+        } catch (IOException e) {
+            Logger.log(e);
+        }
     }
 
     @FXML
@@ -173,6 +213,7 @@ public class OtherSettingsController {
         settings.setRakeLocation(Paths.get(rakeLocation.getText()));
         settings.setSolverResultsFolder(Paths.get(solveResultsFolder.getText()));
         settings.setSolverResultsArchiveFolder(Paths.get(solveResultsBackupFolder.getText()));
+        settings.setIsV2(solverV2Radio.isSelected());
 
         return settings;
     }

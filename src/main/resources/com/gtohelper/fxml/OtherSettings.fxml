@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.media.*?>
-<?import javafx.scene.text.*?>
-<?import javafx.scene.image.*?>
-<?import javafx.geometry.*?>
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gtohelper.datafetcher.controllers.solversettings.OtherSettingsController">
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gtohelper.datafetcher.controllers.solversettings.OtherSettingsController">
    <children>
       <VBox layoutX="171.0" layoutY="79.0" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="2.0" AnchorPane.leftAnchor="2.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="2.0">
          <children>
@@ -69,7 +67,7 @@
                  <Insets bottom="2.0" />
              </padding>
          </HBox>
-            <HBox fillHeight="false">
+            <HBox fillHeight="false" VBox.vgrow="NEVER">
                <children>
                   <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Solve results folder:" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" HBox.hgrow="NEVER">
                      <HBox.margin>
@@ -87,7 +85,7 @@
                   <Insets bottom="2.0" />
                </padding>
             </HBox>
-            <HBox fillHeight="false">
+            <HBox fillHeight="false" VBox.vgrow="NEVER">
                <children>
                   <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Solve results archive folder:" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" HBox.hgrow="NEVER">
                      <HBox.margin>
@@ -104,6 +102,17 @@
                <padding>
                   <Insets bottom="2.0" />
                </padding>
+            </HBox>
+            <HBox fillHeight="false">
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Solver version:" />
+                  <RadioButton fx:id="solverV1Radio" mnemonicParsing="false" text="Solver V1">
+                     <padding>
+                        <Insets left="5.0" right="15.0" />
+                     </padding>
+                  </RadioButton>
+                  <RadioButton fx:id="solverV2Radio" mnemonicParsing="false" text="Solver V2" />
+               </children>
             </HBox>
          </children>
       </VBox>

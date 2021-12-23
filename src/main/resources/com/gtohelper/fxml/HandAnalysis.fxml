@@ -68,7 +68,7 @@
                                              <children>
                                                 <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="2">
                                                    <children>
-                                                      <Label alignment="CENTER" text="Additionally, click here to clear session and tag selection." textAlignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                                      <Label alignment="CENTER" text="Click here to clear session and tag selection." textAlignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                                    </children>
                                                 </AnchorPane>
                                                 <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="1">

@@ -8,13 +8,22 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-class PioSolverTest {
+public class PioSolverTest {
 
-    static ISolver solver = new PioSolver();
-    final static String pioLocation = "C:\\PioSolver Edge\\PioSOLVER-edge.exe";
+    /*
+        Change to v1 or v2 here. Each should have their own test class though, tbh
+     */
+    boolean isV2 = true;
+    static ISolver solver = new PioSolverV2();
+    final static String pioLocation = "C:\\PioSOLVER_Free\\PioSOLVER2-free.exe";
 
-    public static void setup() throws IOException {
-        solver.connectAndInitToSolver(pioLocation);
+
+    public PioSolverTest() {
+        try {
+            solver.connectAndInitToSolver(pioLocation);
+        } catch (IOException e) {
+            assert false;
+        }
     }
 
     public static void tearDown() {
@@ -73,7 +82,7 @@ class PioSolverTest {
     }
 
     @Test
-    void getAddLinesBasicTest() throws IOException {
+    public void getAddLinesBasicTest() throws IOException {
         HandSolveSettings handSolveSettings = new HandSolveSettings();
         BettingOptions bettingOptions = new BettingOptions("Test");
 
@@ -150,7 +159,7 @@ class PioSolverTest {
     }
 
     @Test
-    void getAddLinesRaisesTest() throws IOException {
+    public void getAddLinesRaisesTest() throws IOException {
         HandSolveSettings handSolveSettings = new HandSolveSettings();
         BettingOptions bettingOptions = new BettingOptions("Test");
 
@@ -231,7 +240,7 @@ class PioSolverTest {
     }
 
     @Test
-    void getAddLinesAllinTest() throws IOException {
+    public void getAddLinesAllinTest() throws IOException {
         HandSolveSettings handSolveSettings = new HandSolveSettings();
         BettingOptions bettingOptions = new BettingOptions("Test");
 
@@ -310,7 +319,7 @@ class PioSolverTest {
     }
 
     @Test
-    void getAddLinesDont3BetTest() throws IOException {
+    public void getAddLinesDont3BetTest() throws IOException {
         HandSolveSettings handSolveSettings = new HandSolveSettings();
         BettingOptions bettingOptions = new BettingOptions("Test");
 
@@ -345,8 +354,11 @@ class PioSolverTest {
         }
         solver.buildTree();
 
-        String treeSize = solver.getEstimateSchematicTree();
-        assert(treeSize.equals("estimated tree size: 402 MB"));
+        // This only outputs stuff in V1. Not sure why. Could look into this w.r.t. future development
+        if(!isV2) {
+            String treeSize = solver.getEstimateSchematicTree();
+            assert (treeSize.equals("estimated tree size: 402 MB"));
+        }
 
         String showMemory = solver.getShowMemory();
         assert(!showMemory.isEmpty());
@@ -376,7 +388,7 @@ class PioSolverTest {
 
 
     @Test
-    void getAddLinesAllinOptionsTest() throws IOException {
+    public void getAddLinesAllinOptionsTest() throws IOException {
         HandSolveSettings handSolveSettings = new HandSolveSettings();
         BettingOptions bettingOptions = new BettingOptions("Test");
 
