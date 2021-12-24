@@ -405,10 +405,8 @@ public class WorkQueueController {
         try {
             loadedWork = StateManager.readAllWorkObjectFiles(solverSettings);
         } catch (IOException e) {
-            String error = String.format("Disk input/output error occured while trying to load work files from folder %s. \n" +
-                    "Check for read permissions; or, less likely, for data corruption.", solverSettings.getSolverResultsFolder());
-            Logger.log(error);
-            Popups.showError(error);
+            Logger.log(e.getMessage());
+            Popups.showError(e.getMessage());
             return null;
         }
 

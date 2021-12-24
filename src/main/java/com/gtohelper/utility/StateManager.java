@@ -123,9 +123,10 @@ public class StateManager {
         AtomicInteger errorOccured = new AtomicInteger(0);
         Path rootDirectory = solverSettings.getSolverResultsFolder();
 
-        if(!Files.exists(rootDirectory) || !Files.isDirectory(rootDirectory)) {
-            throw new IOException(String.format("Specified solver results directory %s either does not exist " +
-                    "or is not a folder.", solverSettings.getSolverResultsFolder()));
+        // If it doesn't exist (like on a first initialization), we'll create the new directory and leave.
+        if(!Files.exists(rootDirectory)) {
+            Files.createDirectory(rootDirectory);
+            return results;
         }
 
         Files.walk(rootDirectory, 1).filter(Files::isDirectory).forEach(subfolderPath -> {
