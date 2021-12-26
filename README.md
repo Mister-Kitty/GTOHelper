@@ -1,7 +1,7 @@
 # GTOHelper
 An online poker HUD/tracker (PokerTracker4) -> poker GTO solver (PioSolver) automation tool
 
-The initial purpose of the tool was to alleviate the painful and repetitive process of manually inputting and solving for hands that you wanted to review from your last grind session. While the functionality of scraping data from PokerTracker4's local database, packaging the hands, internally queueing the hands to be solved, and executing the hands in the solver via it's API has been completed, there's still a lot more potential for cool features to be completed that I unfortunately don't have the time/energy to complete.
+The initial purpose of the tool was to alleviate the painful and repetitive process of manually inputting and solving for hands that you wanted to review from your last grind session. While the functionality of scraping data from PokerTracker4's local database, packaging the hands, internally queueing the hands to be solved, and executing the hands in the solver via it's API has been completed, there's still a lot more potential for cool features to be completed that I unfortunately don't have the time/energy to complete. 
 
 Eg.
 - Find your average distance from GTO between your play and the solver for each hand in a bulk Position vs. Position computation. This would quantify where you're playing the poorest ~ rather than subjectively guessing where you're underperforming.
@@ -27,11 +27,16 @@ Eg.
 
 # Dude, where's my .jar?
 Q: Can't you provide me with an .exe or something? I don't want to do the above steps.
-A: I'm really sorry. I picked JavaFX for GUI because IntelliJ had an integration that required no additional steps and no internal Java/JavaFX linking/building knowledge. The functionality was rug-pulled after Java 8, and I simply don't have the time to figure it out. It's not simple at all. If you know a Java developer, I'd be happy to have them submit the code and I'll merge it in for everyone.
+A: I'm really sorry. I picked JavaFX for GUI because IntelliJ had an integration that required no additional steps and no internal Java/JavaFX linking/building knowledge. The functionality was rug-pulled after Java 8, and I simply don't have the time to figure it out. It's not trivial at all. If you do know a Java developer, I'd be happy to have them submit the code and I'll merge it in for everyone.
 Q: Exception on GTOHelperModel.java's rootLoader.load() function
 A: Make sure the Resource folder is marked back on step 5
 Q: I get an error about JUnit when compiling...
 A: Ensure you have GTOHelper\lib in Global Libraries as per section 6. It needs the testing framework.
 
 # Etcetera
-I hope you find this useful. I spent a *load* of time on this earlier in 2021, and got entirely burned out on this project because of how horrible PokerTracker4 was to work with. Amazing, there's a lot of hand data that you simply can't get from PT4. There were times I had to literally code an internal "replay" of the hand to find out trivial information. The last straw that caused me to gave up was when I found out that there is no saved hand data about anything 5bet+, meaning I would have to scrape all 5bet+ pot data fresh from the hand history .txt itself to be able to provide full functionality for deep stacked games. 
+I hope you find this useful. I spent a *load* of time on this earlier in 2021, and got entirely burned out on this project because of how horrible PokerTracker4 was to work with. Amazing, there's a lot of hand data that you simply can't get from PT4. There were times I had to literally code an internal "replay" of the hand to find out trivial information, such as who was last to act preflop. 
+The last straw that caused me to gave up was when I found out that there is no saved hand data about anything 5bet+, meaning I would have to scrape all 5bet+ pot data fresh from the hand history .txt itself to be able to provide full functionality for deep stacked games. 
+
+So yea! If you get use out of this, please drop me a tip. Even a fraction of a buy-in would be greatly appreciated ~ much more than you'd think. "Mr. Kitty#9462" on Discord if needed.
+ETH/AVAX/ONE -> 0x59C8a33e0e9c877eBfEfE209b404E98Bf70e009e
+SOL -> AhNWouCwNw9ivzpB9rxFZgmtS4HZxWcqkUNsbVvyzsxh
