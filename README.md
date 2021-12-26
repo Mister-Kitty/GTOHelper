@@ -24,6 +24,7 @@ Eg.
 ![Modules](https://github.com/Mister-Kitty/Mister-Kitty.github.io/blob/281df6abb17c884792bc74e13c4d57b46d9fc368/img/GTOHelper/Modules.png)
 6. Then go to the Global Libraries tab on the same Project Structure page. Press + (new global library), click Java, then click on the "lib" directory in the project. Click Ok. Click Ok again when it asks to select module. Then, press + again. click Java again. This time, expand the lib folder, the javafx-sdk folder, and click the inner lib folder therein. Click Ok again. Note that I need to apologize for this step. It's embarassing that I don't have a build framework. But when I started this prototype I thought I wouldn't need more than 1 dependancy, and so was sloppy.
 7. On the top toolbar go to 'Run > Edit Configurations...', and 'Add New Configuration > Application' Fill in the Java SDK (I'm using 15 in the image), select the Main method, click 'modify options' and add 'add VM options'. Copy-paste the following to the VM options: --module-path ".\lib\javafx-sdk-15.0.1\lib" --add-modules javafx.controls,javafx.fxml,javafx.base,javafx.web
+![RunConf](https://github.com/Mister-Kitty/Mister-Kitty.github.io/blob/e9745acc763c122d86a1ee2e957a82c790dbbe93/img/GTOHelper/Run%20Config.png)
 
 # Dude, where's my .jar?
 Q: Can't you provide me with an .exe or something? I don't want to do the above steps.
