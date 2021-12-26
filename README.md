@@ -44,7 +44,7 @@ I hope you find this useful. I spent a *load* of time on this earlier in 2021, a
 
 The last straw that caused me to gave up was when I found out that there is no saved hand data about anything 5bet+, meaning I would have to scrape all 5bet+ pot data fresh from the hand history .txt itself to be able to provide full functionality for deep stacked games. 
 
-So yea! If you get use out of this, please drop me a tip. Even a fraction of a buy-in would be greatly appreciated ~ much more than you'd think. "Mr. Kitty#9462" on Discord if needed.
+So yea! If you get use out of this, please drop me a tip. Anything is greatly appreciated. "Mr. Kitty#9462" on Discord if needed.
 
 ETH/AVAX/ONE -> 0x59C8a33e0e9c877eBfEfE209b404E98Bf70e009e
 
