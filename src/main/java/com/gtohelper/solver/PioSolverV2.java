@@ -42,7 +42,9 @@ public class PioSolverV2 extends PioSolverBase implements ISolver {
 
     @Override
     public void setBoard(String board) throws IOException {
-        writeToOutput("set_board " + board);
+        String noSpacesBoard = board.replaceAll(" ", "");
+
+        writeToOutput("set_board " + noSpacesBoard);
         readFromInputUntilEND();
     }
 
