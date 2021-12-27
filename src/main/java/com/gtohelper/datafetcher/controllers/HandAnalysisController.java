@@ -42,8 +42,8 @@ public class HandAnalysisController {
     ObservableList<SessionBundle> sessionTableItems = FXCollections.observableArrayList();
     @FXML TableColumn<SessionBundle, String> sessionTableDateColumn;
     @FXML TableColumn<SessionBundle, String> sessionTableLengthColumn;
-    @FXML TableColumn<SessionBundle, String> sessionTableHandsColumn;
     @FXML TableColumn<SessionBundle, String> sessionTableFlopsColumn;
+    @FXML TableColumn<SessionBundle, String> sessionTableHandsColumn;
     @FXML TableColumn<SessionBundle, String> sessionTableMoneyColumn;
 
     /*
@@ -54,6 +54,21 @@ public class HandAnalysisController {
     @FXML ChoiceBox<String> situationChoiceBox;
     @FXML ChoiceBox<HandData.SolvabilityLevel> solveabilityChoiceBox;
 
+    /*
+        Tournament tab controls
+     */
+
+    @FXML
+    TableView<Tournament> tournamentTable;
+    ObservableList<Tournament> tournamentTableItems = FXCollections.observableArrayList();
+    @FXML TableColumn<Tournament, String> tournamentTableDateColumn;
+    @FXML TableColumn<Tournament, String> tournamentTableHandsColumn;
+    @FXML TableColumn<Tournament, String> tournamentTablePlayersColumn;
+    @FXML TableColumn<Tournament, String> tournamentTableBuyinColumn;
+
+    /*
+        Hand table controls
+    */
     @FXML
     TableView<HandData> handsTable;
     ObservableList<HandData> handsTableItems = FXCollections.observableArrayList();
@@ -63,9 +78,8 @@ public class HandAnalysisController {
     @FXML TableColumn<HandData, Board> handsTableBoardColumn;
 
 
-
     /*
-        Hand table controls
+        Work item build controls
      */
 
     @FXML TextField workName;
@@ -104,6 +118,11 @@ public class HandAnalysisController {
             sessionTableItems.addAll(handAnalysisModel.getSessionBundles(site.id_site, player.id_player));
             sessionTable.sort();
             Platform.runLater(() -> sessionTable.refresh()); // workaround for column header alignment bug in javafx
+
+            tournamentTableItems.clear();
+            tournamentTableItems.addAll(handAnalysisModel.getTournaments(site.id_site, player.id_player));
+            tournamentTable.sort();
+           // Platform.runLater(() -> sessionTable.refresh());
 
         }  catch (SQLException ex) {
         }
@@ -167,6 +186,7 @@ public class HandAnalysisController {
 
         initializeSessionAndTagControls();
         initializePositionVPositionControls();
+        initializeTournamentControls();
 
         /*
             Hands table
@@ -343,6 +363,52 @@ public class HandAnalysisController {
         solveabilityChoiceBox.getItems().addAll(HandData.SolvabilityLevel.values());
         solveabilityChoiceBox.getSelectionModel().select(HandData.SolvabilityLevel.MULTI_PRE_HU_FLOP);
     }
+
+    /*
+        And finally, Tournament controls
+     */
+
+    private void initializeTournamentControls() {
+        tournamentTable.setItems(tournamentTableItems);
+        tournamentTable.setPlaceholder(new Label(""));
+        tournamentTable.getSortOrder().add(tournamentTableDateColumn);
+
+        // Ideally, these should have accessors
+        tournamentTableDateColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().date_start.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+        tournamentTableDateColumn.setSortType(TableColumn.SortType.DESCENDING);
+        tournamentTableHandsColumn.setCellValueFactory(p -> new SimpleStringProperty(String.valueOf(p.getValue().cnt_hands)));
+        tournamentTablePlayersColumn.setCellValueFactory(p -> new SimpleStringProperty(String.valueOf(p.getValue().cnt_players)));
+        tournamentTableBuyinColumn.setCellValueFactory(p -> new SimpleStringProperty(new BigDecimal(p.getValue().amt_buyin).setScale(2, RoundingMode.HALF_UP).toString()));
+
+        tournamentTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            getTournamentHands();
+        });
+    }
+
+    private void getTournamentHands() {
+        Tournament selectedTournament = tournamentTable.getSelectionModel().getSelectedItem();
+
+
+        ArrayList<HandData> results;
+        try {
+
+            results = handAnalysisModel.getHandDataByTournament(selectedTournament.id_tourney, player.id_player);
+
+
+        } catch(SQLException e) {
+            Popups.showError("Database exception while trying to fetch hands. See logger for more info.");
+            Logger.log(Logger.Channel.HUD, "Database exception while trying to fetch hands.\n");
+            Logger.log(e);
+            return;
+        }
+
+        handsTableItems.clear();
+        handsTableItems.addAll(results);
+    }
+
+    /*
+        FXML and etc below
+     */
 
     @FXML
     private void heroSeatSelected() {

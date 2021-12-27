@@ -12,6 +12,8 @@ public interface IHandDataDM {
     ArrayList<HandData> getHandDataByTag(int tagId, int playerId) throws SQLException;
     ArrayList<HandData> getHandDataBySessionBundle(SessionBundle session, int tagId, int playerId) throws SQLException;
     ArrayList<HandData> getHandDataByTaggedHandsInSessions(List<SessionBundle> sessions, int tagId, int playerId) throws SQLException;
+    ArrayList<HandData> getHandDataByTournament(int tournamentId, int playerId) throws SQLException;
     ArrayList<HandData> getHandDataByPositionVsPosition(SeatGroup heroSeatGroup, SeatGroup villainSeatGroup,
                                  Situation sit, LastAction lastAction, HandData.SolvabilityLevel solvability, int playerId) throws SQLException;
+
 }

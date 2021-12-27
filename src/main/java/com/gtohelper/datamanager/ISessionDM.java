@@ -11,9 +11,4 @@ public interface ISessionDM {
     ArrayList<SessionBundle> getAllSessionBundles(int siteId, int playerId) throws SQLException;
 
 
-
-
-
-
-
 }

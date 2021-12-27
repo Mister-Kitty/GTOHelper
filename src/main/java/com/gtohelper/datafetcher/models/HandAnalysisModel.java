@@ -1,6 +1,7 @@
 package com.gtohelper.datafetcher.models;
 
 import com.gtohelper.datamanager.ISessionDM;
+import com.gtohelper.datamanager.ITournamentDM;
 import com.gtohelper.domain.*;
 import com.gtohelper.pt4datamanager.PT4HandDataDM;
 import com.gtohelper.pt4datamanager.PT4LookupDM;
@@ -8,6 +9,7 @@ import com.gtohelper.database.Database;
 import com.gtohelper.datamanager.IHandDataDM;
 import com.gtohelper.datamanager.ILookupDM;
 import com.gtohelper.pt4datamanager.PT4SessionDM;
+import com.gtohelper.pt4datamanager.PT4TournamentDM;
 import com.gtohelper.utility.SaveFileHelper;
 import com.gtohelper.utility.Saveable;
 
@@ -23,7 +25,7 @@ public class HandAnalysisModel extends Saveable {
     }
 
     /*
-        Get our Tag and Session objects
+        Get our Tag, Session, and Tournament objects
      */
     public ArrayList<Tag> getHandTags() throws SQLException {
         try (Connection con = Database.getConnection()) {
@@ -41,10 +43,16 @@ public class HandAnalysisModel extends Saveable {
         }
     }
 
+    public ArrayList<Tournament> getTournaments(int siteId, int playerId) throws SQLException {
+        try (Connection con = Database.getConnection()) {
+
+            ITournamentDM tournamentSummaryDM = new PT4TournamentDM(con);
+            return tournamentSummaryDM.getAllTournaments(siteId, playerId);
+        }
+    }
+
     /*
-        When we have a tag or session query, we use these 3 functions.
-        These could be rolled up into one function.... I'm not sure what's a better choice...
-        Maybe you're supposed to just pick either and stick with it? Whatever...
+        Here, we get HandData
      */
 
     public ArrayList<HandData> getHandDataByTag(int tagId, int playerId) throws SQLException {
@@ -77,6 +85,14 @@ public class HandAnalysisModel extends Saveable {
 
             IHandDataDM handSummaryDM = new PT4HandDataDM(con);
             return handSummaryDM.getHandDataByPositionVsPosition(heroSeatGroup, villainSeatGroup, sit, lastAction, solvability, playerId);
+        }
+    }
+
+    public ArrayList<HandData> getHandDataByTournament(int tournamentId, int playerId) throws SQLException {
+        try (Connection con = Database.getConnection()) {
+
+            IHandDataDM handSummaryDM = new PT4HandDataDM(con);
+            return handSummaryDM.getHandDataByTournament(tournamentId, playerId);
         }
     }
 

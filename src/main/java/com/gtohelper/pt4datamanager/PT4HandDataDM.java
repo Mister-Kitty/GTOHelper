@@ -12,7 +12,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,8 +24,8 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
     public ArrayList<HandData> getHandDataByTag(int tagId, int playerId) throws SQLException {
         String handIdSelectSQL = String.format("select id_x from tags where tags.id_tag = %d", tagId);
 
-        ArrayList<HandData> hands = getHandSummaryData(handIdSelectSQL);
-        ArrayList<PlayerHandData> playerHands = getPlayerHandData(handIdSelectSQL);
+        ArrayList<HandData> hands = getCashHandSummaryData(handIdSelectSQL);
+        ArrayList<PlayerHandData> playerHands = getCashPlayerHandData(handIdSelectSQL);
 
         bundlePlayerHandsIntoHandData(hands, playerHands);
         computeCalculatedFieldsForHandData(hands, playerId);
@@ -55,8 +54,8 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
                 , String.join(",", sessionIds), playerId);
 
 
-        ArrayList<HandData> hands = getHandSummaryData(handIdSelectSQL);
-        ArrayList<PlayerHandData> playerHands = getPlayerHandData(handIdSelectSQL);
+        ArrayList<HandData> hands = getCashHandSummaryData(handIdSelectSQL);
+        ArrayList<PlayerHandData> playerHands = getCashPlayerHandData(handIdSelectSQL);
 
         bundlePlayerHandsIntoHandData(hands, playerHands);
         computeCalculatedFieldsForHandData(hands, playerId);
@@ -80,8 +79,33 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
                 "\n" +
                 "where tags.id_tag = %d and stats.id_session in (%s)", tagId, String.join(",", flattenedSessionIds));
 
-        ArrayList<HandData> hands = getHandSummaryData(handIdSelectSQL);
-        ArrayList<PlayerHandData> playerHands = getPlayerHandData(handIdSelectSQL);
+        ArrayList<HandData> hands = getCashHandSummaryData(handIdSelectSQL);
+        ArrayList<PlayerHandData> playerHands = getCashPlayerHandData(handIdSelectSQL);
+
+        bundlePlayerHandsIntoHandData(hands, playerHands);
+        computeCalculatedFieldsForHandData(hands, playerId);
+
+        return hands;
+    }
+
+    @Override
+    public ArrayList<HandData> getHandDataByTournament(int tournamentId, int playerId) throws SQLException {
+
+        String handIdSelectSQL = String.format(
+                "select stats.id_hand\n" +
+                        "from tourney_hand_player_statistics as stats\n" +
+                        "where\n" +
+                        "    stats.id_tourney = %d and\n" +
+                        // Okay, so here only we want to additionally only produce stats.id_hands where playerId saw flop aka stats.flg_f_saw
+                        // To do this we could do a self inner join, but I think it'll be easier to write in an exists. No idea which is more efficient.
+                        "exists(select * from tourney_hand_player_statistics as s \n" +
+                        "\t   where s.id_hand = stats.id_hand and \n" +
+                        "\t   s.flg_f_saw = true and \n" +
+                        "\t   s.id_player = %d)"
+                , tournamentId, playerId);
+
+        ArrayList<HandData> hands = getTournamentHandSummaryData(handIdSelectSQL);
+        ArrayList<PlayerHandData> playerHands = getTournamentPlayerHandData(handIdSelectSQL);
 
         bundlePlayerHandsIntoHandData(hands, playerHands);
         computeCalculatedFieldsForHandData(hands, playerId);
@@ -119,8 +143,8 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
                     "  %s",
                 playerId, heroSeatGroup.getCommaSeparatedSeats(), playerId, villainSeatGroup.getCommaSeparatedSeats(), betLevel, lastActionRestrictionSQL);
 
-        ArrayList<HandData> hands = getHandSummaryData(handIdSelectSQL);
-        ArrayList<PlayerHandData> playerHands = getPlayerHandData(handIdSelectSQL);
+        ArrayList<HandData> hands = getCashHandSummaryData(handIdSelectSQL);
+        ArrayList<PlayerHandData> playerHands = getCashPlayerHandData(handIdSelectSQL);
 
         bundlePlayerHandsIntoHandData(hands, playerHands);
         computeCalculatedFieldsForHandData(hands, playerId);
@@ -400,7 +424,7 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
         }
     }
 
-    private ArrayList<HandData> getHandSummaryData(String innerQuery) throws SQLException {
+    private ArrayList<HandData> getCashHandSummaryData(String innerQuery) throws SQLException {
         final String handSummaryOuterQuerySql =
                 "SELECT summary.id_hand, summary.date_played, summary.cnt_players, summary.amt_pot, summary.card_1,\n" +
                 "       summary.card_2, summary.card_3, summary.card_4, summary.card_5,\n" +
@@ -433,7 +457,40 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
         return hands;
     }
 
-    private ArrayList<PlayerHandData> getPlayerHandData(String innerQuery) throws SQLException {
+    private ArrayList<HandData> getTournamentHandSummaryData(String innerQuery) throws SQLException {
+        final String handSummaryOuterQuerySql =
+                "SELECT summary.id_hand, summary.date_played, summary.cnt_players, summary.amt_pot, summary.card_1,\n" +
+                        "       summary.card_2, summary.card_3, summary.card_4, summary.card_5,\n" +
+                        "       summary.str_actors_p, summary.str_aggressors_p,\n" +
+                        "       summary.cnt_players_f, summary.str_actors_f, summary.str_aggressors_f, summary.amt_pot_f,\n" +
+                        "       summary.cnt_players_t, summary.str_actors_t, summary.str_aggressors_t,\n" +
+                        "       summary.cnt_players_r, summary.str_actors_r, summary.str_aggressors_r,\n" +
+                        "       tourney_blinds.blinds_name as limit_name, tourney_blinds.amt_sb, tourney_blinds.amt_bb\n" +
+                        "FROM tourney_hand_summary as summary\n" +
+                        "INNER JOIN tourney_blinds\n" +
+                        "  on summary.id_blinds = tourney_blinds.id_blinds\n" +
+                        "WHERE summary.cnt_players_f > 1 AND\n" +  // We only ever get hands with 2 or more flop players. Ever!
+                        "summary.id_hand in\n" +
+                        "(\n" +
+                        "       %s\n" +
+                        ")\n" +
+                        "ORDER BY summary.id_hand DESC";
+        String fullSql = String.format(handSummaryOuterQuerySql, innerQuery);
+
+        ArrayList<HandData> hands = new ArrayList<>();
+        try (Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery(fullSql)) {
+
+            while (rs.next()) {
+                HandData hand = mapHandData(rs);
+                hands.add(hand);
+            }
+        }
+
+        return hands;
+    }
+
+    private ArrayList<PlayerHandData> getCashPlayerHandData(String innerQuery) throws SQLException {
         final String handPlayerStatsOuterQuerySql =
                 "SELECT stats.id_hand, p_actions.action as p_action, f_actions.action as f_action, t_actions.action as t_action, r_actions.action as r_action,\n" +
                         "  stats.id_player, player.player_name, stats.holecard_1, stats.holecard_2, stats.amt_before, stats.amt_won, stats.position, stats.flg_showdown \n" +
@@ -450,6 +507,48 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
                         "INNER JOIN player\n" +
                         "  on stats.id_player = player.id_player\n" +
                         "INNER JOIN cash_hand_summary as summary\n" + // Inner join to ensure our only extra-ordinary condition of
+                        "  on stats.id_hand = summary.id_hand\n" +    // requiring at least 2 players to see flop.
+                        "\n" +
+                        "WHERE p_actions.action != 'F' AND \n" +
+                        "summary.cnt_players_f > 1 AND\n" +
+                        "stats.id_hand in\n" +
+                        "(\n" +
+                        "  %s\n" +
+                        ")\n" +
+                        "ORDER BY stats.id_hand DESC, stats.position DESC";
+        String fullSql = String.format(handPlayerStatsOuterQuerySql, innerQuery);
+
+        ArrayList<PlayerHandData> handData = new ArrayList<>();
+
+        try (Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery(fullSql)) {
+
+            while (rs.next()) {
+                PlayerHandData hand = mapPlayerHandData(rs);
+                handData.add(hand);
+            }
+        }
+
+        return handData;
+    }
+
+    private ArrayList<PlayerHandData> getTournamentPlayerHandData(String innerQuery) throws SQLException {
+        final String handPlayerStatsOuterQuerySql =
+                "SELECT stats.id_hand, p_actions.action as p_action, f_actions.action as f_action, t_actions.action as t_action, r_actions.action as r_action,\n" +
+                        "  stats.id_player, player.player_name, stats.holecard_1, stats.holecard_2, stats.amt_before, stats.amt_won, stats.position, stats.flg_showdown \n" +
+                        "FROM tourney_hand_player_statistics as stats\n" +
+                        "\n" +
+                        "INNER JOIN lookup_actions as p_actions\n" +
+                        "  on stats.id_action_p = p_actions.id_action\n" +
+                        "INNER JOIN lookup_actions as f_actions\n" +
+                        "  on stats.id_action_f = f_actions.id_action\n" +
+                        "INNER JOIN lookup_actions as t_actions\n" +
+                        "  on stats.id_action_t = t_actions.id_action\n" +
+                        "INNER JOIN lookup_actions as r_actions\n" +
+                        "  on stats.id_action_r = r_actions.id_action\n" +
+                        "INNER JOIN player\n" +
+                        "  on stats.id_player = player.id_player\n" +
+                        "INNER JOIN tourney_hand_summary as summary\n" + // Inner join to ensure our only extra-ordinary condition of
                         "  on stats.id_hand = summary.id_hand\n" +    // requiring at least 2 players to see flop.
                         "\n" +
                         "WHERE p_actions.action != 'F' AND \n" +
