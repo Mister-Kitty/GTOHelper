@@ -68,21 +68,38 @@ public class PT4LookupDM  extends DataManagerBase implements ILookupDM {
 
 
     @Override
-    public ArrayList<Player> getSortedPlayersBySite(int siteId, int minCount)throws SQLException {
+    public ArrayList<Player> getSortedPlayersBySite(int siteId, int maxRows)throws SQLException {
         String sql = String.format(
-                "SELECT cash_table_session_summary.id_player, COUNT(*) as cnt, MAX(p.player_name) as player_name,\n" +
-                "\t\t\tbool_or(p.flg_note) as flg_note, bool_or(p.flg_tag) as flg_tag\n" +
-                "FROM cash_table_session_summary\n" +
-                "\tLEFT JOIN \n" +
-                "\t\t(SELECT *\n" +
-                "\t\t FROM player\n" +
-                "\t\tWHERE id_site = %d) AS p\n" +
-                "\tON cash_table_session_summary.id_player = p.id_player\n" +
-                "WHERE cash_table_session_summary.id_site = %d\n" +
-                "GROUP BY cash_table_session_summary.id_player\n" +
-             //   "HAVING COUNT(*) > %d" +
-                "ORDER BY cnt DESC\n" +
-                "LIMIT %d", siteId, siteId, minCount);
+                "SELECT	playerId, playerName,\n" +
+                "    SUM(handCount) as totalHands\n" +
+                "FROM\n" +
+                "(\n" +
+                "        SELECT player.id_player as playerId,\n" +
+                "           player.player_name as playerName,\n" +
+                "           count(*) as handCount\n" +
+                "       FROM player\n" +
+                "       INNER JOIN cash_hand_player_statistics as cash_stats\n" +
+                "           on cash_stats.id_player = player.id_player\n" +
+                "\n" +
+                "       WHERE player.id_site = %d\n" +
+                "       GROUP BY player.id_player, player.player_name\n" +
+                "\n" +
+                "   UNION ALL\n" +
+                "\n" +
+                "       SELECT player.id_player as playerId,\n" +
+                "           player.player_name as playerName,\n" +
+                "           count(*) as handCount\n" +
+                "       FROM player\n" +
+                "       INNER JOIN tourney_hand_player_statistics as tourney_stats\n" +
+                "           on tourney_stats.id_player = player.id_player\n" +
+                "\n" +
+                "       WHERE player.id_site = %d\n" +
+                "       GROUP BY player.id_player, player.player_name\n" +
+                ") as unionedStats\n" +
+                "\n" +
+                "GROUP BY playerId, playerName\n" +
+                "ORDER BY totalHands DESC\n" +
+                "LIMIT %d", siteId, siteId, maxRows);
 
         ArrayList<Player> players = new ArrayList<Player>();
 
@@ -129,10 +146,9 @@ public class PT4LookupDM  extends DataManagerBase implements ILookupDM {
 
     private Player mapPlayer(ResultSet rs) throws SQLException {
         Player player = new Player();
-        player.id_player = rs.getInt("id_player");
-        player.player_name = rs.getString("player_name");
-        player.flg_note = rs.getBoolean("flg_note");
-        player.flg_tag = rs.getBoolean("flg_tag");
+        player.id_player = rs.getInt("playerId");
+        player.player_name = rs.getString("playerName");
+        player.total_hands = rs.getInt("totalHands");
         return player;
     }
 }

@@ -13,6 +13,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.util.StringConverter;
 
 import java.sql.SQLException;
 import java.util.function.BiConsumer;
@@ -131,25 +132,37 @@ public class DBConnectionController {
     }
 
     private void initializeControls() {
-        site.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Site>() {
+
+        player.setConverter(new StringConverter<>() {
             @Override
-            public void changed(ObservableValue<? extends Site> observable, Site oldValue, Site newValue) {
-                // when we change the site, we re-fetch and refresh the players dropdown
-                if (newValue == null || newValue.equals(oldValue))
-                    return;
+            public String toString(Player player) {
+                if (player == null)
+                    return "";
+                return player.player_name + " (hands: " + player.total_hands + ")";
+            }
 
-                try {
-                    ObservableList<Player> t =
-                            FXCollections.observableList(dbConnectionModel.getSortedPlayersBySite(newValue.id_site, 15));
-                    player.getItems().clear();
-                    player.getItems().addAll(t);
-                    player.getSelectionModel().selectFirst();
+            @Override
+            public Player fromString(String s) {
+                return null;
+            }
+        });
 
-                    go.disableProperty().bind(player.getSelectionModel().selectedItemProperty().isNull());
+        site.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            // when we change the site, we re-fetch and refresh the players dropdown
+            if (newValue == null || newValue.equals(oldValue))
+                return;
 
-                } catch (SQLException throwables) {
-                    results.setText("Database error while fetching players for selected site! Error posted on Debug tab.");
-                }
+            try {
+                ObservableList<Player> t =
+                        FXCollections.observableList(dbConnectionModel.getSortedPlayersBySite(newValue.id_site, 30));
+                player.getItems().clear();
+                player.getItems().addAll(t);
+                player.getSelectionModel().selectFirst();
+
+                go.disableProperty().bind(player.getSelectionModel().selectedItemProperty().isNull());
+
+            } catch (SQLException throwables) {
+                results.setText("Database error while fetching players for selected site! Error posted on Debug tab.");
             }
         });
     }

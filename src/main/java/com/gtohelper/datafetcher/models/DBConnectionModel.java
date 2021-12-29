@@ -38,11 +38,11 @@ public class DBConnectionModel extends Saveable {
         }
     }
 
-    public ArrayList<Player> getSortedPlayersBySite(int siteId, int minSessionCount) throws SQLException {
+    public ArrayList<Player> getSortedPlayersBySite(int siteId, int maxRows) throws SQLException {
         try (Connection con = Database.getConnection();) {
 
             ILookupDM lookupDM = new PT4LookupDM(con);
-            return lookupDM.getSortedPlayersBySite(siteId, minSessionCount);
+            return lookupDM.getSortedPlayersBySite(siteId, maxRows);
         }
     }
 
