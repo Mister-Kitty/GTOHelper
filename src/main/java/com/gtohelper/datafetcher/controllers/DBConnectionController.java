@@ -3,6 +3,7 @@ package com.gtohelper.datafetcher.controllers;
 import com.gtohelper.datafetcher.models.DBConnectionModel;
 import com.gtohelper.domain.Player;
 import com.gtohelper.domain.Site;
+import com.gtohelper.utility.Logger;
 import com.gtohelper.utility.SaveFileHelper;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -64,8 +65,9 @@ public class DBConnectionController {
         dbConnectionModel = new DBConnectionModel(saveHelper);
         loadFieldsFromModel();
         testConnection();
-        if(!getConnectionSuccess())
-            results.setText("PT4's default user/pass/name has failed. Please enter the correct info to continue");
+        if(!getConnectionSuccess()) {
+            results.setText("Connect attempt failed. Error message has been posted in the debug tab.");
+        }
     }
 
     private BiConsumer<Site, Player> connectionSuccessfulCallback;
@@ -85,18 +87,25 @@ public class DBConnectionController {
     @FXML
     private boolean testConnection() {
         String url = getDBUrl();
-        String reply;
 
         try {
             dbConnectionModel.testConnection(url, DBUser.getText(), DBPassword.getText());
-            reply = "Connection attempt succeeded. Fill in poker site & username info below to continue.";
+
+            String reply = "Connection attempt succeeded. Fill in poker site & username info below to continue.";
+            results.setText(reply);
         }  catch (SQLException ex) {
-            reply = "Connect attempt failed. Error message has been posted in the debug tab.";
+            String reply = "Connect attempt failed. Error message has been posted in the debug tab.";
+            results.setText(reply);
+
+            Logger.log(Logger.Channel.HUD, "-----------------------------------------------\n");
+            Logger.log(Logger.Channel.HUD, "Database error while trying to connect.\n");
+            Logger.log(Logger.Channel.HUD, "-----------------------------------------------\n");
+            Logger.log(Logger.Channel.HUD, ex.getMessage());
             setConnectionSuccess(false);
             return false;
         }
 
-        results.setText(reply);
+
 
         setConnectionSuccess(true);
         updatePropsFromFields();

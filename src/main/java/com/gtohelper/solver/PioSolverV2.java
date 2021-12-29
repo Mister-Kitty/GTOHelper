@@ -2,11 +2,6 @@ package com.gtohelper.solver;
 
 import java.io.IOException;
 
-/*
-      This inheritance tree with v1 and v2 really could be better...
-      Maybe move most of this into a SolverBase.java?
-      That way they could easily have their own matching test files
- */
 public class PioSolverV2 extends PioSolverBase implements ISolver {
     @Override
     public void connectAndInitToSolver(String solverLocation) throws IOException {
@@ -22,12 +17,6 @@ public class PioSolverV2 extends PioSolverBase implements ISolver {
         readFromInputUntilEND();
 
         writeToOutput("set_recalc_accuracy 0.0025 0.001 0.0005");
-        readFromInputUntilEND();
-
-        writeToOutput("set_info_freq 2");
-        readFromInputUntilEND();
-
-        writeToOutput("set_info_freq 2");
         readFromInputUntilEND();
 
         writeToOutput("set_info_freq 2");
