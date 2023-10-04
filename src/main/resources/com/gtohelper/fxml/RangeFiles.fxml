@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
-<?import javafx.scene.text.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TreeTableColumn?>
+<?import javafx.scene.control.TreeTableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/8"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.gtohelper.datafetcher.controllers.solversettings.RangeFilesController">
+<AnchorPane xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gtohelper.datafetcher.controllers.solversettings.RangeFilesController">
      <children>
         <VBox layoutX="50.0" layoutY="6.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
            <children>
@@ -19,7 +25,7 @@
                        </HBox.margin>
                     </Text>
                     <TextField fx:id="rangeFolderLocation" maxHeight="25.0" minHeight="25.0" minWidth="160.0" HBox.hgrow="ALWAYS" />
-                    <Button onAction="#onChooseFolderPress" mnemonicParsing="false" text="Browse">
+                    <Button disable="true" mnemonicParsing="false" onAction="#onChooseFolderPress" text="Browse">
                        <HBox.margin>
                           <Insets left="1.0" />
                        </HBox.margin></Button>
@@ -34,7 +40,7 @@
                       <items>
                         <AnchorPane>
                              <children>
-                                <TreeTableView fx:id="rangeFileTable" minWidth="200.0" sortMode="ONLY_FIRST_LEVEL" AnchorPane.bottomAnchor="-0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                <TreeTableView fx:id="rangeFileTable" minWidth="200.0" sortMode="ONLY_FIRST_LEVEL" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                   <columns>
                                     <TreeTableColumn fx:id="rangeFileTableFilePathColumn" minWidth="100.0" prefWidth="100.0" text="File Path" />
                                     <TreeTableColumn fx:id="rangeFileTableBoundActionColumn" minWidth="150.0" prefWidth="150.0" text="Bound Action/Position" />
@@ -43,6 +49,11 @@
                                       <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                                    </columnResizePolicy>
                                 </TreeTableView>
+                              <TextArea editable="false" prefHeight="50.0" prefWidth="200.0" text="NOTE: Editing this tab is disabled until v0.1.1. This is due to a pending rewrite to allow stack depth specific ranges &amp; enable tournament ranges!" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                                 <font>
+                                    <Font size="10.0" />
+                                 </font>
+                              </TextArea>
                              </children>
                           </AnchorPane>
                         <AnchorPane>
@@ -63,7 +74,7 @@
                                       </AnchorPane>
                                       <AnchorPane>
                                          <children>
-                                            <Button fx:id="bindButton" onAction="#onBindButtonPress" disable="true" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" text="Bind file to action/position" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                                            <Button fx:id="bindButton" alignment="CENTER" contentDisplay="CENTER" disable="true" mnemonicParsing="false" onAction="#onBindButtonPress" text="Bind file to action/position" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                                                <VBox.margin>
                                                   <Insets left="1.0" top="1.0" />
                                                </VBox.margin>
@@ -72,7 +83,7 @@
                                       </AnchorPane>
                                       <AnchorPane>
                                          <children>
-                                            <Button fx:id="saveBindingsButton"  onAction="#onSaveBindingsButtonPress"  alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" text="Save bindings" textAlignment="CENTER" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                                            <Button fx:id="saveBindingsButton" alignment="CENTER" contentDisplay="CENTER" disable="true" mnemonicParsing="false" onAction="#onSaveBindingsButtonPress" text="Save bindings" textAlignment="CENTER" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                                                <VBox.margin>
                                                   <Insets />
                                                </VBox.margin>

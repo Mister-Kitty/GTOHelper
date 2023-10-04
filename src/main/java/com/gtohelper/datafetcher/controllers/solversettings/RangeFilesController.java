@@ -116,11 +116,13 @@ public class RangeFilesController {
             if(newValue == null) // Unsure why this triggers. Will look into it.
                 return;
 
-            bindButton.disableProperty().setValue(!newValue.isLeaf() || actionTableItem == null || !actionTableItem.isLeaf());
+            // DISABLED UNTIL 0.1.1
+            //bindButton.disableProperty().setValue(!newValue.isLeaf() || actionTableItem == null || !actionTableItem.isLeaf());
         });
         actionPositionTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             TreeItem<File> fileTableItem = rangeFileTable.getSelectionModel().getSelectedItem();
-            bindButton.disableProperty().setValue(!newValue.isLeaf() || fileTableItem == null || !fileTableItem.isLeaf());
+            // DISABLED UNTIL 0.1.1
+            //bindButton.disableProperty().setValue(!newValue.isLeaf() || fileTableItem == null || !fileTableItem.isLeaf());
         });
     }
 

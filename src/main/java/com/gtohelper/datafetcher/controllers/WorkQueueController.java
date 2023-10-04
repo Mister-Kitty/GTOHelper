@@ -110,11 +110,11 @@ public class WorkQueueController {
                 (observable, oldValue, newValue) -> updateHandDataFields(newValue));
 
         // Do these programmatically so that SceneBuilder still renders
-        taskInfoScrollPane.setVisible(false);
+        //taskInfoScrollPane.setVisible(false);
     }
 
     public void changed(QueueType source, Work oldValue, Work newValue) {
-        taskInfoScrollPane.setVisible(true); // don't want scroll bar to render with no work picked, as said above.
+        //taskInfoScrollPane.setVisible(true); // don't want scroll bar to render with no work picked, as said above.
 
         if(newValue != null) {
             setSelectedWork(newValue);
