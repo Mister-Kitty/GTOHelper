@@ -18,7 +18,7 @@ public class GTOHelperModel extends Application {
         GTOHelperController controller = (GTOHelperController)rootLoader.getController();
         controller.setStage(primaryStage);
 
-        primaryStage.setTitle("GTOHelper v 0.0");
+        primaryStage.setTitle("GTOHelper v 0.1.0");
         primaryStage.setScene(scene);
         primaryStage.setMinWidth(960);
         primaryStage.show();

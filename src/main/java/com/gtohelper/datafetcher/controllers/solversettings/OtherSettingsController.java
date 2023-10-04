@@ -19,7 +19,11 @@ import javafx.stage.FileChooser;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.function.Function;
 
 public class OtherSettingsController {
@@ -35,9 +39,6 @@ public class OtherSettingsController {
 
     @FXML
     TextField solveResultsFolder;
-
-    @FXML
-    TextField solveResultsBackupFolder;
 
     // These should really enumerate versions... so, hold an INT containing version number.
     @FXML
@@ -81,16 +82,42 @@ public class OtherSettingsController {
         viewerLocation.setText(viewer);
 
         String rake = otherSettingsModel.loadTextField("rakeLocation");
-        rakeLocation.setText(rake);
+        Path rakePathAbsPath = Paths.get(rake).toAbsolutePath();
+        if(!Files.exists(rakePathAbsPath)) {
+            // If it doesn't exist, like on first launch, we gotta regenerate it from Resources
+            ClassLoader classLoader = OtherSettingsController.class.getClassLoader();
+            InputStream inputStream = classLoader.getResourceAsStream("DefaultRakeFile.csv");
+            Path defaultRakeFilePath = Paths.get("DefaultRakeFile.csv");
+
+            try {
+                Files.copy(inputStream, defaultRakeFilePath, StandardCopyOption.REPLACE_EXISTING);
+                rakeLocation.setText(defaultRakeFilePath.toString());
+            } catch (IOException e) {
+                Popups.showError(String.format("Failed to create default rake file at %s.\n" +
+                        "Check write permission and/or run GTOHelper as Admin", defaultRakeFilePath.toString()));
+                throw new RuntimeException(e);
+            }
+        } else {
+            rakeLocation.setText(rakePathAbsPath.toString());
+        }
 
         String resultsFolder = otherSettingsModel.loadTextField("solveResultsFolder");
-        solveResultsFolder.setText(resultsFolder);
-
-        String resultsBackupFolder = otherSettingsModel.loadTextField("solveResultsBackupFolder");
-        solveResultsBackupFolder.setText(resultsBackupFolder);
+        Path resultsFolderAbsPath = Paths.get(resultsFolder).toAbsolutePath();
+        if(!Files.exists(resultsFolderAbsPath)) {
+            try {
+                Path resultPath = Files.createDirectory(resultsFolderAbsPath);
+                solveResultsFolder.setText(resultPath.toAbsolutePath().toString());
+            } catch (IOException e) {
+                Popups.showError(String.format("Failed to create solver results folder at %s.\n" +
+                                "Check write permission and/or run GTOHelper as Admin", resultsFolderAbsPath.toString()));
+                throw new RuntimeException(e);
+            }
+        } else {
+            solveResultsFolder.setText(resultsFolderAbsPath.toString());
+        }
 
         String isV2 = otherSettingsModel.loadTextField("isV2");
-        Boolean isV2Boolean = Boolean.parseBoolean(isV2);
+        boolean isV2Boolean = Boolean.parseBoolean(isV2);
         if(isV2Boolean)
             solverV2Radio.setSelected(true);
         else
@@ -118,12 +145,6 @@ public class OtherSettingsController {
     private void selectResultsFolder(File folder) throws IOException {
         solveResultsFolder.setText(folder.getCanonicalPath());
         otherSettingsModel.saveTextField("solveResultsFolder", folder.getAbsolutePath());
-        otherSettingsModel.saveAll();
-    }
-
-    private void selectResultsBackupFolder(File folder) throws IOException {
-        solveResultsBackupFolder.setText(folder.getCanonicalPath());
-        otherSettingsModel.saveTextField("solveResultsBackupFolder", folder.getAbsolutePath());
         otherSettingsModel.saveAll();
     }
 
@@ -193,18 +214,6 @@ public class OtherSettingsController {
             selectResultsFolder(result);
     }
 
-    @FXML
-    private void onResultsBackupChooseFolderPress() throws IOException {
-        File defaultFolder = new File(solveResultsBackupFolder.getText());
-
-        if(defaultFolder.exists())
-            folderChooser.setInitialDirectory(defaultFolder);
-
-        File result = displayFolderChooserCallback.apply(folderChooser);
-        if(result != null)
-            selectResultsBackupFolder(result);
-    }
-
     public GlobalSolverSettings getGlobalSolverSettings() {
         GlobalSolverSettings settings = new GlobalSolverSettings();
 
@@ -212,7 +221,6 @@ public class OtherSettingsController {
         settings.setViewerLocation(Paths.get(viewerLocation.getText()));
         settings.setRakeLocation(Paths.get(rakeLocation.getText()));
         settings.setSolverResultsFolder(Paths.get(solveResultsFolder.getText()));
-        settings.setSolverResultsArchiveFolder(Paths.get(solveResultsBackupFolder.getText()));
         settings.setIsV2(solverV2Radio.isSelected());
 
         return settings;

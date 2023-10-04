@@ -43,8 +43,7 @@ public class StateManager {
         }
 
         try {
-            Path result = Files.createDirectory(finalFolderAddress);
-            return result;
+            return Files.createDirectory(finalFolderAddress);
         } catch (IOException e) {
             Popups.showError(String.format("IOException while trying to create work folder %s.", rootResultsDirectory.toString()));
             Logger.log(e);
@@ -123,10 +122,10 @@ public class StateManager {
         AtomicInteger errorOccured = new AtomicInteger(0);
         Path rootDirectory = solverSettings.getSolverResultsFolder();
 
-        // If it doesn't exist (like on a first initialization), we'll create the new directory and leave.
+        // If it doesn't exist, there's a problem. Earlier code should have made it if it doesn't exist.
         if(!Files.exists(rootDirectory)) {
-            Files.createDirectory(rootDirectory);
-            return results;
+            Popups.showError("Error while loading all .gto files. Solver results folder DNE.");
+            throw new RuntimeException();
         }
 
         Files.walk(rootDirectory, 1).filter(Files::isDirectory).forEach(subfolderPath -> {

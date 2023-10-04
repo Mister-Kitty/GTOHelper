@@ -50,7 +50,8 @@ public abstract class Saveable {
             saveHelper.saveAll();
             return true;
         } catch (IOException e) {
-            String error = "Disk error while trying to update config file. Ensure we have write permissions and that the file is not open elsewhere.";
+            String error = "Disk error while trying to update config file. \n" +
+                    "Ensure we have write permissions and that the file is not open elsewhere.";
             Logger.log(error);
             Popups.showWarning(error);
             return false;

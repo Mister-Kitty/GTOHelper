@@ -1,6 +1,7 @@
 package com.gtohelper.utility;
 
 import java.io.*;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
@@ -16,7 +17,7 @@ public class SaveFileHelper {
         HashMap<String, String> defaultValues = saveable.getDefaultValues();
         defaultValues.forEach((k, v) -> {
             // In this special case we have to qualify the field names for the user.
-            // That way, they they can be 100% agnostic of this implementation requirement
+            // That way, they can be 100% agnostic of this implementation requirement
             String qualifiedK = saveable.getQualifiedFieldName(k);
             if(props.get(qualifiedK) == null)
                 props.put(qualifiedK,v);
@@ -71,36 +72,39 @@ public class SaveFileHelper {
         try {
             props = new SortedProperties();
 
-            try (InputStream output = Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties")) {
-                props.load(output);
+            // First, try reading from file in JAR directory.
+            URI executablePath = SaveFileHelper.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+            URI configPath = executablePath.resolve("config.properties");
+            File file = new File(configPath);
+            InputStream inputStream;
+
+            if(file.exists()) {
+                // If we found the file, simple stream load
+                inputStream = new FileInputStream(file);
+                props.load(inputStream);
+            } else {
+                // If no file exists, then we load the default resource file
+                ClassLoader classLoader = SaveFileHelper.class.getClassLoader();
+                inputStream = classLoader.getResourceAsStream("config.properties");
+
+                // inputStream can be null if running from IDE and the config file isn't there.
+                props.load(inputStream);
             }
-
-       } catch (IOException e) {
-            // todo: log in debugger
-            //  results.setText("Error when trying to load existing config file. Regeneration and save was successful.");
+        } catch (Exception e) {
+            Logger.log(e);
         }
-
     }
 
     public void saveAll() throws IOException {
-        URL configUrl = Thread.currentThread().getContextClassLoader().getResource("config.properties");
+        try {
+            URI executablePath = SaveFileHelper.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+            URI configPath = executablePath.resolve("config.properties");
 
-        try (OutputStream output = new FileOutputStream(new File(configUrl.toURI()))) {
-            props.store(output, "");
-      //      Database.buildConnectionProperties();
-        } catch (URISyntaxException e) {
-            //todo
+            try (OutputStream output = new FileOutputStream(new File(configPath))) {
+                props.store(output, "");
+            }
+        } catch (Exception e) {
+            throw new IOException(e);
         }
     }
-
-
-
-
-
-
-
-
-
-
-
 }

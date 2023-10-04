@@ -45,7 +45,7 @@ public class GTOHelperController  {
     @FXML Tab debugOutputTab;
 
     private Stage stage;
-    private SaveFileHelper saveHelper = new SaveFileHelper();
+    private final SaveFileHelper saveHelper = new SaveFileHelper();
 
     @FXML
     private void initialize() {
@@ -73,6 +73,7 @@ public class GTOHelperController  {
         handAnalysisController.saveSolveHandsCallback(this::analyzeHands);
         workQueueController.saveGetGlobalSolverSettingsCallback(this::getGlobalSolverSettings);
 
+        // Order here is important. For instance, workQueue depends on solverSettings.
         dbConnectionController.loadModel(saveHelper);
         handAnalysisController.loadModel(saveHelper);
         solverSettingsController.loadModels(saveHelper);

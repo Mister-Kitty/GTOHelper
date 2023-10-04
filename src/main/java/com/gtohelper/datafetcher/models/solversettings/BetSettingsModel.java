@@ -15,9 +15,6 @@ public class BetSettingsModel extends Saveable {
     @Override
     public HashMap<String, String> getDefaultValues() {
         HashMap<String, String> values = new HashMap<>();
-        values.put("betSettingsNames", "Default");
-
-
         return values;
     }
 }

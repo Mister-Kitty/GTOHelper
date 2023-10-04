@@ -3,6 +3,7 @@ package com.gtohelper.datafetcher.controllers.solversettings;
 import com.gtohelper.datafetcher.models.solversettings.RangeFilesModel;
 import com.gtohelper.domain.Ranges;
 import com.gtohelper.utility.FileTreeItem;
+import com.gtohelper.utility.Popups;
 import com.gtohelper.utility.SaveFileHelper;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
@@ -11,8 +12,16 @@ import javafx.stage.DirectoryChooser;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.function.Function;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class RangeFilesController {
 
@@ -134,6 +143,38 @@ public class RangeFilesController {
 
     void loadFieldsFromModel() {
         String savedFolder = rangeFilesModel.loadTextField("rangeFolderLocation");
+        Path rangeFolderAbsPath = Paths.get(savedFolder).toAbsolutePath();
+        if(!Files.exists(rangeFolderAbsPath)) {
+            // If the range folder location DNE, like on first launch or user fuckery, we
+            // regenerate it from resources.
+            ClassLoader classLoader = RangeFilesController.class.getClassLoader();
+            InputStream inputStream = classLoader.getResourceAsStream("6 Max.zip");
+            String outputFolder = "Default Ranges/";
+
+            try(ZipInputStream zipInputStream = new ZipInputStream(inputStream)) {
+                ZipEntry entry;
+                while ((entry = zipInputStream.getNextEntry()) != null) {
+                    Path outputPath = Paths.get(outputFolder, entry.getName());
+
+                    if (entry.isDirectory()) {
+                        Files.createDirectories(outputPath);
+                    } else {
+                        Files.createDirectories(outputPath.getParent());
+                        Files.copy(zipInputStream, outputPath, StandardCopyOption.REPLACE_EXISTING);
+                    }
+                    zipInputStream.closeEntry();
+                }
+            } catch (IOException e) {
+                Popups.showError(String.format("Failed to extract default range folder to %s.\n" +
+                        "Check write permission and/or run GTOHelper as Admin", Paths.get(outputFolder).toAbsolutePath().toString()));
+                throw new RuntimeException(e);
+            }
+
+            // Default range generation successful. Now let's update and set new folder location.
+            Path sixmaxFolderPath = Paths.get(outputFolder + "6 Max").toAbsolutePath();
+            savedFolder = sixmaxFolderPath.toString();
+            rangeFilesModel.saveTextField("rangeFolderLocation", savedFolder);
+        }
 
         selectFolder(new File(savedFolder));
 

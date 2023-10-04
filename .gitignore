@@ -4,9 +4,11 @@
 #     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
 
 solver results/**
-solver results backup/**
 *.gto
 *.cfr
+
+Default Ranges/**
+DefaultRakeFile.csv
 
 # Node artifact files
 node_modules/
