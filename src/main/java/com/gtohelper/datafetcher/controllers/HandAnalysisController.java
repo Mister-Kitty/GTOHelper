@@ -8,8 +8,8 @@ import com.gtohelper.utility.Logger;
 import com.gtohelper.utility.Popups;
 import com.gtohelper.utility.SaveFileHelper;
 import javafx.application.Platform;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -42,9 +42,9 @@ public class HandAnalysisController {
     ObservableList<SessionBundle> sessionTableItems = FXCollections.observableArrayList();
     @FXML TableColumn<SessionBundle, String> sessionTableDateColumn;
     @FXML TableColumn<SessionBundle, String> sessionTableLengthColumn;
-    @FXML TableColumn<SessionBundle, String> sessionTableFlopsColumn;
-    @FXML TableColumn<SessionBundle, String> sessionTableHandsColumn;
-    @FXML TableColumn<SessionBundle, String> sessionTableMoneyColumn;
+    @FXML TableColumn<SessionBundle, Integer> sessionTableFlopsColumn;
+    @FXML TableColumn<SessionBundle, Integer> sessionTableHandsColumn;
+    @FXML TableColumn<SessionBundle, Double> sessionTableMoneyColumn;
 
     /*
         Position v position tab controls.
@@ -62,9 +62,9 @@ public class HandAnalysisController {
     TableView<Tournament> tournamentTable;
     ObservableList<Tournament> tournamentTableItems = FXCollections.observableArrayList();
     @FXML TableColumn<Tournament, String> tournamentTableDateColumn;
-    @FXML TableColumn<Tournament, String> tournamentTableHandsColumn;
-    @FXML TableColumn<Tournament, String> tournamentTablePlayersColumn;
-    @FXML TableColumn<Tournament, String> tournamentTableBuyinColumn;
+    @FXML TableColumn<Tournament, Integer> tournamentTableHandsColumn;
+    @FXML TableColumn<Tournament, Integer> tournamentTablePlayersColumn;
+    @FXML TableColumn<Tournament, Double> tournamentTableBuyinColumn;
 
     /*
         Hand table controls
@@ -73,7 +73,7 @@ public class HandAnalysisController {
     TableView<HandData> handsTable;
     ObservableList<HandData> handsTableItems = FXCollections.observableArrayList();
     @FXML TableColumn<HandData, String> handsTableDateColumn;
-    @FXML TableColumn<HandData, String> handsTableCWonColumn;
+    @FXML TableColumn<HandData, Double> handsTableCWonColumn;
     @FXML TableColumn<HandData, Hand> handsTableHandColumn;
     @FXML TableColumn<HandData, Board> handsTableBoardColumn;
 
@@ -197,8 +197,21 @@ public class HandAnalysisController {
         handsTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         handsTable.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> updateSolveButtonDisabledState());
         handsTableDateColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().date_played.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
-        handsTableCWonColumn.setCellValueFactory(p -> new SimpleStringProperty("" + p.getValue().amt_pot));
+        handsTableCWonColumn.setCellValueFactory(p -> new SimpleDoubleProperty(p.getValue().amt_pot).asObject());
+        handsTableCWonColumn.setCellFactory(col -> new TableCell<HandData, Double>() {
+            @Override
+            protected void updateItem(Double item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    // Format the Double value with two decimal places
+                    setText(String.format("%.2f", item));
+                }
+            }
+        });
         handsTableHandColumn.setCellValueFactory(p -> new ReadOnlyObjectWrapper(new Hand(p.getValue().getHandDataForPlayer(player.id_player))));
+        handsTableHandColumn.setSortable(false);
         handsTableHandColumn.setCellFactory(new Callback<>() {
             @Override
             public TableCell<HandData, Hand> call(TableColumn<HandData, Hand> param) {
@@ -217,6 +230,7 @@ public class HandAnalysisController {
             }
         });
         handsTableBoardColumn.setCellValueFactory(p -> new ReadOnlyObjectWrapper(new Board(p.getValue())));
+        handsTableBoardColumn.setSortable(false);
         handsTableBoardColumn.setCellFactory(new Callback<>() {
             @Override
             public TableCell<HandData, Board> call(TableColumn<HandData, Board> param) {
@@ -277,9 +291,21 @@ public class HandAnalysisController {
         sessionTable.getSortOrder().add(sessionTableDateColumn);
         sessionTableDateColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().getMinSessionStartTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
         sessionTableDateColumn.setSortType(TableColumn.SortType.DESCENDING);
-        sessionTableHandsColumn.setCellValueFactory(p -> new SimpleStringProperty(String.valueOf(p.getValue().getHandCount())));
-        sessionTableFlopsColumn.setCellValueFactory(p -> new SimpleStringProperty(String.valueOf(p.getValue().getFlopsCount())));
-        sessionTableMoneyColumn.setCellValueFactory(p -> new SimpleStringProperty(new BigDecimal(p.getValue().getAmountWon()).setScale(2, RoundingMode.HALF_UP).toString()));
+        sessionTableHandsColumn.setCellValueFactory(p -> new SimpleIntegerProperty(p.getValue().getHandCount()).asObject());
+        sessionTableFlopsColumn.setCellValueFactory(p -> new SimpleIntegerProperty(p.getValue().getFlopsCount()).asObject());
+        sessionTableMoneyColumn.setCellValueFactory(p -> new SimpleDoubleProperty(p.getValue().getAmountWon()).asObject());
+        sessionTableMoneyColumn.setCellFactory(col -> new TableCell<SessionBundle, Double>() {
+            @Override
+            protected void updateItem(Double item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    // Format the Double value with two decimal places
+                    setText(String.format("%.2f", item));
+                }
+            }
+        });
         sessionTableLengthColumn.setCellValueFactory(p -> new SimpleStringProperty(
                 // No elegant way to display this apparently. Use this weird Stack Overflow suggestion.
                 String.format("%d:%02d",
@@ -376,9 +402,22 @@ public class HandAnalysisController {
         // Ideally, these should have accessors
         tournamentTableDateColumn.setCellValueFactory(p -> new SimpleStringProperty(p.getValue().date_start.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
         tournamentTableDateColumn.setSortType(TableColumn.SortType.DESCENDING);
-        tournamentTableHandsColumn.setCellValueFactory(p -> new SimpleStringProperty(String.valueOf(p.getValue().cnt_hands)));
-        tournamentTablePlayersColumn.setCellValueFactory(p -> new SimpleStringProperty(String.valueOf(p.getValue().cnt_players)));
-        tournamentTableBuyinColumn.setCellValueFactory(p -> new SimpleStringProperty(new BigDecimal(p.getValue().amt_buyin).setScale(2, RoundingMode.HALF_UP).toString()));
+        tournamentTableHandsColumn.setCellValueFactory(p -> new SimpleIntegerProperty(p.getValue().cnt_hands).asObject());
+        tournamentTablePlayersColumn.setCellValueFactory(p -> new SimpleIntegerProperty(p.getValue().cnt_players).asObject());
+        tournamentTableBuyinColumn.setCellValueFactory(p -> new SimpleDoubleProperty(p.getValue().amt_buyin).asObject());
+
+        tournamentTableBuyinColumn.setCellFactory(col -> new TableCell<Tournament, Double>() {
+            @Override
+            protected void updateItem(Double item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    // Format the Double value with two decimal places
+                    setText(String.format("%.2f", item));
+                }
+            }
+        });
 
         tournamentTable.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             getTournamentHands();

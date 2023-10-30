@@ -94,7 +94,7 @@ public class CardResolver {
     }
 
     public static String getHandString(HandData.PlayerHandData playerHand) {
-        if(playerHand != null)
+        if(playerHand != null && playerHand.holecard_1 != 0 & playerHand.holecard_2 != 0)
             return resolveToString(playerHand.holecard_1) + " " + resolveToString(playerHand.holecard_2);
         else
             return "";
