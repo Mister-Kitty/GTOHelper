@@ -21,4 +21,14 @@ Eg.
 
 Right now, only a default 100BB 6max range is available. This means this tool isn't currently too useful for tournaments. However, the very next thing I'll be working on are the changes for both the GUI and backend that are required to match hand ranges to BB ranges. So it shouldn't take _too_ long to see this feature completed.
 
-"Mr. Kitty#9462" on Discord if you need assistance. I'm also in the Piosolver Discord, in case you can't message me directly.
+# How to get it running
+1. Install Java 21 JDK from https://www.oracle.com/java/technologies/downloads/#jdk21-windows. Both the normal installer and MSI installer are fine.
+2. On the top right hand of this github page, under the About section, you should see a Releases section. Click 0.1.0.0. Then, click and download GTOHelper.jar
+   
+![Release](https://raw.githubusercontent.com/Mister-Kitty/Mister-Kitty.github.io/main/img/GTOHelper/releases.png) 
+
+3. Place in its own folder. When you execute the Jar, it will decompress default files, as shown here:
+
+![Folder](https://raw.githubusercontent.com/Mister-Kitty/Mister-Kitty.github.io/main/img/GTOHelper/expanded_folder.png) 
+
+"Mr. Kitty#9462" on Discord if you need assistance. I'm also in the Piosolver Discord, in case you can't message me without a shared server in common.
