@@ -10,7 +10,7 @@
 
 <StackPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
            minHeight="400.0" minWidth="600.0" prefHeight="400.0" prefWidth="600.0"
-           xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+           xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="com.gtohelper.datafetcher.controllers.DBConnectionController">
     <children>
         <VBox fx:id="vbox" layoutX="129.0" layoutY="14.0" minHeight="350.0" minWidth="600.0" prefHeight="321.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">

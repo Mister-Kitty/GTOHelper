@@ -6,5 +6,13 @@ module com.gtohelper {
     requires javafx.fxml;
     requires javafx.controls;
 
-    exports com.gtohelper;
+    exports com.gtohelper.datafetcher.models to javafx.graphics;
+
+    exports com.gtohelper.datafetcher.controllers to javafx.fxml;
+    opens com.gtohelper.datafetcher.controllers to javafx.fxml;
+
+    exports com.gtohelper.datafetcher.controllers.solversettings to javafx.fxml;
+    opens com.gtohelper.datafetcher.controllers.solversettings to javafx.fxml;
+
+    opens com.gtohelper.fxml to javafx.fxml;
 }

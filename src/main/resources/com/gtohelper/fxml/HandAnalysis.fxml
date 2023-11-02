@@ -22,7 +22,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<AnchorPane prefHeight="600.0" prefWidth="960.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gtohelper.datafetcher.controllers.HandAnalysisController">
+<AnchorPane prefHeight="600.0" prefWidth="960.0" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gtohelper.datafetcher.controllers.HandAnalysisController">
    <children>
       <SplitPane fx:id="rootSplitPane" dividerPositions="0.4" prefHeight="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
           <items>
@@ -148,7 +148,7 @@
                                                 <Insets top="3.0" />
                                              </padding>
                                           </Label>
-                                          <ComboBox fx:id="villainSeatComboBox" disable="true" onAction="#villainSeatSelected" prefWidth="222.0" stylesheets="/com/gtohelper/style/handAnalysis.css">
+                                          <ComboBox fx:id="villainSeatComboBox" disable="true" onAction="#villainSeatSelected" prefWidth="222.0" stylesheets="@../style/handAnalysis.css">
                                              <HBox.margin>
                                                 <Insets left="3.0" />
                                              </HBox.margin>

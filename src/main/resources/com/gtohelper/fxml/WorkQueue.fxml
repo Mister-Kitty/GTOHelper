@@ -3,13 +3,11 @@
 <?import javafx.scene.paint.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.geometry.*?>
-<?import java.lang.*?>
 <?import javafx.scene.text.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import java.net.URL?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gtohelper.datafetcher.controllers.WorkQueueController">
+<AnchorPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gtohelper.datafetcher.controllers.WorkQueueController">
    <children>
       <HBox style="-fx-background-color: white;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
@@ -67,7 +65,7 @@
                         </AnchorPane>
                         <AnchorPane GridPane.halignment="LEFT" GridPane.hgrow="NEVER" GridPane.rowIndex="1" GridPane.rowSpan="2" GridPane.vgrow="ALWAYS" VBox.vgrow="ALWAYS">
                            <children>
-                              <ListView fx:id="solveTaskListView" prefWidth="160.0" styleClass="task-list" stylesheets="/com/gtohelper/style/workQueue.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="ALWAYS">
+                              <ListView fx:id="solveTaskListView" prefWidth="160.0" styleClass="task-list" stylesheets="@../style/workQueue.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" VBox.vgrow="ALWAYS">
 
                               </ListView>
                            </children>
@@ -87,7 +85,7 @@
                            <children>
                               <ScrollPane fx:id="taskInfoScrollPane" fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" prefViewportHeight="497.0" prefViewportWidth="205.0" style="-fx-box-border: transparent;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                  <content>
-                                    <VBox layoutX="40.0" layoutY="116.0" stylesheets="/com/gtohelper/style/workQueue.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                    <VBox layoutX="40.0" layoutY="116.0" stylesheets="@../style/workQueue.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                        <children>
                                           <HBox VBox.vgrow="NEVER">
                                              <children>

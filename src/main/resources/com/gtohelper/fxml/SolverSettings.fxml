@@ -17,20 +17,20 @@
 
                 <Tab fx:id="betSettingsTab" id="betSettingsTab" text="Bet Settings">
                     <content>
-                        <fx:include fx:id="betSettings" source="/com/gtohelper/fxml/BetSettings.fxml"/>
+                        <fx:include fx:id="betSettings" source="BetSettings.fxml"/>
                     </content>
                 </Tab>
 
 
                 <Tab fx:id="rangeFilesTab" id="rangeFilesTab" text="Range Files">
                     <content>
-                        <fx:include fx:id="rangeFiles" source="/com/gtohelper/fxml/RangeFiles.fxml"/>
+                        <fx:include fx:id="rangeFiles" source="RangeFiles.fxml"/>
                     </content>
                 </Tab>
 
                 <Tab fx:id="otherSettingsTab" id="otherSettingsTab" text="Other Settings">
                     <content>
-                        <fx:include fx:id="otherSettings" source="/com/gtohelper/fxml/OtherSettings.fxml"/>
+                        <fx:include fx:id="otherSettings" source="OtherSettings.fxml"/>
                     </content>
                 </Tab>
             </tabs>

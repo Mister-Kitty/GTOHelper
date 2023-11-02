@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.*?>
 
 
-<AnchorPane xmlns="http://javafx.com/javafx/8"
+<AnchorPane xmlns="http://javafx.com/javafx"
           xmlns:fx="http://javafx.com/fxml/1"
           fx:controller="com.gtohelper.datafetcher.controllers.GTOHelperController">
    <children>
@@ -12,27 +12,27 @@
         <tabs>
           <Tab fx:id="workQueueTab"  id="workQueueTab" text="Work Queue">
             <content>
-              <fx:include fx:id="workQueue" source="/com/gtohelper/fxml/WorkQueue.fxml"/>
+              <fx:include fx:id="workQueue" source="WorkQueue.fxml"/>
             </content>
           </Tab>
           <Tab fx:id="solverSettingsTab" id="solverSettingsTab" text="Solver Settings">
             <content>
-              <fx:include fx:id="solverSettings" source="/com/gtohelper/fxml/SolverSettings.fxml"/>
+              <fx:include fx:id="solverSettings" source="SolverSettings.fxml"/>
             </content>
           </Tab>
           <Tab fx:id="handAnalysisTab"  id="handAnalysisTab" text="Hand Analysis" >
             <content>
-              <fx:include fx:id="handAnalysis" source="/com/gtohelper/fxml/HandAnalysis.fxml" />
+              <fx:include fx:id="handAnalysis" source="HandAnalysis.fxml" />
             </content>
           </Tab>
           <Tab fx:id="dbConnectionTab" id="dbConnectionTab" text="DB Connection">
             <content>
-              <fx:include fx:id="dbConnection" source="/com/gtohelper/fxml/DBConnection.fxml"/>
+              <fx:include fx:id="dbConnection" source="DBConnection.fxml"/>
             </content>
           </Tab>
           <Tab fx:id="debugOutputTab" id="debugOutput"  text="Debug Output">
             <content>
-              <fx:include fx:id="debugOutput" source="/com/gtohelper/fxml/DebugOutput.fxml"/>
+              <fx:include fx:id="debugOutput" source="DebugOutput.fxml"/>
             </content>
           </Tab>
         </tabs>
