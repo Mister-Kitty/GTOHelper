@@ -22,12 +22,16 @@ Eg.
 Right now, only a default 100BB 6max range is available. This means this tool isn't currently too useful for tournaments. However, the very next thing I'll be working on are the changes for both the GUI and backend that are required to match hand ranges to BB ranges. So it shouldn't take _too_ long to see this feature completed.
 
 # How to get it running
-1. On the top right hand of this github page, under the About section, you should see a Releases section. Click 0.1.0.0. Then, click and download GTOHelper.exe
-2. Place in its own folder. When you execute the application, it will decompress default files, as shown here:
-
+1. On the top right hand of this github page, under the About section, you should see a Releases section. Click 0.1.0.0, as shown here:
+ 
+![Releases](https://raw.githubusercontent.com/Mister-Kitty/Mister-Kitty.github.io/main/img/GTOHelper/releases.png)
+   
+2. Then click and download GTOHelper.exe. Place in its own folder, wherever you want. GTOHelper does not install. 
+3. When you execute the application, it will decompress default files. So do be sure to actually put it in an folder.
+   
 ![Folder](https://raw.githubusercontent.com/Mister-Kitty/Mister-Kitty.github.io/main/img/GTOHelper/expanded_folder.png) 
 
 Note: You'll almost certainly get a Windows SmartScreen warning when you execute the exe. On the warning, click 'more info' and 'run anyway'.
-These warnings are avoidable by purchasing a Code Signing Certificate from Digisign or whereever ~ but they're incredibly expensive and don't validate the code in any way. It's a borderline scam, in my oppinion.
+These warnings are avoidable by purchasing a Code Signing Certificate from Digisign or wherever ~ but they're very expensive and don't validate the code in any way. It's a borderline scam, in my opinion.
 
 "Mr. Kitty#9462" on Discord if you need assistance. I'm also in the Piosolver Discord, in case you can't message me without a shared server in common.
