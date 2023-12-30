@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 
 public enum SeatGroup implements Serializable {
-    EP("EP - (All FR seats before LJ)", Seat.TthSeat, Seat.UTG, Seat.UTG1, Seat.UTG2), Tth_Seat(Seat.TthSeat), UTG(Seat.UTG), UTG1(Seat.UTG1), UTG2(Seat.UTG2),
+    EP("EP - (All FR seats before LJ)", Seat.TEN, Seat.UTG, Seat.UTG1, Seat.UTG2), Tth_Seat(Seat.TEN), UTG(Seat.UTG), UTG1(Seat.UTG1), UTG2(Seat.UTG2),
     MP("MP - (LJ & HJ)", Seat.LJ, Seat.HJ), LJ(Seat.LJ), HJ(Seat.HJ), CO(Seat.CO), BTN(Seat.BTN), SB(Seat.SB), BB(Seat.BB);
 
     public static final SeatGroup allByPostflopPosition[] = { SB, BB, EP, UTG, UTG1, UTG2, MP, LJ, HJ, CO, BTN };

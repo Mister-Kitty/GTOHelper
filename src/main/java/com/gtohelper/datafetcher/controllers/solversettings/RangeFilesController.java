@@ -140,7 +140,7 @@ public class RangeFilesController {
     }
 
     public Ranges loadRangeFiles() {
-        return rangeFilesModel.loadRangeFiles(actionToRangeFileMap);
+        return rangeFilesModel.loadRangeFromRangeFolder(rangeFolderLocation.getText());
     }
 
     void loadFieldsFromModel() {
@@ -150,8 +150,8 @@ public class RangeFilesController {
             // If the range folder location DNE, like on first launch or user fuckery, we
             // regenerate it from resources.
             ClassLoader classLoader = RangeFilesController.class.getClassLoader();
-            InputStream inputStream = classLoader.getResourceAsStream("6 Max.zip");
-            String outputFolder = "Default Ranges/";
+            InputStream inputStream = classLoader.getResourceAsStream("Default-Cash-100bb.zip");
+            String outputFolder = "Ranges/";
 
             try(ZipInputStream zipInputStream = new ZipInputStream(inputStream)) {
                 ZipEntry entry;
@@ -173,7 +173,7 @@ public class RangeFilesController {
             }
 
             // Default range generation successful. Now let's update and set new folder location.
-            Path sixmaxFolderPath = Paths.get(outputFolder + "6 Max").toAbsolutePath();
+            Path sixmaxFolderPath = Paths.get(outputFolder + "Default-Cash-100bb").toAbsolutePath();
             savedFolder = sixmaxFolderPath.toString();
             rangeFilesModel.saveTextField("rangeFolderLocation", savedFolder);
         }

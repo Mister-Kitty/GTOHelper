@@ -3,7 +3,7 @@ package com.gtohelper.domain;
 import java.io.Serializable;
 
 public enum Situation implements Serializable {
-    LIMP("Limp"), RFI("RFI"), VRFI("vRFI"), V3BET("v3Bet"), V4BET("v4Bet"), CALL5BET("call5Bet");
+    LIMP("Limp"), RFI("RFI"), VRFI("vs RFI"), V3BET("vs 3Bet"), V4BET("vs 4Bet"), V5BET("vs 5Bet");
 
     private static final long serialVersionUID = 1L;
     public static final Situation values[] = values();

@@ -8,7 +8,6 @@ import com.gtohelper.utility.Logger;
 import com.gtohelper.utility.Popups;
 import com.gtohelper.utility.SaveFileHelper;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -18,8 +17,6 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Callback;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -521,7 +518,7 @@ public class HandAnalysisController {
         heroOOPSituationList.add(new SituationComboBoxMapping("2Bet - Villain calls vs Hero", Situation.RFI, LastAction.RAISE));
         heroOOPSituationList.add(new SituationComboBoxMapping("3Bet - Hero calls vs Villain", Situation.V3BET, LastAction.CALL));
         heroOOPSituationList.add(new SituationComboBoxMapping("4Bet - Villain calls vs Hero", Situation.V3BET, LastAction.RAISE));
-        heroOOPSituationList.add(new SituationComboBoxMapping("5Bet - Hero calls vs Villain", Situation.CALL5BET, LastAction.CALL));
+        heroOOPSituationList.add(new SituationComboBoxMapping("5Bet - Hero calls vs Villain", Situation.V5BET, LastAction.CALL));
     }
 
     private void getPositionVsPositionHands() {

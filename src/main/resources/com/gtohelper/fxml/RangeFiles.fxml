@@ -49,7 +49,7 @@
                                       <TreeTableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                                    </columnResizePolicy>
                                 </TreeTableView>
-                              <TextArea editable="false" prefHeight="50.0" prefWidth="200.0" text="NOTE: Editing this tab is disabled until v0.1.1. This is due to a pending rewrite to allow stack depth specific ranges &amp; enable tournament ranges!" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                              <TextArea editable="false" prefHeight="50.0" prefWidth="200.0" text="NOTE: Editing this tab is disabled until v0.1.2. This is due to a pending rewrite to allow stack depth specific ranges &amp; enable tournament ranges!" wrapText="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                                  <font>
                                     <Font size="10.0" />
                                  </font>

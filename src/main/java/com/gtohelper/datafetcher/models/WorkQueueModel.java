@@ -391,9 +391,10 @@ public class WorkQueueModel extends Saveable {
             RangeData ipRange = ranges.getRangeForHand(solve.getHandData().ipPlayer);
 
             if(ipRange == null || oopRange == null) {
-                String error = String.format("Could not resolve range files for handId = %d (aka board %s, %d bet pot, with aggressor seats %s)",
-                        solve.getHandData().id_hand, CardResolver.getBoardString(solve.getHandData()),
-                        solve.getHandData().highestPreflopBetLevel, solve.getHandData().str_aggressors_p);
+                String error = String.format("No matching range exists for hand (board %s, %d bet pot, with PF aggressor seats %s)",
+                        CardResolver.getBoardString(solve.getHandData()),
+                        solve.getHandData().highestPreflopBetLevel,
+                        solve.getHandData().str_aggressors_p);
                 Logger.log(error);
                 results.setError(error);
                 return results;

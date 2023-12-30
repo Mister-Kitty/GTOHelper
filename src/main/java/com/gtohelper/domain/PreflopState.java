@@ -1,8 +1,10 @@
 package com.gtohelper.domain;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 public class PreflopState implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
     public Situation situation;
     public Seat heroSeat;
@@ -10,10 +12,6 @@ public class PreflopState implements Serializable {
     public LastAction lastHeroAction;
 
     public final static String delimiter = "-";
-
-    public PreflopState(String string) {
-        fromString(string);
-    }
 
     public PreflopState() {}
 
@@ -35,17 +33,9 @@ public class PreflopState implements Serializable {
         HandData.PlayerHandData.LastActionForStreet lastPreflopAction = playerHand.preflop;
         heroSeat = playerHand.seat;
         villainSeat = lastPreflopAction.vsSeat;
-        switch(lastPreflopAction.action) {
-            case BET:
-            case RAISE:
-                lastHeroAction = LastAction.RAISE;
-                break;
-            case CALL:
-            case CHECK:
-                lastHeroAction = LastAction.CALL;
-                break;
-            default:
-                assert false;
+        switch (lastPreflopAction.action) {
+            case BET, RAISE -> lastHeroAction = LastAction.RAISE;
+            case CALL, CHECK -> lastHeroAction = LastAction.CALL;
         }
 
         if(lastPreflopAction.betLevel == 1) {
@@ -69,10 +59,9 @@ public class PreflopState implements Serializable {
             if(lastHeroAction == LastAction.RAISE)
                 situation = Situation.V4BET;
             else
-                situation = Situation.CALL5BET;
+                situation = Situation.V5BET;
         } else {
-            assert(lastPreflopAction.betLevel == 5);
-            situation = Situation.CALL5BET;
+            situation = Situation.V5BET;
         }
     }
 
@@ -130,7 +119,7 @@ public class PreflopState implements Serializable {
             v3BetFromString(splitStrings[index + 1], splitStrings[index], splitStrings[index + 2]);
         } else if(situation == Situation.V4BET) {
             v4BetFromString(splitStrings[index], splitStrings[index + 1], splitStrings[index + 2]);
-        } else if(situation == Situation.CALL5BET) {
+        } else if(situation == Situation.V5BET) {
             call5BetFromString(splitStrings[index + 1], splitStrings[index], splitStrings[index + 2]);
         } else {
             // todo: log error.
@@ -144,11 +133,9 @@ public class PreflopState implements Serializable {
         if(obj == this)
             return true;
 
-        if (!(obj instanceof PreflopState)) {
+        if (!(obj instanceof PreflopState o)) {
             return false;
         }
-
-        PreflopState o = (PreflopState)obj;
 
         return heroSeat == o.heroSeat && villainSeat == o.villainSeat &&
                 situation == o.situation && lastHeroAction == o.lastHeroAction;
@@ -171,7 +158,7 @@ public class PreflopState implements Serializable {
             return v3BetToString();
         else if(situation == Situation.V4BET)
             return v4BetToString();
-        else if(situation == Situation.CALL5BET)
+        else if(situation == Situation.V5BET)
             return call5BetToString();
         else
             return "";
