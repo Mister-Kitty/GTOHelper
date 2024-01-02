@@ -88,46 +88,6 @@ public class PreflopState implements Serializable {
         }
     }
 
-    private void fromString(String string) {
-        String[] splitStrings = string.split(delimiter);
-
-        // peel off the first segments until we find the leading 'situation'
-        int index = 0;
-        for(; index < splitStrings.length && situation == null; index++) {
-            String split = splitStrings[index];
-            // Check to see if it's a defined Situation
-            for(Situation s : Situation.values()) {
-                if(s.name.equals(split)) {
-                    situation = s;
-                    break;
-                }
-            }
-        }
-
-        assert index < splitStrings.length;
-
-        // index is now pointing at the split _after_ we find the 'situation'.
-        // This is because index++ is called before the break condition.
-        if(situation == Situation.LIMP) {
-            limpFromString(splitStrings[index]);
-        } else if(situation == Situation.RFI) {
-            rfiFromString(splitStrings[index]);
-        } else if(situation == Situation.VRFI) {
-            // Note that these FromStrings() have Villain, then hero as their parameter.
-            vRfiFromString(splitStrings[index], splitStrings[index + 1], splitStrings[index + 2]);
-        } else if(situation == Situation.V3BET) {
-            v3BetFromString(splitStrings[index + 1], splitStrings[index], splitStrings[index + 2]);
-        } else if(situation == Situation.V4BET) {
-            v4BetFromString(splitStrings[index], splitStrings[index + 1], splitStrings[index + 2]);
-        } else if(situation == Situation.V5BET) {
-            call5BetFromString(splitStrings[index + 1], splitStrings[index], splitStrings[index + 2]);
-        } else {
-            // todo: log error.
-            assert false;
-        }
-
-    }
-
     @Override
     public boolean equals(Object obj) {
         if(obj == this)
@@ -161,63 +121,27 @@ public class PreflopState implements Serializable {
         else if(situation == Situation.V5BET)
             return call5BetToString();
         else
-            return "";
-    }
-
-    private void limpFromString(String heroPosition) {
-        heroSeat = Seat.fromString(heroPosition);
-        villainSeat = Seat.BB;
-        lastHeroAction = LastAction.CALL;
+            return "Invalid preflop state";
     }
 
     private String limpToString() {
         return situation.name + delimiter + heroSeat.name;
     }
 
-    private void rfiFromString(String heroPosition) {
-        heroSeat = Seat.fromString(heroPosition);
-        villainSeat = Seat.BB;
-        lastHeroAction = LastAction.RAISE;
-    }
-
     private String rfiToString() {
         return situation.name + delimiter + heroSeat.name;
-    }
-
-    private void vRfiFromString(String villainPosition, String heroPosition, String lastAction) {
-        heroSeat = Seat.fromString(heroPosition);
-        villainSeat = Seat.fromString(villainPosition.substring(1)); // remove the starting "v"
-        lastHeroAction = LastAction.fromString(lastAction);
     }
 
     private String vRfiToString() {
         return situation.name + delimiter + "v" + villainSeat.name + delimiter + heroSeat.name + delimiter + lastHeroAction;
     }
 
-    private void v3BetFromString(String villainPosition, String heroPosition, String lastAction) {
-        heroSeat = Seat.fromString(heroPosition);
-        villainSeat = Seat.fromString(villainPosition.substring(1)); // remove the starting "v"
-        lastHeroAction = LastAction.fromString(lastAction);
-    }
-
     private String v3BetToString() {
         return situation.name + delimiter + heroSeat.name + delimiter + "v" + villainSeat.name + delimiter + lastHeroAction;
     }
 
-    private void v4BetFromString(String villainPosition, String heroPosition, String lastAction) {
-        heroSeat = Seat.fromString(heroPosition);
-        villainSeat = Seat.fromString(villainPosition.substring(1)); // remove the starting "v"
-        lastHeroAction = LastAction.fromString(lastAction);
-    }
-
     private String v4BetToString() {
         return situation.name + delimiter + "v" + villainSeat.name + delimiter + heroSeat.name + delimiter + lastHeroAction;
-    }
-
-    private void call5BetFromString(String villainPosition, String heroPosition, String lastAction) {
-        heroSeat = Seat.fromString(heroPosition);
-        villainSeat = Seat.fromString(villainPosition.substring(1)); // remove the starting "v"
-        lastHeroAction = LastAction.fromString(lastAction);
     }
 
     private String call5BetToString() {

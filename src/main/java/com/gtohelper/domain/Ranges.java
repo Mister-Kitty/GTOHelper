@@ -60,23 +60,15 @@ public class Ranges implements Serializable {
         }
 
         private void fillNoVillainMap(HashMap<PreflopState, RangeData> map, Situation sit, LastAction lastAction) {
-            RangeData lastRangeData = null;
-
-            PreflopState action = new PreflopState(sit, Seat.BB, Seat.SB, lastAction);
-            action.lastHeroAction = lastAction;
+            PreflopState action = new PreflopState();
             action.situation = sit;
-            action.heroSeat = Seat.BB;
-            action.villainSeat = Seat.SB;
+            action.lastHeroAction = lastAction;
 
-            // This edge case is needed because the villainSeat is different.
-            RangeData data = map.get(action);
-            lastRangeData = data;
-            action.villainSeat = Seat.BB;
-
-            for(int heroIndex = 1; heroIndex < Seat.preflopPositionsDESC.length; heroIndex++) {
+            RangeData lastRangeData = null;
+            for(int heroIndex = 0; heroIndex < Seat.preflopPositionsDESC.length; heroIndex++) {
                 action.heroSeat = Seat.preflopPositionsDESC[heroIndex];
 
-                data = map.get(action);
+                RangeData data = map.get(action);
                 if ((data == null || data.isTheEmptyRange) && (lastRangeData != null && !lastRangeData.isTheEmptyRange))
                     map.put(new PreflopState(action), lastRangeData);
                 else
@@ -162,7 +154,11 @@ public class Ranges implements Serializable {
         @Override
         public RangeData put(PreflopState action, RangeData data) {
             switch (action.situation) {
-                case LIMP -> limpMap.put(action, data);
+                case LIMP -> {
+                    PreflopState noVersusAction = new PreflopState(action);
+                    noVersusAction.villainSeat = null;
+                    limpMap.put(noVersusAction, data);
+                }
                 case RFI -> RFIMap.put(action, data);
                 case VRFI -> vsRFIMap.put(action, data);
                 case V3BET -> vs3BetMap.put(action, data);
@@ -177,11 +173,16 @@ public class Ranges implements Serializable {
 
         @Override
         public RangeData get(Object obj) {
-            if (!(obj instanceof PreflopState action)) {
+            if (!(obj instanceof PreflopState)) {
                 return null;
             }
 
-            return getBestMatch(action);
+            PreflopState newState = new PreflopState((PreflopState) obj);
+            if(newState.situation == Situation.LIMP) {
+                newState.villainSeat = null;
+            }
+
+            return getBestMatch(newState);
         }
 
         private RangeData getBestMatch(PreflopState action) {

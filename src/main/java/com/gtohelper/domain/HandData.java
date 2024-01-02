@@ -245,7 +245,7 @@ public class HandData implements Serializable {
 
         // Calculated fields to be set
         // These 3 fields are the info for the last action taken by the player.
-        public class LastActionForStreet implements Serializable{
+        public class LastActionForStreet implements Serializable {
             private static final long serialVersionUID = 1L;
             public short betLevel;
             public Seat vsSeat;

@@ -35,7 +35,7 @@ public class WorkQueueModel extends Saveable {
 
     // No indexable java.concurrent structure with .take() exists. So
     // we use the BlockingQueue and lock it for rebuilds to move item indexes ~ which are only valid if the Queue size > 2.
-    private Object pendingQueueLock = new Object();
+    private final Object pendingQueueLock = new Object();
     private LinkedBlockingQueue<Work> pendingWorkQueue;
 
     public WorkQueueModel(SaveFileHelper saveHelper, Consumer<Boolean> solverStatusCallback, Consumer<SolveTask> startedOnTaskCallback,

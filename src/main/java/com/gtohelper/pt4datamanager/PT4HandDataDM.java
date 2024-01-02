@@ -195,11 +195,26 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
     private void resolvePreflopActionForPlayersInHand(HandData hand) {
         // Manually handle the all-limp case, to make edge cases in the following code chunk easier.
         if(hand.highestPreflopBetLevel == 1) {
+            Seat earliestLimpSeat = Seat.BB;
+            for(PlayerHandData handData : hand.playerHandData) {
+                if(handData.seat.preflopPosition < earliestLimpSeat.preflopPosition) {
+                    earliestLimpSeat = handData.seat;
+                }
+            }
+
             for(PlayerHandData handData : hand.playerHandData) {
                 LastActionForStreet lastPreflopAction = handData.getLastActionForStreet(Street.PRE);
                 lastPreflopAction.betLevel = 1;
-                lastPreflopAction.vsSeat = Seat.BB;
-                lastPreflopAction.action = Action.CALL;
+
+                if(handData.seat == earliestLimpSeat)
+                    lastPreflopAction.vsSeat = Seat.BB;
+                else
+                    lastPreflopAction.vsSeat = earliestLimpSeat;
+
+                if(handData.seat == Seat.BB)
+                    lastPreflopAction.action = Action.CHECK;
+                else
+                    lastPreflopAction.action = Action.CALL;
             }
             return;
         }
@@ -246,7 +261,7 @@ public class PT4HandDataDM extends DataManagerBase implements IHandDataDM {
                 LastActionForStreet lastAction = handData.getLastActionForStreet(street);
                 lastAction.betLevel = 0;
                 lastAction.vsSeat = null;
-                lastAction.action = Action.CALL;
+                lastAction.action = Action.CHECK;
             }
             return;
         }
