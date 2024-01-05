@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.gtohelper.datafetcher.controllers.AnalyzeResultsController">
+   <opaqueInsets>
+      <Insets />
+   </opaqueInsets>
+   <children>
+      <Text layoutX="-80.0" layoutY="-77.0" strokeType="OUTSIDE" strokeWidth="0.0" text="This tab is a work in progress, to be released through the GTOHelper Patreon for version 0.1.1" textAlignment="CENTER" wrappingWidth="333.13671875" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+      <Hyperlink onAction="#onHyperlinkClick" text="patreon.com/GTOHelper" AnchorPane.leftAnchor="96.0" AnchorPane.topAnchor="40.0" />
+   </children>
+   <padding>
+      <Insets left="30.0" top="100.0" />
+   </padding>
+</AnchorPane>

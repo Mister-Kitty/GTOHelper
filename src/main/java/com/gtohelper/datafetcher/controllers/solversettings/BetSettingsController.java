@@ -252,6 +252,7 @@ public class BetSettingsController {
 
         savedBetSettingsTable.getItems().clear();
         savedBetSettingsTable.getItems().addAll(settingNameToTreeData);
+        savedBetSettingsTable.getSelectionModel().select(0);
 
         callback.accept(Arrays.asList(listOfSettingsNames.split(",")));
     }

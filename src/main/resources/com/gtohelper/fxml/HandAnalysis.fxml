@@ -297,12 +297,12 @@
                                                           </AnchorPane>
                                                           <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="1">
                                                               <children>
-                                                                  <Label alignment="CENTER" text="Tournament support is very &quot;in alpha&quot;." textAlignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                                  <Label alignment="CENTER" text="Full Tournament support is set for v0.1.2" textAlignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
                                                               </children>
                                                           </AnchorPane>
                                                           <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="3">
                                                              <children>
-                                                                <Label alignment="CENTER" prefHeight="36.0" prefWidth="360.0" text="Default ranges are 100bb. If modified, *please* backup your config file at .\out\production\GTOHelper\config.properties" textAlignment="CENTER" wrapText="true" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                                                <Label alignment="CENTER" prefHeight="36.0" prefWidth="360.0" text="Until then, only solving with the Default 100bb range is possible." textAlignment="CENTER" wrapText="true" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                                                              </children>
                                                           </AnchorPane>
                                                       </children>

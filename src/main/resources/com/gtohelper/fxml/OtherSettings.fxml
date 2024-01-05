@@ -94,7 +94,7 @@
                         <Insets left="5.0" right="15.0" />
                      </padding>
                   </RadioButton>
-                  <RadioButton fx:id="solverV2Radio" mnemonicParsing="false" text="Solver V2" />
+                  <RadioButton fx:id="solverV2Radio" mnemonicParsing="false" text="Solver V2 or V3" />
                </children>
             </HBox>
          </children>

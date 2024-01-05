@@ -32,6 +32,9 @@ public class GTOHelperController  {
     HandAnalysisController handAnalysisController;
 
     @FXML
+    AnalyzeResultsController analyzeResultsController;
+
+    @FXML
     WorkQueueController workQueueController;
 
     @FXML
@@ -39,6 +42,7 @@ public class GTOHelperController  {
 
     @FXML
     TabPane mainTabPain;
+    @FXML Tab analyseResultsTab;
     @FXML Tab handAnalysisTab;
     @FXML Tab workQueueTab;
     @FXML Tab dbConnectionTab;
@@ -166,6 +170,7 @@ public class GTOHelperController  {
 
     private void initializeControls() {
         // Listener for when different tabs are selected.
+        mainTabPain.getSelectionModel().select(workQueueTab);
         mainTabPain.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
             @Override
             public void changed(ObservableValue<? extends Tab> observable, Tab oldValue, Tab newValue) {

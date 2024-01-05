@@ -214,7 +214,7 @@ public class WorkQueueController {
 
             viewHandReplay(task.getHandData().id_hand);
         });
-        viewInBrowser.disableProperty().set(false);
+        //viewInBrowser.disableProperty().set(false);
 
         //viewHandReplay
 

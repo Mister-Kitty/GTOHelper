@@ -345,7 +345,7 @@
                                           </HBox>
                                           <HBox>
                                              <children>
-                                                <Hyperlink fx:id="viewInBrowser" disable="true" graphicTextGap="0.0" text="Click to replay hand in browser" HBox.hgrow="ALWAYS">
+                                                <Hyperlink fx:id="viewInBrowser" disable="true" graphicTextGap="0.0" text="Click to replay hand PT4 (v0.1.4)" HBox.hgrow="ALWAYS">
                                                    <opaqueInsets>
                                                       <Insets />
                                                    </opaqueInsets>

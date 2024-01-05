@@ -10,19 +10,24 @@
    <children>
       <TabPane fx:id="mainTabPain" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" tabClosingPolicy="UNAVAILABLE">
         <tabs>
-          <Tab fx:id="workQueueTab"  id="workQueueTab" text="Work Queue">
+          <Tab fx:id="analyseResultsTab" id="analyzeResultsTab" text="Analyze Results">
+            <content>
+              <fx:include fx:id="analyzeResults" source="AnalyzeResults.fxml"/>
+            </content>
+          </Tab>
+          <Tab fx:id="workQueueTab" id="workQueueTab" text="Work Queue">
             <content>
               <fx:include fx:id="workQueue" source="WorkQueue.fxml"/>
+            </content>
+          </Tab>
+          <Tab fx:id="handAnalysisTab" id="handAnalysisTab" text="Build Work" >
+            <content>
+              <fx:include fx:id="handAnalysis" source="HandAnalysis.fxml" />
             </content>
           </Tab>
           <Tab fx:id="solverSettingsTab" id="solverSettingsTab" text="Solver Settings">
             <content>
               <fx:include fx:id="solverSettings" source="SolverSettings.fxml"/>
-            </content>
-          </Tab>
-          <Tab fx:id="handAnalysisTab"  id="handAnalysisTab" text="Hand Analysis" >
-            <content>
-              <fx:include fx:id="handAnalysis" source="HandAnalysis.fxml" />
             </content>
           </Tab>
           <Tab fx:id="dbConnectionTab" id="dbConnectionTab" text="DB Connection">
